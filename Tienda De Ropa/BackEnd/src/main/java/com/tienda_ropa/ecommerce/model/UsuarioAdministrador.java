@@ -13,8 +13,8 @@ public class UsuarioAdministrador extends Master {
 
     private String email;
 
-    @Column(name = "contraseña")
-    private String contrasena;
+    @Column(name = "password")
+    private String password;
 
     @OneToOne
     @JoinColumn(name = "id_administrador", nullable = false)

@@ -13,6 +13,8 @@ import java.util.*;
 public class UsuarioCliente extends Master {
 
     private String username;
+
+    @Column(name = "password")
     private String password;
 
     @OneToOne
