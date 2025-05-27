@@ -1,0 +1,66 @@
+plugins {
+    id 'java'
+    id("org.springframework.boot") version "3.4.5"
+    id("io.spring.dependency-management") version "1.1.7"
+}
+
+group = "com.tienda_ropa"
+version = "0.0.1-SNAPSHOT"
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    //Validaciones
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // MapStruct
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+
+    // MySQL driver
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    // H2 Database para pruebas
+    runtimeOnly 'com.h2database:h2'
+
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+    // Logging (SLF4J viene con Spring Boot, pero puedes añadir configuración específica)
+    implementation 'ch.qos.logback:logback-classic'
+
+    // WebClient (para llamadas API REST)
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    // Auth0
+    implementation 'com.auth0:auth0-spring-security-api:1.5.1'
+    implementation 'com.auth0:java-jwt:4.3.0'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
