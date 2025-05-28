@@ -1,0 +1,41 @@
+footer{
+    background-color: #7a77da;
+    display: grid; 
+    grid-template-columns: 1fr 1fr 1fr; 
+    grid-template-rows: 1fr; 
+    gap: 0px 0px; 
+    text-align: left;
+    padding: 20px;
+    color: #000;
+}
+
+.RedesSociales{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.RedesSociales a{
+    display: flex;
+}
+
+.fw-bold{
+    font-weight: bold;
+}
+
+.tercerDiv{
+    padding-top: 15px;
+    padding-left: 10px;
+}
+
+@media screen and (max-width: 768px) {
+    footer{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }   
+    .RedesSociales{
+        justify-content: center;
+    }
+}
