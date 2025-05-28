@@ -1,0 +1,22 @@
+.panel-admin-container {
+    padding-top: 70px; /* Ajusta esto al height de tu navbar */
+    height: 100vh;
+    overflow: hidden;
+}
+
+.sidebar {
+    position: fixed;
+    top: 70px; /* Este valor debe coincidir con el height del navbar superior */
+    left: 0;
+    height: calc(100% - 70px);
+    z-index: 1;
+}
+
+.sidebar .nav-link.active {
+    background-color: #0d6efd;
+    border-radius: 5px;
+}
+
+.content-wrapper {
+    margin-left: 16.66%; /* offset de 2 columnas Bootstrap (aprox 2/12 = 16.66%) */
+}

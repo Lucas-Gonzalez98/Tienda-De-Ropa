@@ -171,3 +171,23 @@ nav .homeNav{
     top: 16px;
     filter: invert(1);
 }
+.nav-link {
+    color: #fff;
+    text-decoration: none;
+}
+
+.nav-link:hover {
+    color: #ccc;
+    text-decoration: underline;
+}
+.navButtons .nav-link {
+    color: #fff !important;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.navButtons .nav-link:hover {
+    color: #ccc !important;
+    text-decoration: underline;
+}
+
