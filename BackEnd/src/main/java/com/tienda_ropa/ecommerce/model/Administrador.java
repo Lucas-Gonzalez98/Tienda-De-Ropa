@@ -1,5 +1,6 @@
 package com.tienda_ropa.ecommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,5 +24,6 @@ public class Administrador extends Master {
     private Domicilio domicilio;
 
     @OneToOne(mappedBy = "administrador", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Usuario usuario;
+    @JsonBackReference
+    private Usuario usuarioAdministrador;
 }

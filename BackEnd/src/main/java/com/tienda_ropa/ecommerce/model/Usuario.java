@@ -1,24 +1,36 @@
 package com.tienda_ropa.ecommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.tienda_ropa.ecommerce.model.enums.Rol;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "usuario_administrador")
+@Table(name = "usuario")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"administrador", "cliente"})
 public class Usuario extends Master {
 
+    @Column(nullable = false, unique = true)
     private String email;
 
-    private String FirebaseUid;
+    @Column(name = "firebase_uid", nullable = false, unique = true)
+    private String firebaseUid;
 
-    private Rol Rol;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Rol rol;
 
     @OneToOne
-    @JoinColumn(name = "id_administrador", nullable = false)
+    @JoinColumn(name = "id_administrador", unique = true)
+    @JsonBackReference
     private Administrador administrador;
+
+    @OneToOne
+    @JoinColumn(name = "id_cliente", unique = true)
+    @JsonBackReference
+    private Cliente cliente;
 }

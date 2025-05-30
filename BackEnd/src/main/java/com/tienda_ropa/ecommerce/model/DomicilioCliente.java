@@ -1,5 +1,7 @@
 package com.tienda_ropa.ecommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,10 +14,12 @@ import lombok.*;
 public class DomicilioCliente extends Master {
 
     @ManyToOne
-    @JoinColumn(name = "domicilio_id")
+    @JoinColumn(name = "domicilio_id", nullable = false)
+    @JsonBackReference
     private Domicilio domicilio;
 
     @OneToOne
-    @JoinColumn(name = "cliente_id")
+    @JoinColumn(name = "cliente_id", nullable = false, unique = true)
+    @JsonManagedReference
     private Cliente cliente;
 }

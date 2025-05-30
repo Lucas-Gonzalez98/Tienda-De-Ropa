@@ -1,5 +1,6 @@
 package com.tienda_ropa.ecommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,6 +16,7 @@ public class Stock extends Master {
 
     @ManyToOne
     @JoinColumn(name = "id_producto", nullable = false)
+    @JsonBackReference
     private Producto producto;
 
     @ManyToOne
@@ -25,3 +27,4 @@ public class Stock extends Master {
     @JoinColumn(name = "id_talle", nullable = false)
     private Talle talle;
 }
+

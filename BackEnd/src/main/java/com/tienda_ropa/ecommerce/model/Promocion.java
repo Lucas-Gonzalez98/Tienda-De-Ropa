@@ -1,5 +1,6 @@
 package com.tienda_ropa.ecommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -32,8 +33,11 @@ public class Promocion extends Master {
     private String descripcion;
 
     @OneToMany(mappedBy = "promocion", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private Set<ImagenPromocion> imagenes = new HashSet<>();
 
     @OneToMany(mappedBy = "promocion", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private Set<PromocionDetalle> detalles = new HashSet<>();
 }
+
