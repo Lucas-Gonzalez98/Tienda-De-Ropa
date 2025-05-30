@@ -1,0 +1,1 @@
+export type FormaPago = "EFECTIVO" | "TARJETA" | "MERCADO_PAGO";
