@@ -1,5 +1,6 @@
 package com.tienda_ropa.ecommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,5 +16,7 @@ public class Telefono extends Master {
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "cliente_id")
+    @JsonBackReference
     private Cliente cliente;
 }
+

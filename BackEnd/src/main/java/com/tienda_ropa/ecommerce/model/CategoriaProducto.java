@@ -19,3 +19,4 @@ public class CategoriaProducto extends Master {
     @JoinColumn(name = "id_producto", nullable = false)
     private Producto producto;
 }
+
