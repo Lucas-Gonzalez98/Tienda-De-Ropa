@@ -1,8 +1,7 @@
-import ImagenCliente from "./ImagenCliente";
-import UsuarioCliente from "./UsuarioCliente";
+
 import Domicilio from "./Domicilio";
 import Pedido from "./Pedido";
-import type { Rol } from "./enums/Rol";
+import Usuario from "./Usuario.ts";
 
 export default class Cliente {
     id?: number;
@@ -10,11 +9,8 @@ export default class Cliente {
     apellido: string = "";
     telefono: string = "";
     email: string = "";
-    dni: number = 0;
     fechaNacimiento: Date = new Date();
-    rolCliente: Rol = "CLIENTE";
-    imagenCliente?: ImagenCliente;
-    usuarioCliente?: UsuarioCliente;
+    usuario: Usuario = new Usuario() ;
     domicilios: Domicilio[] = [];
     pedidos: Pedido[] = [];
     eliminado!: boolean;
