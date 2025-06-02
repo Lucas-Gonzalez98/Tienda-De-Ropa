@@ -2,16 +2,16 @@ import { createUserWithEmailAndPassword, updateProfile} from "firebase/auth";
 import { useState, useEffect} from "react";
 import { Button, Form } from "react-bootstrap";
 import {auth} from "./firebase.ts";
-import type Cliente from "../../models/Cliente.ts";
+import  Cliente from "../../models/Cliente.ts";
 import { Eye, EyeSlash } from "react-bootstrap-icons"; // Requiere instalar `react-bootstrap-icons`
 
 import {
     getPaises,
     getProvincias,
     getLocalidades,
-    Pais,
-    Provincia,
-    Localidad
+     Pais,
+     Provincia,
+     Localidad
 } from "../../services/LocalizacionApi.ts";
 interface Props {
     onBackToLogin: () => void;
@@ -43,13 +43,13 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
 
     const [pais, setPais] = useState("");
     const [provincia, setProvincia] = useState("");
-    const [localidad, setLocalidad] = useState("");
+    const [localidadId, setLocalidadId] = useState<number | null>(null);
     const [localidadesFiltradas, setLocalidadesFiltradas] = useState<Localidad[]>([]);
 
     const handleProvinciaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const nombreProvincia = e.target.value;
         setProvincia(nombreProvincia);
-        setLocalidad("");
+        setLocalidadId(null); // Reset del ID en lugar del nombre
 
         const localidadesFiltradas = localidadesTodas.filter(
             (loc) => loc.provincia.nombre === nombreProvincia
@@ -98,10 +98,11 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
             alert("Las contraseñas no coinciden.");
             return;
         }
-        if (!fechaNacimiento || !telefono || !pais || !provincia || !localidad || !codigoPostal || !calle || !numero || !referencia) {
+        if (!fechaNacimiento || !telefono || !pais || !provincia || !localidadId || !codigoPostal || !calle || !numero || !referencia) {
             setFormError("Por favor completá todos los campos del segundo paso.");
             return;
         }
+
 
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, contrasena);
@@ -118,8 +119,10 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
             const cliente: Cliente = {
                 nombre: nombre,
                 apellido: apellido,
-                telefono: telefono,
-                email: email,
+                telefono: {
+                    numero: `+54 ${telefono}`,
+                    eliminado: false
+                },
                 fechaNacimiento: new Date(fechaNacimiento),
                 eliminado: false,
                 domicilios: [
@@ -130,37 +133,27 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                         referencia: referencia,
                         eliminado: false,
                         localidad: {
-                            nombre: localidad,
-                            eliminado: false,
-                            provincia: {
-                                nombre: provincia,
-                                eliminado: false,
-                                pais: {
-                                    nombre: pais,
-                                    eliminado: false
-                                }
-                            }
+                            id: localidadId,
+
                         }
                     }
                 ],
-                usuarioCliente: {
+                usuario: {
                     email: email,
                     firebaseUid: userCredential.user.uid,
                     rol: "CLIENTE",
                     eliminado: false
                 },
-                pedidos: [] // si tu clase no lo requiere aún, podés omitir este campo
             };
             console.log("Cliente a enviar:", JSON.stringify(cliente, null, 2));
 
 
-            // Enviar a backend
-            /*
-            const response = await fetch("http://localhost:8080/auth/cliente", {
+
+            const response = await fetch("http://localhost:8080/api/cliente", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${await userCredential.user.getIdToken()}`
+
                 },
                 body: JSON.stringify(cliente)
             });
@@ -172,8 +165,6 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
               }
 
             if (!response.ok) throw new Error("Error al registrar cliente en el backend");
-
-            */
 
             alert("Registro exitoso!");
             onBackToLogin(); // Vuelve al login
@@ -323,13 +314,13 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
 
                         <Form.Group controlId="localidad" className="mb-2">
                             <Form.Select
-                                value={localidad}
-                                onChange={(e) => setLocalidad(e.target.value)}
+                                value={localidadId || ""}
+                                onChange={(e) => setLocalidadId(e.target.value ? parseInt(e.target.value) : null)}
                                 disabled={!localidadesFiltradas.length}
                             >
                                 <option value="">Seleccioná una localidad...</option>
                                 {localidadesFiltradas.map((loc) => (
-                                    <option key={loc.id} value={loc.nombre}>
+                                    <option key={loc.id} value={loc.id}>
                                         {loc.nombre}
                                     </option>
                                 ))}
