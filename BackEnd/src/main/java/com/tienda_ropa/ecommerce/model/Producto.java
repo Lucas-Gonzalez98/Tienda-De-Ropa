@@ -1,6 +1,7 @@
 package com.tienda_ropa.ecommerce.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.*;
@@ -20,5 +21,10 @@ public class Producto extends Master {
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
     private Set<PedidoDetalle> detalles = new HashSet<>();
+
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private Set<ImagenProducto> imagenes = new HashSet<>();
+
 }
 
