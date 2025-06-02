@@ -1,69 +1,21 @@
 import { createUserWithEmailAndPassword, updateProfile} from "firebase/auth";
-import { useState } from "react";
+import { useState, useEffect} from "react";
 import { Button, Form } from "react-bootstrap";
 import {auth} from "./firebase.ts";
 import type Cliente from "../../models/Cliente.ts";
 import { Eye, EyeSlash } from "react-bootstrap-icons"; // Requiere instalar `react-bootstrap-icons`
 
-
+import {
+    getPaises,
+    getProvincias,
+    getLocalidades,
+    Pais,
+    Provincia,
+    Localidad
+} from "../../services/LocalizacionApi.ts";
 interface Props {
     onBackToLogin: () => void;
 }
-
-// === Datos hardcodeados ===
-const paises = [
-    { nombre: "Argentina", id: 1 }
-];
-
-const provincias = [
-    { nombre: "Buenos Aires" },
-    { nombre: "Catamarca" },
-    { nombre: "Chaco" },
-    { nombre: "Chubut" },
-    { nombre: "Córdoba" },
-    { nombre: "Corrientes" },
-    { nombre: "Entre Ríos" },
-    { nombre: "Formosa" },
-    { nombre: "Jujuy" },
-    { nombre: "La Pampa" },
-    { nombre: "La Rioja" },
-    { nombre: "Mendoza" },
-    { nombre: "Misiones" },
-    { nombre: "Neuquén" },
-    { nombre: "Río Negro" },
-    { nombre: "Salta" },
-    { nombre: "San Juan" },
-    { nombre: "San Luis" },
-    { nombre: "Santa Cruz" },
-    { nombre: "Santa Fe" },
-    { nombre: "Santiago del Estero" },
-    { nombre: "Tierra del Fuego" },
-    { nombre: "Tucumán" },
-    { nombre: "CABA" }
-];
-
-const localidadesPorProvincia: { [provincia: string]: string[] } = {
-    "Mendoza": [
-        "Mendoza",
-        "Godoy Cruz",
-        "Guaymallén",
-        "Maipú",
-        "Las Heras",
-        "Luján de Cuyo",
-        "San Rafael",
-        "General Alvear",
-        "Malargüe",
-        "Rivadavia",
-        "San Martín",
-        "Tunuyán",
-        "Tupungato",
-        "San Carlos",
-        "Lavalle",
-        "Santa Rosa",
-        "La Paz"
-    ],
-    // Puedes agregar localidades hardcodeadas para otras provincias si es necesario...
-};
 
 
 
@@ -85,16 +37,24 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
     // Segundo paso
     const [fechaNacimiento, setFechaNacimiento] = useState("");
     const [telefono, setTelefono] = useState("");
+    const [paises, setPaises] = useState<Pais[]>([]);
+    const [provincias, setProvincias] = useState<Provincia[]>([]);
+    const [localidadesTodas, setLocalidadesTodas] = useState<Localidad[]>([]);
+
     const [pais, setPais] = useState("");
     const [provincia, setProvincia] = useState("");
     const [localidad, setLocalidad] = useState("");
-    const [localidades, setLocalidades] = useState<string[]>([]);
+    const [localidadesFiltradas, setLocalidadesFiltradas] = useState<Localidad[]>([]);
 
     const handleProvinciaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const prov = e.target.value;
-        setProvincia(prov);
-        setLocalidad(""); // reset
-        setLocalidades(localidadesPorProvincia[prov] || []);
+        const nombreProvincia = e.target.value;
+        setProvincia(nombreProvincia);
+        setLocalidad("");
+
+        const localidadesFiltradas = localidadesTodas.filter(
+            (loc) => loc.provincia.nombre === nombreProvincia
+        );
+        setLocalidadesFiltradas(localidadesFiltradas);
     };
     const [codigoPostal, setCodigoPostal] = useState("");
     const [calle, setCalle] = useState("");
@@ -119,6 +79,19 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
         setStep(2);
     };
 
+    useEffect(() => {
+        const fetchData = async () => {
+            const paisesData = await getPaises();
+            const provinciasData = await getProvincias();
+            const localidadesData = await getLocalidades();
+
+            setPaises(paisesData);
+            setProvincias(provinciasData);
+            setLocalidadesTodas(localidadesData);
+        };
+
+        fetchData();
+    }, []);
 
     const handleRegister = async () => {
         if (contrasena !== confirmarContrasena) {
@@ -170,7 +143,7 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                         }
                     }
                 ],
-                usuario: {
+                usuarioCliente: {
                     email: email,
                     firebaseUid: userCredential.user.uid,
                     rol: "CLIENTE",
@@ -317,7 +290,7 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
 
                         <Form.Group controlId="telefono" className="mb-2">
                             <Form.Control
-                                type="text"
+                                type="number"
                                 placeholder="Teléfono"
                                 value={telefono}
                                 onChange={(e) => setTelefono(e.target.value)}
@@ -325,39 +298,40 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                         </Form.Group>
 
                         <Form.Group controlId="pais" className="mb-2">
-                            <Form.Select
-                                value={pais}
-                                onChange={e => setPais(e.target.value)}
-                            >
+                            <Form.Select value={pais} onChange={(e) => setPais(e.target.value)}>
                                 <option value="">Seleccioná un país...</option>
                                 {paises.map((p) => (
-                                    <option key={p.id} value={p.nombre}>{p.nombre}</option>
+                                    <option key={p.id} value={p.nombre}>
+                                        {p.nombre}
+                                    </option>
                                 ))}
                             </Form.Select>
                         </Form.Group>
 
-
                         <Form.Group controlId="provincia" className="mb-2">
-                            <Form.Select
-                                value={provincia}
-                                onChange={handleProvinciaChange}
-                            >
+                            <Form.Select value={provincia} onChange={handleProvinciaChange}>
                                 <option value="">Seleccioná una provincia...</option>
-                                {provincias.map((prov, idx) => (
-                                    <option key={idx} value={prov.nombre}>{prov.nombre}</option>
-                                ))}
+                                {provincias
+                                    .filter((prov) => prov.pais.nombre === pais)
+                                    .map((prov) => (
+                                        <option key={prov.id} value={prov.nombre}>
+                                            {prov.nombre}
+                                        </option>
+                                    ))}
                             </Form.Select>
                         </Form.Group>
 
                         <Form.Group controlId="localidad" className="mb-2">
                             <Form.Select
                                 value={localidad}
-                                onChange={e => setLocalidad(e.target.value)}
-                                disabled={!localidades.length}
+                                onChange={(e) => setLocalidad(e.target.value)}
+                                disabled={!localidadesFiltradas.length}
                             >
                                 <option value="">Seleccioná una localidad...</option>
-                                {localidades.map((loc, idx) => (
-                                    <option key={idx} value={loc}>{loc}</option>
+                                {localidadesFiltradas.map((loc) => (
+                                    <option key={loc.id} value={loc.nombre}>
+                                        {loc.nombre}
+                                    </option>
                                 ))}
                             </Form.Select>
                         </Form.Group>

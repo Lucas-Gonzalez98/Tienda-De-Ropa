@@ -10,9 +10,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    /*
 
-    // SOLO PARA ENTORNOS DE DESARROLLO
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -30,6 +28,5 @@ public class SecurityConfig {
         return http.build();
     }
 
-     */
 }
 

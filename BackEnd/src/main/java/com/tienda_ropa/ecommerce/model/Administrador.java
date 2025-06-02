@@ -27,5 +27,5 @@ public class Administrador extends Master {
     @OneToOne
     @JoinColumn(name = "id_usuario", unique = true)
     @JsonManagedReference
-    private Usuario usuarioAdministrador;
+    private Usuario usuario;
 }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -18,19 +19,24 @@ public class Cliente extends Master {
 
     private String nombre;
     private String apellido;
+    private LocalDate fechaNacimiento;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "telefono_id")
-    @JsonManagedReference
+    @ManyToOne
+    @JoinColumn(name = "id_telefono", nullable = false)
     private Telefono telefono;
 
     @OneToOne
     @JoinColumn(name = "id_usuario", unique = true)
     @JsonManagedReference
-    private Usuario usuarioCliente;
+    private Usuario usuario;
 
-    @OneToOne(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonBackReference
-    private DomicilioCliente domicilioCliente;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "cliente_domicilio",
+            joinColumns = @JoinColumn(name = "cliente_id"),
+            inverseJoinColumns = @JoinColumn(name = "domicilio_id")
+    )
+    private Set<Domicilio> domicilios = new HashSet<>();
+
 }
 

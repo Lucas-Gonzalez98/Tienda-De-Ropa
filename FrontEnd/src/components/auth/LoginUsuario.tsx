@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { sendPasswordResetEmail } from "firebase/auth";
+import { sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "./firebase";
 import { Form, Button, InputGroup } from "react-bootstrap";
 import { Eye, EyeSlash } from "react-bootstrap-icons"; // Requiere instalar `react-bootstrap-icons`
@@ -38,8 +38,27 @@ const LoginUsuario = ({ onRegisterClick }: Props) => {
         }
     };
 
+    const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setError(null);
+        setMessage(null);
+
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            console.log("Sesión iniciada con éxito:");
+            console.log(JSON.stringify(userCredential.user, null, 2));
+
+            // También podés acceder directamente al usuario:
+            console.log("Usuario:", userCredential.user);
+        } catch (error) {
+            console.error("Error al iniciar sesión:", error);
+            setError("Email o contraseña incorrectos.");
+        }
+    };
+
+
     return (
-        <Form>
+        <Form onSubmit={handleLogin}>
             {step === 1 && (
                 <>
                     <Form.Group className="mb-3">

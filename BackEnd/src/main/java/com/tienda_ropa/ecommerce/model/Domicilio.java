@@ -24,8 +24,5 @@ public class Domicilio extends Master {
     @JsonBackReference
     private Localidad localidad;
 
-    @OneToMany(mappedBy = "domicilio", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private Set<DomicilioCliente> domicilioClientes = new HashSet<>();
 }
 
