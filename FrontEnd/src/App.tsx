@@ -5,7 +5,9 @@ import { Route, Routes } from 'react-router-dom'
 import Home from './components/layout/Home'
 import Perfil from './components/auth/Perfil'
 import Productos from "./components/articulos/Productos.tsx";
+import GrillaProductos from "./components/articulos/GrillaProducts.tsx";
 import PanelAdmin from "./components/admin/PanelAdmin.tsx";
+import FormProducto from './components/articulos/FormProductos.tsx'
 
 function App() {
 
@@ -18,7 +20,9 @@ function App() {
         <Route path="/perfil" element={<Perfil />} />
         <Route path="*" element={<Home />} />
         <Route path="/productos" element={<Productos />} />
+        <Route path="/grillaproductos" element={<GrillaProductos />} />
         <Route path="/admin" element={<PanelAdmin />} />
+        <Route path="/fromproducto" element={<FormProducto />} />
 
 
       </Routes>
