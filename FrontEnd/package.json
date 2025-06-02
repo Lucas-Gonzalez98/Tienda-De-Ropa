@@ -1,5 +1,5 @@
 {
-  "name": "frontend",
+  "name": "buen-sabor-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,14 +10,23 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mercadopago/sdk-react": "^1.0.3",
+    "bootstrap": "^5.3.6",
+    "firebase": "^11.8.1",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-bootstrap": "^2.10.10",
+    "react-bootstrap-icons": "^1.11.6",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
-    "@types/react": "^19.1.2",
+    "@types/bootstrap": "^5.2.10",
+    "@types/react": "^19.1.4",
+    "@types/react-bootstrap": "^0.32.37",
     "@types/react-dom": "^19.1.2",
-    "@vitejs/plugin-react": "^4.4.1",
+    "@types/react-router-dom": "^5.3.3",
+    "@vitejs/plugin-react-swc": "^3.9.0",
     "eslint": "^9.25.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
