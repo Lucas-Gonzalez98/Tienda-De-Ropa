@@ -31,4 +31,13 @@ public class ClienteController extends MasterController<Cliente, Long> {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<Cliente> getByUsuarioId(@PathVariable Long usuarioId) {
+        return clienteService.findByUsuarioId(usuarioId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
 }

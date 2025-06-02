@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -93,6 +94,11 @@ public class ClienteServiceImpl extends MasterServiceImpl<Cliente, Long> impleme
             throw new RuntimeException("Error al guardar cliente: " + e.getMessage(), e);
         }
     }
+    @Override
+    public Optional<Cliente> findByUsuarioId(Long usuarioId) {
+        return clienteRepository.findByUsuarioId(usuarioId);
+    }
+
 
     @Override
     public Cliente save(Cliente entity) {
