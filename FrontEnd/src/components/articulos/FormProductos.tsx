@@ -103,7 +103,7 @@ const Guardar = async () => {
             await ProductoService.create(producto);
         }
         alert("Producto guardado exitosamente");
-        window.location.href = "/productos";
+        window.location.href = "/grillaproductos";
     } catch (error) {
         console.error("Error al guardar el producto:", error);
         alert("Error al guardar el producto");
