@@ -18,14 +18,15 @@ public class Cliente extends Master {
 
     private String nombre;
     private String apellido;
-    private String email;
 
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "telefono_id")
     @JsonManagedReference
-    private Set<Telefono> telefonos = new HashSet<>();
+    private Telefono telefono;
 
-    @OneToOne(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonBackReference
+    @OneToOne
+    @JoinColumn(name = "id_usuario", unique = true)
+    @JsonManagedReference
     private Usuario usuarioCliente;
 
     @OneToOne(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)

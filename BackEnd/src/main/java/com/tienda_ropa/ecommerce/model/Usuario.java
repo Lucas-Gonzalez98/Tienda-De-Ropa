@@ -24,13 +24,4 @@ public class Usuario extends Master {
     @Column(nullable = false)
     private Rol rol;
 
-    @OneToOne
-    @JoinColumn(name = "id_administrador", unique = true)
-    @JsonBackReference
-    private Administrador administrador;
-
-    @OneToOne
-    @JoinColumn(name = "id_cliente", unique = true)
-    @JsonBackReference
-    private Cliente cliente;
 }

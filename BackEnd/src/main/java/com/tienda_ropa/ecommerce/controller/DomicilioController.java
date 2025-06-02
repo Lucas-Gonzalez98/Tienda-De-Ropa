@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/domicilio")
 public class DomicilioController extends MasterController<Domicilio, Long> {
 
-    private final DomicilioService DomicilioService;
+    private final DomicilioService domicilioService;
 
-    public DomicilioController(DomicilioService DomicilioService) {
-        super(DomicilioService);
-        this.DomicilioService = DomicilioService;
+    public DomicilioController(DomicilioService domicilioService) {
+        super(domicilioService);
+        this.domicilioService = domicilioService;
     }
 
 

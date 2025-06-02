@@ -10,11 +10,11 @@ import java.util.List;
 @RequestMapping("/api/telefono")
 public class TelefonoController extends MasterController<Telefono, Long> {
 
-    private final TelefonoService TelefonoService;
+    private final TelefonoService telefonoService;
 
-    public TelefonoController(TelefonoService TelefonoService) {
-        super(TelefonoService);
-        this.TelefonoService = TelefonoService;
+    public TelefonoController(TelefonoService telefonoService) {
+        super(telefonoService);
+        this.telefonoService = telefonoService;
     }
 
 

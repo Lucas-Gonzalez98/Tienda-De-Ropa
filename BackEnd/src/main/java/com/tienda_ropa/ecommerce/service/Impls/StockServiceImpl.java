@@ -1,17 +1,36 @@
 package com.tienda_ropa.ecommerce.service.Impls;
 
+import com.tienda_ropa.ecommerce.model.Color;
 import com.tienda_ropa.ecommerce.model.Stock;
+import com.tienda_ropa.ecommerce.model.Talle;
 import com.tienda_ropa.ecommerce.repository.StockRepository;
 import com.tienda_ropa.ecommerce.service.StockService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class StockServiceImpl extends MasterServiceImpl<Stock, Long> implements StockService {
+
+    private final StockRepository stockRepository;
 
     @Autowired
     public StockServiceImpl(StockRepository stockRepository) {
         super(stockRepository);
+        this.stockRepository = stockRepository;
+    }
+
+    //filtrar stock por talle, color y disponibilidad
+    @Override
+    public List<Stock> getDisponiblesPorTalleYColor(Talle talle, Color color) {
+
+        return stockRepository.findByTalleAndColorAndCantidadGreaterThan(talle, color, 0);
+    }
+    //obtener todos los el stock con cantidad > 0
+    @Override
+    public List<Stock> getDisponibles() {
+        return stockRepository.findByCantidadGreaterThan(0);
     }
 
 }

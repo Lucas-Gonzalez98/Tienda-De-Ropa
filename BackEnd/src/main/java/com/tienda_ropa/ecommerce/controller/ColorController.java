@@ -10,11 +10,11 @@ import java.util.List;
 @RequestMapping("/api/color")
 public class ColorController extends MasterController<Color, Long> {
 
-    private final ColorService ColorService;
+    private final ColorService colorService;
 
-    public ColorController(ColorService ColorService) {
-        super(ColorService);
-        this.ColorService = ColorService;
+    public ColorController(ColorService colorService) {
+        super(colorService);
+        this.colorService = colorService;
     }
 
 

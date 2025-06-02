@@ -10,11 +10,11 @@ import java.util.List;
 @RequestMapping("/api/categoria")
 public class CategoriaController extends MasterController<Categoria, Long> {
 
-    private final CategoriaService CategoriaService;
+    private final CategoriaService categoriaService;
 
-    public CategoriaController(CategoriaService CategoriaService) {
-        super(CategoriaService);
-        this.CategoriaService = CategoriaService;
+    public CategoriaController(CategoriaService categoriaService) {
+        super(categoriaService);
+        this.categoriaService = categoriaService;
     }
 
 

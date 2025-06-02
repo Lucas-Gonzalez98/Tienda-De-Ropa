@@ -10,11 +10,11 @@ import java.util.List;
 @RequestMapping("/api/administrador")
 public class AdministradorController extends MasterController<Administrador, Long> {
 
-    private final AdministradorService AdministradorService;
+    private final AdministradorService administradorService;
 
-    public AdministradorController(AdministradorService AdministradorService) {
-        super(AdministradorService);
-        this.AdministradorService = AdministradorService;
+    public AdministradorController(AdministradorService administradorService) {
+        super(administradorService);
+        this.administradorService = administradorService;
     }
 
 

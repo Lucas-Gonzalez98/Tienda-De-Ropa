@@ -10,11 +10,11 @@ import java.util.List;
 @RequestMapping("/api/localidad")
 public class LocalidadController extends MasterController<Localidad, Long> {
 
-    private final LocalidadService LocalidadService;
+    private final LocalidadService localidadService;
 
-    public LocalidadController(LocalidadService LocalidadService) {
-        super(LocalidadService);
-        this.LocalidadService = LocalidadService;
+    public LocalidadController(LocalidadService localidadService) {
+        super(localidadService);
+        this.localidadService = localidadService;
     }
 
 

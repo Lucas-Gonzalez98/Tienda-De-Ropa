@@ -10,11 +10,11 @@ import java.util.List;
 @RequestMapping("/api/promocion-detalle")
 public class PromocionDetalleController extends MasterController<PromocionDetalle, Long> {
 
-    private final PromocionDetalleService PromocionDetalleService;
+    private final PromocionDetalleService promocionDetalleService;
 
-    public PromocionDetalleController(PromocionDetalleService PromocionDetalleService) {
-        super(PromocionDetalleService);
-        this.PromocionDetalleService = PromocionDetalleService;
+    public PromocionDetalleController(PromocionDetalleService promocionDetalleService) {
+        super(promocionDetalleService);
+        this.promocionDetalleService = promocionDetalleService;
     }
 
 

@@ -17,9 +17,7 @@ public class Domicilio extends Master {
     private String calle;
     private String numero;
     private Integer codigoPostal;
-    private String piso;
-    private String nroDepartamento;
-    private String detalles;
+    private String referencia;
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "localidad_id")

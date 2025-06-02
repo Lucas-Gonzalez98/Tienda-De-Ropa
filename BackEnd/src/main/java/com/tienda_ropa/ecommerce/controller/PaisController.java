@@ -10,11 +10,11 @@ import java.util.List;
 @RequestMapping("/api/pais")
 public class PaisController extends MasterController<Pais, Long> {
 
-    private final PaisService PaisService;
+    private final PaisService paisService;
 
-    public PaisController(PaisService PaisService) {
-        super(PaisService);
-        this.PaisService = PaisService;
+    public PaisController(PaisService paisService) {
+        super(paisService);
+        this.paisService = paisService;
     }
 
 

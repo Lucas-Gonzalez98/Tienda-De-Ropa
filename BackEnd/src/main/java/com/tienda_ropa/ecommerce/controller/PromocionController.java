@@ -2,6 +2,7 @@ package com.tienda_ropa.ecommerce.controller;
 
 import com.tienda_ropa.ecommerce.model.Promocion;
 import com.tienda_ropa.ecommerce.service.PromocionService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,13 +11,17 @@ import java.util.List;
 @RequestMapping("/api/promocion")
 public class PromocionController extends MasterController<Promocion, Long> {
 
-    private final PromocionService PromocionService;
+    private final PromocionService promocionService;
 
-    public PromocionController(PromocionService PromocionService) {
-        super(PromocionService);
-        this.PromocionService = PromocionService;
+    public PromocionController(PromocionService promocionService) {
+        super(promocionService);
+        this.promocionService = promocionService;
     }
 
-
+    //Ver promociones vigentes
+    @GetMapping("/vigentes")
+    public ResponseEntity<List<Promocion>> getPromocionesVigentes() {
+        return ResponseEntity.ok(promocionService.getPromocionesVigentes());
+    }
 
 }

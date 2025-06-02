@@ -10,11 +10,11 @@ import java.util.List;
 @RequestMapping("/api/imagen-promocion")
 public class ImagenPromocionController extends MasterController<ImagenPromocion, Long> {
 
-    private final ImagenPromocionService ImagenPromocionService;
+    private final ImagenPromocionService imagenPromocionService;
 
-    public ImagenPromocionController(ImagenPromocionService ImagenPromocionService) {
-        super(ImagenPromocionService);
-        this.ImagenPromocionService = ImagenPromocionService;
+    public ImagenPromocionController(ImagenPromocionService imagenPromocionService) {
+        super(imagenPromocionService);
+        this.imagenPromocionService = imagenPromocionService;
     }
 
 

@@ -10,11 +10,11 @@ import java.util.List;
 @RequestMapping("/api/magen-producto")
 public class ImagenProductoController extends MasterController<ImagenProducto, Long> {
 
-    private final ImagenProductoService ImagenProductoService;
+    private final ImagenProductoService imagenProductoService;
 
-    public ImagenProductoController(ImagenProductoService ImagenProductoService) {
-        super(ImagenProductoService);
-        this.ImagenProductoService = ImagenProductoService;
+    public ImagenProductoController(ImagenProductoService imagenProductoService) {
+        super(imagenProductoService);
+        this.imagenProductoService = imagenProductoService;
     }
 
 

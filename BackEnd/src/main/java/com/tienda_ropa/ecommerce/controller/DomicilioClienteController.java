@@ -10,11 +10,11 @@ import java.util.List;
 @RequestMapping("/api/domicilio-cliente")
 public class DomicilioClienteController extends MasterController<DomicilioCliente, Long> {
 
-    private final DomicilioClienteService DomicilioClienteService;
+    private final DomicilioClienteService domicilioClienteService;
 
-    public DomicilioClienteController(DomicilioClienteService DomicilioClienteService) {
-        super(DomicilioClienteService);
-        this.DomicilioClienteService = DomicilioClienteService;
+    public DomicilioClienteController(DomicilioClienteService domicilioClienteService) {
+        super(domicilioClienteService);
+        this.domicilioClienteService = domicilioClienteService;
     }
 
 

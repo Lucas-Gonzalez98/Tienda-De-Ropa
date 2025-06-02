@@ -10,11 +10,11 @@ import java.util.List;
 @RequestMapping("/api/talle")
 public class TalleController extends MasterController<Talle, Long> {
 
-    private final TalleService TalleService;
+    private final TalleService talleService;
 
-    public TalleController(TalleService TalleService) {
-        super(TalleService);
-        this.TalleService = TalleService;
+    public TalleController(TalleService talleService) {
+        super(talleService);
+        this.talleService = talleService;
     }
 
 

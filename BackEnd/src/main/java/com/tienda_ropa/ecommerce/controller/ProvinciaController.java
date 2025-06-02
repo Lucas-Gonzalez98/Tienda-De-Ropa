@@ -10,11 +10,11 @@ import java.util.List;
 @RequestMapping("/api/provincia")
 public class ProvinciaController extends MasterController<Provincia, Long> {
 
-    private final ProvinciaService ProvinciaService;
+    private final ProvinciaService provinciaService;
 
-    public ProvinciaController(ProvinciaService ProvinciaService) {
-        super(ProvinciaService);
-        this.ProvinciaService = ProvinciaService;
+    public ProvinciaController(ProvinciaService provinciaService) {
+        super(provinciaService);
+        this.provinciaService = provinciaService;
     }
 
 

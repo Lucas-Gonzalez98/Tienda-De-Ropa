@@ -1,6 +1,8 @@
 package com.tienda_ropa.ecommerce.controller;
 
+import com.tienda_ropa.ecommerce.model.Color;
 import com.tienda_ropa.ecommerce.model.Stock;
+import com.tienda_ropa.ecommerce.model.Talle;
 import com.tienda_ropa.ecommerce.service.StockService;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,13 +12,30 @@ import java.util.List;
 @RequestMapping("/api/stock")
 public class StockController extends MasterController<Stock, Long> {
 
-    private final StockService StockService;
+    private final StockService stockService;
 
-    public StockController(StockService StockService) {
-        super(StockService);
-        this.StockService = StockService;
+    public StockController(StockService stockService) {
+        super(stockService);
+        this.stockService = stockService;
     }
 
+    //filtro por talle y color
+    @GetMapping("/filtrar")
+    public List<Stock> filtrarPorTalleYColor(@RequestParam Long idTalle, @RequestParam Long idColor) {
+        Talle talle = new Talle();
+        talle.setId(idTalle);
+
+        Color color = new Color();
+        color.setId(idColor);
+
+        return stockService.getDisponiblesPorTalleYColor(talle, color);
+    }
+
+    //stock disponible
+    @GetMapping("/disponibles")
+    public List<Stock> disponibles() {
+        return stockService.getDisponibles();
+    }
 
 
 }

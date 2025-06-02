@@ -10,11 +10,11 @@ import java.util.List;
 @RequestMapping("/api/cliente")
 public class ClienteController extends MasterController<Cliente, Long> {
 
-    private final ClienteService ClienteService;
+    private final ClienteService clienteService;
 
-    public ClienteController(ClienteService ClienteService) {
-        super(ClienteService);
-        this.ClienteService = ClienteService;
+    public ClienteController(ClienteService clienteService) {
+        super(clienteService);
+        this.clienteService = clienteService;
     }
 
 

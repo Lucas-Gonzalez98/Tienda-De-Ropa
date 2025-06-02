@@ -10,11 +10,11 @@ import java.util.List;
 @RequestMapping("/api/historico-precio-compra")
 public class HistoricoPrecioCompraController extends MasterController<HistoricoPrecioCompra, Long> {
 
-    private final HistoricoPrecioCompraService HistoricoPrecioCompraService;
+    private final HistoricoPrecioCompraService historicoPrecioCompraService;
 
-    public HistoricoPrecioCompraController(HistoricoPrecioCompraService HistoricoPrecioCompraService) {
-        super(HistoricoPrecioCompraService);
-        this.HistoricoPrecioCompraService = HistoricoPrecioCompraService;
+    public HistoricoPrecioCompraController(HistoricoPrecioCompraService historicoPrecioCompraService) {
+        super(historicoPrecioCompraService);
+        this.historicoPrecioCompraService = historicoPrecioCompraService;
     }
 
 
