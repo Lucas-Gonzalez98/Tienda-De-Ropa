@@ -6,7 +6,7 @@ function Productos(){
     const [productos, setProductos] = useState<Producto[]>([]);
 
     useEffect(() => {
-        ProductoService.getAll().then(setProductos).catch(console.error);
+        ProductoService.getNotDeleted().then(setProductos).catch(console.error);
     }, []);
 
     return (
