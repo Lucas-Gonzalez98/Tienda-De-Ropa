@@ -1,5 +1,5 @@
 USE tienda_ropa;
-insert  into `usuario`(`id`,`eliminado`,`email`,`firebase_uid`,`rol`) values (1,'\0','mln204manutup@gmail.com','FpoIGLW9l7gSd9C7TPvooVntjjz1','ADMINISTRADOR'),(2,'','mln204manubackup@gmail.com','8y7clcXmZugprzwGkpn9r71DFGT2','CLIENTE');
+insert  into `usuario`(`id`,`eliminado`,`email`,`firebase_uid`,`rol`) values (1,'\0','mln204manutup@gmail.com','FpoIGLW9l7gSd9C7TPvooVntjjz1','ADMINISTRADOR');
 
 
 -- Insertar país Argentina

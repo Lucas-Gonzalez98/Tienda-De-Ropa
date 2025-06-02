@@ -23,5 +23,9 @@ public class Usuario extends Master {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Rol rol;
+    // Agregar esta referencia bidireccional
+    @OneToOne(mappedBy = "usuario")
+    @JsonBackReference
+    private Cliente cliente;
 
 }

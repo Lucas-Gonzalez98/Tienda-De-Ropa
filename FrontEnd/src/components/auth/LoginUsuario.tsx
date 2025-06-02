@@ -1,153 +1,101 @@
-import { useState } from "react";
-import { sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import React, { useState } from "react";
+import { Button, Form } from "react-bootstrap";
 import { auth } from "./firebase";
-import { Form, Button, InputGroup } from "react-bootstrap";
-import { Eye, EyeSlash } from "react-bootstrap-icons"; // Requiere instalar `react-bootstrap-icons`
+import { useAuth } from "../../context/AuthContext";
 
 interface Props {
     onRegisterClick: () => void;
 }
 
-const LoginUsuario = ({ onRegisterClick }: Props) => {
-    const [step, setStep] = useState(1);
+const LoginUsuario: React.FC<Props> = ({ onRegisterClick }) => {
     const [email, setEmail] = useState("");
-    const [confirmEmail, setConfirmEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [showPassword, setShowPassword] = useState(false); // 👁️ Nuevo estado
     const [error, setError] = useState<string | null>(null);
     const [message, setMessage] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
 
-    const handlePasswordReset = async () => {
-        if (!email || !confirmEmail) {
-            setError("Por favor completá ambos campos.");
-            return;
-        }
-
-        if (email !== confirmEmail) {
-            setError("Los emails no coinciden.");
-            return;
-        }
-
-        try {
-            await sendPasswordResetEmail(auth, email);
-            setMessage("Te enviamos un correo para restablecer tu contraseña.");
-            setError(null);
-        } catch (error) {
-            setError("No se pudo enviar el correo. Verificá que el email esté registrado.");
-            setMessage(null);
-        }
-    };
+    const { login } = useAuth();
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError(null);
         setMessage(null);
+        setLoading(true);
 
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             console.log("Sesión iniciada con éxito:");
             console.log(JSON.stringify(userCredential.user, null, 2));
 
-            // También podés acceder directamente al usuario:
-            console.log("Usuario:", userCredential.user);
+            // Usar el contexto para establecer el usuario y obtener sus datos
+            await login(userCredential.user);
+
+            setMessage("¡Inicio de sesión exitoso!");
+
+            // Cerrar el modal automáticamente después del login exitoso
+            setTimeout(() => {
+                window.location.reload(); // O usar una función para cerrar el modal
+            }, 1000);
+
         } catch (error) {
             console.error("Error al iniciar sesión:", error);
             setError("Email o contraseña incorrectos.");
+        } finally {
+            setLoading(false);
         }
     };
 
-
     return (
-        <Form onSubmit={handleLogin}>
-            {step === 1 && (
-                <>
-                    <Form.Group className="mb-3">
-                        <Form.Label>Email</Form.Label>
-                        <Form.Control
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                    </Form.Group>
+        <div className="p-4">
+            <h3 className="text-center fw-bold">Iniciar Sesión</h3>
+            <hr style={{ width: "150px", borderTop: "3px solid blue", margin: "0 auto 20px" }} />
 
-                    <Form.Group className="mb-3">
-                        <Form.Label>Contraseña</Form.Label>
-                        <InputGroup>
-                            <Form.Control
-                                type={showPassword ? "text" : "password"}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
-                            <Button
-                                variant="outline-secondary"
-                                onClick={() => setShowPassword(!showPassword)}
-                                tabIndex={-1}
-                            >
-                                {showPassword ? <EyeSlash /> : <Eye />}
-                            </Button>
-                        </InputGroup>
-                    </Form.Group>
+            <Form onSubmit={handleLogin}>
+                <Form.Group controlId="email" className="mb-3">
+                    <Form.Control
+                        type="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+                </Form.Group>
 
-                    <Button type="submit" variant="dark" className="w-100 mb-2">
-                        Iniciar Sesión
+                <Form.Group controlId="password" className="mb-3">
+                    <Form.Control
+                        type="password"
+                        placeholder="Contraseña"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+                </Form.Group>
+
+                {error && <div className="alert alert-danger">{error}</div>}
+                {message && <div className="alert alert-success">{message}</div>}
+
+                <div className="d-grid gap-2 mb-3">
+                    <Button
+                        variant="dark"
+                        type="submit"
+                        disabled={loading}
+                    >
+                        {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
                     </Button>
+                </div>
 
-                    {error && <div className="text-danger text-center mt-2">{error}</div>}
-                    {message && <div className="text-success text-center mt-2">{message}</div>}
-
-                    <div className="text-center mt-2">
-                        <Button variant="link" size="sm" onClick={() => setStep(2)}>
-                            ¿Olvidaste tu contraseña?
-                        </Button>
-                    </div>
-
-                    <hr />
-
-                    <div className="text-center mt-3">
-                        <span>¿No tenés cuenta?</span><br />
-                        <Button variant="link" onClick={onRegisterClick}>
-                            Registrate
-                        </Button>
-                    </div>
-                </>
-            )}
-
-            {step === 2 && (
-                <>
-                    <h5 className="text-center mb-3">Recuperar Contraseña</h5>
-
-                    <Form.Group className="mb-3">
-                        <Form.Label>Email</Form.Label>
-                        <Form.Control
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                    </Form.Group>
-
-                    <Form.Group className="mb-3">
-                        <Form.Label>Confirmar Email</Form.Label>
-                        <Form.Control
-                            type="email"
-                            value={confirmEmail}
-                            onChange={(e) => setConfirmEmail(e.target.value)}
-                        />
-                    </Form.Group>
-
-                    <div className="d-grid gap-2">
-                        <Button variant="dark" onClick={handlePasswordReset}>
-                            Enviar correo de recuperación
-                        </Button>
-                        <Button variant="secondary" onClick={() => setStep(1)}>
-                            ← Volver al login
-                        </Button>
-                    </div>
-
-                    {error && <div className="text-danger text-center mt-2">{error}</div>}
-                    {message && <div className="text-success text-center mt-2">{message}</div>}
-                </>
-            )}
-        </Form>
+                <div className="text-center">
+                    <button
+                        type="button"
+                        onClick={onRegisterClick}
+                        className="btn btn-link"
+                    >
+                        ¿No tenés cuenta? Registrate
+                    </button>
+                </div>
+            </Form>
+        </div>
     );
 };
 
