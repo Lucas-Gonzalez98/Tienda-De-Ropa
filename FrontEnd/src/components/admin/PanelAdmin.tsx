@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Container, Row, Col, Nav } from 'react-bootstrap';
 import '../../styles/PanelAdmin.css';
 import AdminPanelIcon from '../../assets/admin_panel.svg'; // Importa el SVG
+import GrillaProductos from '../articulos/GrillaProducts';
+import GrillaCategorias from '../articulos/GrillaCategoria';
 
 function PanelAdmin() {
     const [selected, setSelected] = useState('Productos');
@@ -9,9 +11,9 @@ function PanelAdmin() {
     const renderContent = () => {
         switch (selected) {
             case 'Productos':
-                return <div>Componente Productos</div>;
+                return <div><GrillaProductos/></div>;
             case 'Categorias':
-                return <div>Componente Categorias</div>;
+                return <div><GrillaCategorias/></div>;
             case 'Promociones':
                 return <div>Componente Promociones</div>;
             case 'Pedidos':

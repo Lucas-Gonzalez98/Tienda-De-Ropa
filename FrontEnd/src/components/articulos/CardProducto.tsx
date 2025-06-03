@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import Articulo from "../../models/Producto";
-
+import "../../styles/productocard.css"; // Import your CSS styles
 interface Props {
   articulo: Articulo;
 }
@@ -16,7 +16,7 @@ const CardArticulo: React.FC<Props> = ({ articulo }) => {
         border: "1px solid #ccc",
         borderRadius: "8px",
         padding: "16px",
-        width: "200px",
+        width: "400px",
         cursor: "pointer",
       }}
       onClick={() => navigate(`/articulo/${articulo.id}`)}
@@ -26,8 +26,10 @@ const CardArticulo: React.FC<Props> = ({ articulo }) => {
         alt={articulo.nombre || "Artículo sin imagen"}
         style={{ width: "100%", height: "120px", objectFit: "cover" }}
       />
-      <h6>{articulo.nombre}</h6>
-      <p>${articulo.precio}</p>
+      <div className="card-body">
+        <h6>{articulo.nombre}</h6>
+        <p>${articulo.precio}</p>
+      </div>
     </div>
   );
 };
