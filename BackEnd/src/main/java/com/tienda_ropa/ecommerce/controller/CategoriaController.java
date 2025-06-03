@@ -2,6 +2,7 @@ package com.tienda_ropa.ecommerce.controller;
 
 import com.tienda_ropa.ecommerce.model.Categoria;
 import com.tienda_ropa.ecommerce.service.CategoriaService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,7 +18,9 @@ public class CategoriaController extends MasterController<Categoria, Long> {
         super(categoriaService);
         this.categoriaService = categoriaService;
     }
-
-
+    @GetMapping("/allCategorias")
+    public ResponseEntity<List<Categoria>> todasLasCategorias(){
+        return ResponseEntity.ok(categoriaService.findAllExcludingFirst());
+    }
 
 }
