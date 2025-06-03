@@ -1,31 +1,29 @@
-import { createUserWithEmailAndPassword, updateProfile} from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile, signOut} from "firebase/auth";
 import { useState, useEffect} from "react";
 import { Button, Form } from "react-bootstrap";
 import {auth} from "./firebase.ts";
-import type Cliente from "../../models/Cliente.ts";
-import { Eye, EyeSlash } from "react-bootstrap-icons"; // Requiere instalar `react-bootstrap-icons`
+import  Cliente from "../../models/Cliente.ts";
+import { Eye, EyeSlash } from "react-bootstrap-icons";
 
 import {
     getPaises,
     getProvincias,
     getLocalidades,
-    Pais,
-    Provincia,
-    Localidad
+     Pais,
+     Provincia,
+     Localidad
 } from "../../services/LocalizacionApi.ts";
+
 interface Props {
     onBackToLogin: () => void;
 }
 
-
-
 const RegisterUsuario = ({ onBackToLogin }: Props) => {
     const [step, setStep] = useState(1);
-
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [formError, setFormError] = useState<string | null>(null);
-
+    const [loading, setLoading] = useState(false);
 
     // Primer paso
     const [nombre, setNombre] = useState("");
@@ -43,19 +41,20 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
 
     const [pais, setPais] = useState("");
     const [provincia, setProvincia] = useState("");
-    const [localidad, setLocalidad] = useState("");
+    const [localidadId, setLocalidadId] = useState<number | null>(null);
     const [localidadesFiltradas, setLocalidadesFiltradas] = useState<Localidad[]>([]);
 
     const handleProvinciaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const nombreProvincia = e.target.value;
         setProvincia(nombreProvincia);
-        setLocalidad("");
+        setLocalidadId(null);
 
         const localidadesFiltradas = localidadesTodas.filter(
             (loc) => loc.provincia.nombre === nombreProvincia
         );
         setLocalidadesFiltradas(localidadesFiltradas);
     };
+
     const [codigoPostal, setCodigoPostal] = useState("");
     const [calle, setCalle] = useState("");
     const [numero, setNumero] = useState("");
@@ -95,31 +94,36 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
 
     const handleRegister = async () => {
         if (contrasena !== confirmarContrasena) {
-            alert("Las contraseñas no coinciden.");
+            setFormError("Las contraseñas no coinciden.");
             return;
         }
-        if (!fechaNacimiento || !telefono || !pais || !provincia || !localidad || !codigoPostal || !calle || !numero || !referencia) {
+        if (!fechaNacimiento || !telefono || !pais || !provincia || !localidadId || !codigoPostal || !calle || !numero || !referencia) {
             setFormError("Por favor completá todos los campos del segundo paso.");
             return;
         }
 
+        setLoading(true);
+        setFormError(null);
+
         try {
+            // Crear usuario en Firebase
             const userCredential = await createUserWithEmailAndPassword(auth, email, contrasena);
 
-            // Opcional: actualizar el nombre de usuario en Firebase
+            // Actualizar perfil en Firebase
             await updateProfile(userCredential.user, {
                 displayName: `${nombre} ${apellido}`
             });
 
-            console.log("Usuario registrado en firebases con éxito:");
+            console.log("Usuario registrado en Firebase con éxito");
 
-            console.log(JSON.stringify(userCredential.user, null, 2));
-
+            // Crear objeto cliente
             const cliente: Cliente = {
                 nombre: nombre,
                 apellido: apellido,
-                telefono: telefono,
-                email: email,
+                telefono: {
+                    numero: `+54 ${telefono}`,
+                    eliminado: false
+                },
                 fechaNacimiento: new Date(fechaNacimiento),
                 eliminado: false,
                 domicilios: [
@@ -130,37 +134,25 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                         referencia: referencia,
                         eliminado: false,
                         localidad: {
-                            nombre: localidad,
-                            eliminado: false,
-                            provincia: {
-                                nombre: provincia,
-                                eliminado: false,
-                                pais: {
-                                    nombre: pais,
-                                    eliminado: false
-                                }
-                            }
+                            id: localidadId,
                         }
                     }
                 ],
-                usuarioCliente: {
+                usuario: {
                     email: email,
                     firebaseUid: userCredential.user.uid,
                     rol: "CLIENTE",
                     eliminado: false
                 },
-                pedidos: [] // si tu clase no lo requiere aún, podés omitir este campo
             };
+
             console.log("Cliente a enviar:", JSON.stringify(cliente, null, 2));
 
-
-            // Enviar a backend
-            /*
-            const response = await fetch("http://localhost:8080/auth/cliente", {
+            // Enviar al backend
+            const response = await fetch("http://localhost:8080/api/cliente", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${await userCredential.user.getIdToken()}`
                 },
                 body: JSON.stringify(cliente)
             });
@@ -169,18 +161,22 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                 // Si falla el backend, eliminar el usuario de Firebase
                 await userCredential.user.delete();
                 throw new Error("Error al registrar cliente en el backend. Usuario Firebase eliminado.");
-              }
+            }
 
-            if (!response.ok) throw new Error("Error al registrar cliente en el backend");
+            // Cerrar sesión automáticamente para evitar conflictos con AuthContext
+            await signOut(auth);
 
-            */
+            // Mostrar mensaje de éxito
+            setFormError(null);
+            alert("¡Registro exitoso! Ahora podés iniciar sesión con tu cuenta.");
+            
+            // Volver al login
+            onBackToLogin();
 
-            alert("Registro exitoso!");
-            onBackToLogin(); // Vuelve al login
         } catch (error: any) {
             console.error("Error al registrar:", error);
 
-            // Eliminar usuario si ya fue creado pero el backend no estaba corriendo
+            // Eliminar usuario de Firebase si el proceso falló
             const currentUser = auth.currentUser;
             if (currentUser) {
                 try {
@@ -191,10 +187,11 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                 }
             }
 
-            alert(error.message || "Error desconocido durante el registro.");
+            setFormError(error.message || "Error desconocido durante el registro.");
+        } finally {
+            setLoading(false);
         }
     };
-
 
     return (
         <div className="p-4">
@@ -210,6 +207,7 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                                 placeholder="Nombre"
                                 value={nombre}
                                 onChange={(e) => setNombre(e.target.value)}
+                                disabled={loading}
                             />
                         </Form.Group>
 
@@ -219,6 +217,7 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                                 placeholder="Apellido"
                                 value={apellido}
                                 onChange={(e) => setApellido(e.target.value)}
+                                disabled={loading}
                             />
                         </Form.Group>
 
@@ -228,6 +227,7 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                                 placeholder="Email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
+                                disabled={loading}
                             />
                         </Form.Group>
 
@@ -238,8 +238,13 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                                     placeholder="Contraseña"
                                     value={contrasena}
                                     onChange={(e) => setContrasena(e.target.value)}
+                                    disabled={loading}
                                 />
-                                <Button variant="outline-secondary" onClick={() => setShowPassword(!showPassword)}>
+                                <Button 
+                                    variant="outline-secondary" 
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    disabled={loading}
+                                >
                                     {showPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
                                 </Button>
                             </div>
@@ -252,39 +257,40 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                                     placeholder="Confirmar Contraseña"
                                     value={confirmarContrasena}
                                     onChange={(e) => setConfirmarContrasena(e.target.value)}
+                                    disabled={loading}
                                 />
-                                <Button variant="outline-secondary" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                                <Button 
+                                    variant="outline-secondary" 
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    disabled={loading}
+                                >
                                     {showConfirmPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
                                 </Button>
                             </div>
                         </Form.Group>
 
-
                         <div className="d-grid gap-2 mb-2">
-                            <Button variant="dark" onClick={validateStep1}>
+                            <Button variant="dark" onClick={validateStep1} disabled={loading}>
                                 Siguiente →
                             </Button>
-                            <Button variant="dark" onClick={onBackToLogin}>
+                            <Button variant="dark" onClick={onBackToLogin} disabled={loading}>
                                 Salir
                             </Button>
                         </div>
-
-
-
                     </>
                 )}
 
                 {step === 2 && (
                     <>
-
                         <Form.Group controlId="fechaNacimiento" className="mb-2">
-                            <div className="d-flex  p-1 align-items-end" style={{width: "100%"}}>
-                                <Form.Label style={{width:"300px"}}> Fecha de nacimiento: </Form.Label>
-                            <Form.Control
-                                type="date"
-                                value={fechaNacimiento}
-                                onChange={(e) => setFechaNacimiento(e.target.value)}
-                            />
+                            <div className="d-flex p-1 align-items-end" style={{width: "100%"}}>
+                                <Form.Label style={{width:"300px"}}>Fecha de nacimiento:</Form.Label>
+                                <Form.Control
+                                    type="date"
+                                    value={fechaNacimiento}
+                                    onChange={(e) => setFechaNacimiento(e.target.value)}
+                                    disabled={loading}
+                                />
                             </div>
                         </Form.Group>
 
@@ -294,11 +300,16 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                                 placeholder="Teléfono"
                                 value={telefono}
                                 onChange={(e) => setTelefono(e.target.value)}
+                                disabled={loading}
                             />
                         </Form.Group>
 
                         <Form.Group controlId="pais" className="mb-2">
-                            <Form.Select value={pais} onChange={(e) => setPais(e.target.value)}>
+                            <Form.Select 
+                                value={pais} 
+                                onChange={(e) => setPais(e.target.value)}
+                                disabled={loading}
+                            >
                                 <option value="">Seleccioná un país...</option>
                                 {paises.map((p) => (
                                     <option key={p.id} value={p.nombre}>
@@ -309,7 +320,11 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                         </Form.Group>
 
                         <Form.Group controlId="provincia" className="mb-2">
-                            <Form.Select value={provincia} onChange={handleProvinciaChange}>
+                            <Form.Select 
+                                value={provincia} 
+                                onChange={handleProvinciaChange}
+                                disabled={loading}
+                            >
                                 <option value="">Seleccioná una provincia...</option>
                                 {provincias
                                     .filter((prov) => prov.pais.nombre === pais)
@@ -323,20 +338,18 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
 
                         <Form.Group controlId="localidad" className="mb-2">
                             <Form.Select
-                                value={localidad}
-                                onChange={(e) => setLocalidad(e.target.value)}
-                                disabled={!localidadesFiltradas.length}
+                                value={localidadId || ""}
+                                onChange={(e) => setLocalidadId(e.target.value ? parseInt(e.target.value) : null)}
+                                disabled={!localidadesFiltradas.length || loading}
                             >
                                 <option value="">Seleccioná una localidad...</option>
                                 {localidadesFiltradas.map((loc) => (
-                                    <option key={loc.id} value={loc.nombre}>
+                                    <option key={loc.id} value={loc.id}>
                                         {loc.nombre}
                                     </option>
                                 ))}
                             </Form.Select>
                         </Form.Group>
-
-
 
                         <Form.Group controlId="codigoPostal" className="mb-2">
                             <Form.Control
@@ -344,6 +357,7 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                                 placeholder="Código Postal"
                                 value={codigoPostal}
                                 onChange={(e) => setCodigoPostal(e.target.value)}
+                                disabled={loading}
                             />
                         </Form.Group>
 
@@ -353,6 +367,7 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                                 placeholder="Calle"
                                 value={calle}
                                 onChange={(e) => setCalle(e.target.value)}
+                                disabled={loading}
                             />
                         </Form.Group>
 
@@ -362,33 +377,48 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                                 placeholder="Número"
                                 value={numero}
                                 onChange={(e) => setNumero(e.target.value)}
+                                disabled={loading}
                             />
                         </div>
 
                         <Form.Group controlId="referencia" className="mb-2">
                             <Form.Control
                                 type="text"
-                                placeholder="Referencia direccion(casa,departamento, piso, nro)"
+                                placeholder="Referencia dirección (casa, departamento, piso, nro)"
                                 value={referencia}
                                 onChange={(e) => setReferencia(e.target.value)}
+                                disabled={loading}
                             />
                         </Form.Group>
 
                         <div className="d-flex justify-content-between">
-                            <Button variant="dark" onClick={() => setStep(1)}>
+                            <Button 
+                                variant="dark" 
+                                onClick={() => setStep(1)}
+                                disabled={loading}
+                            >
                                 ← Atrás
                             </Button>
-                            <Button variant="dark" onClick={handleRegister}>
-                                Registrarse
+                            <Button 
+                                variant="dark" 
+                                onClick={handleRegister}
+                                disabled={loading}
+                            >
+                                {loading ? "Registrando..." : "Registrarse"}
                             </Button>
-
                         </div>
                     </>
                 )}
             </Form>
-            {formError && <div className="text-danger text-center mb-2">{formError}</div>}
+            
+            {formError && <div className="alert alert-danger mt-3">{formError}</div>}
+            
             <div className="text-center mt-3">
-                <button onClick={onBackToLogin} className="btn btn-link">
+                <button 
+                    onClick={onBackToLogin} 
+                    className="btn btn-link"
+                    disabled={loading}
+                >
                     ¿Ya tenés cuenta? Iniciar sesión
                 </button>
             </div>

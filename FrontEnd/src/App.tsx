@@ -6,24 +6,36 @@ import Home from './components/layout/Home'
 import Perfil from './components/auth/Perfil'
 import Productos from "./components/articulos/Productos.tsx";
 import PanelAdmin from "./components/admin/PanelAdmin.tsx";
-import FormProducto from './components/articulos/FormProductos.tsx'
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 function App() {
-
   return (
-    <>
+    <AuthProvider>
       <Navbar/>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/perfil" element={<Perfil />} />
-        <Route path="*" element={<Home />} />
         <Route path="/productos" element={<Productos />} />
-        <Route path="/admin" element={<PanelAdmin />} />
-        <Route path="/fromproducto" element={<FormProducto />} />
+        
+        {/* Rutas protegidas */}
+        <Route path="/perfil" element={
+          <ProtectedRoute>
+            <Perfil />
+          </ProtectedRoute>
+        } />
+        
+        {/* Ruta solo para administradores */}
+        <Route path="/admin" element={
+          <ProtectedRoute adminOnly={true}>
+            <PanelAdmin />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="*" element={<Home />} />
       </Routes>
       <Footer/>
-    </>
+    </AuthProvider>
   )
 }
 

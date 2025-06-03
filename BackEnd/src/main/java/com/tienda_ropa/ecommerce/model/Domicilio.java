@@ -1,7 +1,5 @@
 package com.tienda_ropa.ecommerce.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.*;
@@ -19,10 +17,7 @@ public class Domicilio extends Master {
     private Integer codigoPostal;
     private String referencia;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne  // REMOVER cascade = CascadeType.ALL
     @JoinColumn(name = "localidad_id")
-    @JsonBackReference
     private Localidad localidad;
-
 }
-

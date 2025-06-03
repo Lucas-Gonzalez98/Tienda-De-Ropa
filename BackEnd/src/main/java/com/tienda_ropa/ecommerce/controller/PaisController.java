@@ -17,6 +17,4 @@ public class PaisController extends MasterController<Pais, Long> {
         this.paisService = paisService;
     }
 
-
-
 }
