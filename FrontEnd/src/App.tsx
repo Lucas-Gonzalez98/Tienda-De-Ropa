@@ -29,17 +29,18 @@ function App() {
         } />
 
         <Route path="/domicilios" element={
-          <ProtectedRoute>
+          <ProtectedRoute clientOnly={true}>
             <Domicilios />
           </ProtectedRoute>
         } />
 
         <Route path="/pedidos" element={
-          <ProtectedRoute>
-            <Perfil />
+          <ProtectedRoute clientOnly={true}>
+            <Perfil /> {/* o el componente correcto de pedidos si tenés otro */}
           </ProtectedRoute>
         } />
-        
+
+
         {/* Ruta solo para administradores */}
         <Route path="/admin" element={
           <ProtectedRoute adminOnly={true}>

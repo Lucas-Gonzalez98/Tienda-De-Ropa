@@ -6,9 +6,10 @@ import { Navigate } from 'react-router-dom';
 interface ProtectedRouteProps {
     children: React.ReactNode;
     adminOnly?: boolean;
+    clientOnly?: boolean; // nueva prop
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = false }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = false, clientOnly = false }) => {
     const { currentUser, usuario, loading } = useAuth();
 
     if (loading) {
@@ -26,6 +27,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = f
     }
 
     if (adminOnly && usuario.rol !== 'ADMINISTRADOR') {
+        return <Navigate to="/" replace />;
+    }
+
+    if (clientOnly && usuario.rol !== 'CLIENTE') {
         return <Navigate to="/" replace />;
     }
 
