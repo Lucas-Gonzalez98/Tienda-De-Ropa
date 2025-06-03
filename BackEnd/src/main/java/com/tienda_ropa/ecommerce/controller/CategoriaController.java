@@ -8,6 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/categoria")
+@CrossOrigin(origins = "*")
 public class CategoriaController extends MasterController<Categoria, Long> {
 
     private final CategoriaService categoriaService;
