@@ -9,6 +9,7 @@ import PanelAdmin from "./components/admin/PanelAdmin.tsx";
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import FormProducto from './components/articulos/FormProductos.tsx'
+import FormCategoria from './components/articulos/FormCategoria.tsx'
 
 function App() {
   return (
@@ -35,6 +36,11 @@ function App() {
         <Route path="/fromproducto" element={
           <ProtectedRoute adminOnly={true}>
             <FormProducto />
+          </ProtectedRoute>
+        } />
+        <Route path="/fromcategoria" element={
+          <ProtectedRoute adminOnly={true}>
+            <FormCategoria />
           </ProtectedRoute>
         } />
         

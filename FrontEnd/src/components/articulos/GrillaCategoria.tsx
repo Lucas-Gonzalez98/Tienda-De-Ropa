@@ -79,7 +79,8 @@ function GrillaCategorias() {
 
   // Filtra solo las categorías padre (sin categoriaPadre)
   const categoriasPadre = categorias.filter(cat => cat.subcategorias.length > 0);
-
+  // Si no hay categorías padre, muestra un mensaje
+  const categoriasNoPadreNoHija = categorias.filter(cat => cat.subcategorias.length == 0 && !categorias.some(c => c.subcategorias.some(sub => sub.id === cat.id)));
   if (loading) return <div>Cargando categorías...</div>;
   if (error) return <div>{error}</div>;
 
@@ -145,6 +146,28 @@ function GrillaCategorias() {
                 ))}
               </div>
             )}
+          </div>
+        ))}
+        {categoriasNoPadreNoHija.map(catHija => (
+          <div key={catHija.id} style={{
+                display: "flex",
+                alignItems: "center",
+                padding: "1rem",
+                cursor: catHija.subcategorias && catHija.subcategorias.length > 0 ? "pointer" : "default",
+                fontWeight: 600,
+                fontSize: 20,
+                borderBottom: catHija.subcategorias && catHija.subcategorias.length > 0 ? "1px solid #eee" : "none"
+              }}>
+            <span style={{ flex: 1 }}>{catHija.denominacion}</span>
+            <div style={{ display: "flex", gap: 8 }}>
+              <BotonVer onClick={() => handleVer(catHija)} />
+              <BotonModificar onClick={() => handleActualizar(catHija)} />
+              {!catHija.eliminado ? (
+                <BotonEliminar onClick={() => eliminarCategoria(catHija.id!)} />
+              ) : (
+                <BotonAlta onClick={() => darDeAlta(catHija.id!)} />
+              )}
+            </div>
           </div>
         ))}
       </div>

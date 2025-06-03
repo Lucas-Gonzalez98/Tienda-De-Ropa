@@ -1,12 +1,12 @@
 .formContainer div {
     display: flex;
     flex-direction: column;
-    margin: 20px;
 }
 
 .formContainer{
-    max-width: 500px !important;
+    width: 500px !important;
     margin: 1em;
+    gap: 10px;
 }
 
 .formContainer input, .formContainer select, .formContainer textarea {

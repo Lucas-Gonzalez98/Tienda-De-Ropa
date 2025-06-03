@@ -8,7 +8,7 @@ import BotonVer from "../layout/BotonVer";
 import BotonEliminar from "../layout/BotonEliminar";
 import BotonModificar from "../layout/BotonModificar";
 import BotonAlta from "../layout/BotonAlta";
-
+import "../../styles/GrillaProductos.css"; // Importar estilos específicos
 // ...existing code...
 function GrillaProductos() {
   const [productos, setProductos] = useState<Producto[]>([]);
@@ -114,7 +114,12 @@ function GrillaProductos() {
 
   return (
     <div>
-      <h2>Productos</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+        <h2 style={{ margin: 0 }}>Produtos</h2>
+        <Button variant="outline-dark" onClick={() => window.location.href = "/fromProducto"}>
+          Nueva Produto
+        </Button>
+      </div>
       <ReusableTable columns={columns} data={productos} />
       {/* Modal para ver información */}
       <Modal show={showModal} onHide={handleCloseModal} centered>
