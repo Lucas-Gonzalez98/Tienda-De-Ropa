@@ -36,13 +36,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [usuario, setUsuario] = useState<Usuario | null>(null);
     const [loading, setLoading] = useState(true);
 
-    const fetchUserData = async (firebaseUid: string) => {
+    const fetchUserData = async (firebaseUid: string, retries = 3) => {
         try {
             // Buscar el usuario por Firebase UID
             const usuarioResponse = await fetch(`http://localhost:8080/api/usuario/firebase/${firebaseUid}`);
             
             if (!usuarioResponse.ok) {
-                throw new Error('Usuario no encontrado');
+                if (retries > 0) {
+                    // Reintentar después de 1 segundo (útil para registros recientes)
+                    console.log(`Usuario no encontrado, reintentando... (${retries} intentos restantes)`);
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    return await fetchUserData(firebaseUid, retries - 1);
+                }
+                throw new Error('Usuario no encontrado en la base de datos');
             }
 
             const usuarioData: Usuario = await usuarioResponse.json();

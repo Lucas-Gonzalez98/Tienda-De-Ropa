@@ -16,7 +16,7 @@ function Perfil(){
             <div className="buttons d-flex flex-column justify-content-center align-items-center">
                 <button className="perfilButton">Cambiar datos personales</button>
                 <button className="perfilButton">Cambiar Contraseña</button>
-                <button className="perfilButton">Cerrar Secion</button>
+                <button className="perfilButton">Cerrar Sesion</button>
             </div>
         </div>
     )
