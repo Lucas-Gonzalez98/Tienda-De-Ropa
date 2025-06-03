@@ -28,7 +28,7 @@ function PanelAdmin() {
     };
 
     return (
-        <Container fluid className="panel-admin-container">
+        <Container fluid className="panel-admin-container w-full">
             <Row>
                 <Col md={2} className="sidebar bg-dark text-white p-3">
                     <div className="d-flex align-items-center mb-4">

@@ -16,7 +16,7 @@ class CategoriaService {
 
     async getAll(): Promise<Categoria[]> {
         try {
-            const res = await fetch(`${API_URL}/all`);
+            const res = await fetch(`${API_URL}/allCategorias`);
             if (!res.ok) throw new Error("Error al obtener categorías");
             return await res.json();
         } catch (error) {

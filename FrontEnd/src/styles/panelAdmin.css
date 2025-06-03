@@ -1,6 +1,5 @@
 .panel-admin-container {
     padding-top: 70px; /* Ajusta esto al height de tu navbar */
-    height: 100vh;
     overflow: hidden;
 }
 
@@ -18,5 +17,7 @@
 }
 
 .content-wrapper {
-    margin-left: 16.66%; /* offset de 2 columnas Bootstrap (aprox 2/12 = 16.66%) */
+    margin-left: 16.66%;
+    height: 100%;
+    overflow-y: auto; /* offset de 2 columnas Bootstrap (aprox 2/12 = 16.66%) */
 }
