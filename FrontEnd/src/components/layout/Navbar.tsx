@@ -75,6 +75,8 @@ function Navbar() {
                                     Mi Perfil
                                 </Dropdown.Item>
                                 <Dropdown.Divider />
+                                {!isAdmin && (
+                                    <>
                                 <Dropdown.Item as={Link} to="/perfil">
                                     Mis Domicilios
                                 </Dropdown.Item>
@@ -83,6 +85,8 @@ function Navbar() {
                                     Mis Pedidos
                                 </Dropdown.Item>
                                 <Dropdown.Divider />
+                                    </>
+                                )}
                                 <Dropdown.Item onClick={handleLogout}>
                                     Cerrar Sesión
                                 </Dropdown.Item>
@@ -96,8 +100,10 @@ function Navbar() {
                             <span>Iniciar Sesión</span>
                         </button>
                     )}
-                    
-                    <img className='carrito' src={Vector} alt="logoCarrito" />
+
+                    {!isAdmin && (
+                        <img className='carrito' src={Vector} alt="logoCarrito" />
+                    )}
                 </div>
             </nav>
 
