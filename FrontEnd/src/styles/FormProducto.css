@@ -1,0 +1,17 @@
+.formContainer div {
+    display: flex;
+    flex-direction: column;
+    margin: 20px;
+}
+
+.formContainer{
+    max-width: 500px !important;
+    margin: 1em;
+}
+
+.formContainer input, .formContainer select, .formContainer textarea {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}

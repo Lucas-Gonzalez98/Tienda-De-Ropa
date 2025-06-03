@@ -4,6 +4,7 @@ import ProductoService from "../../services/ProductoService";
 import { Button } from "react-bootstrap";
 import type Producto from "../../models/Producto";
 import type ImagenProducto from "../../models/ImagenProducto";
+import "../../styles/FormProducto.css"; // Asegúrate de tener este archivo CSS para estilos personalizados
 
 function FormProducto() {
     const [nombre, setNombre] = useState("");
@@ -112,7 +113,7 @@ const Guardar = async () => {
     return (
         <>
             <h2 className="mt-5">{idFromUrl ? "Actualizar" : "Crear"} Producto</h2>
-            <form className="formContainer container d-flex flex-column gap-3 text-start" onSubmit={e => e.preventDefault()}>
+            <form className="formContainer container d-flex flex-column text-start" onSubmit={e => e.preventDefault()}>
                 <div>
                     <label>Nombre:</label>
                     <input value={nombre} onChange={e => setNombre(e.target.value)} required />
@@ -146,7 +147,7 @@ const Guardar = async () => {
                         <div className="preview-imagenes mt-2 d-flex gap-2 flex-wrap">
                             {imagenesExistentes.map((img, idx) =>
                                 !img.eliminado && (
-                                    <div key={img.id || idx} style={{ position: "relative", display: "inline-block" }}>
+                                    <div key={img.id || idx} style={{ position: "relative", display: "inline-block", width: "fit-content"}}>
                                         <img
                                             src={img.denominacion}
                                             alt={`img-existente-${idx}`}
@@ -166,6 +167,9 @@ const Guardar = async () => {
                                                 width: 20,
                                                 height: 20,
                                                 cursor: "pointer",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
                                             }}
                                         >
                                             ×
