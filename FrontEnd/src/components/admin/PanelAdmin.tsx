@@ -4,6 +4,7 @@ import '../../styles/PanelAdmin.css';
 import AdminPanelIcon from '../../assets/admin_panel.svg'; // Importa el SVG
 import GrillaProductos from '../articulos/GrillaProducts';
 import GrillaCategorias from '../articulos/GrillaCategoria';
+import GrillaCliente from "./GrillaCliente.tsx";
 
 function PanelAdmin() {
     const [selected, setSelected] = useState('Productos');
@@ -19,7 +20,7 @@ function PanelAdmin() {
             case 'Pedidos':
                 return <div>Componente Pedidos</div>;
             case 'Clientes':
-                return <div>Componente Clientes</div>;
+                return <GrillaCliente/>;
             case 'Historicos':
                 return <div>Componente Historicos</div>;
             default:
