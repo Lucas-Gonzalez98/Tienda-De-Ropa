@@ -77,11 +77,11 @@ function Navbar() {
                                 <Dropdown.Divider />
                                 {!isAdmin && (
                                     <>
-                                <Dropdown.Item as={Link} to="/perfil">
+                                <Dropdown.Item as={Link} to="/domicilios">
                                     Mis Domicilios
                                 </Dropdown.Item>
                                 <Dropdown.Divider />
-                                <Dropdown.Item as={Link} to="/perfil">
+                                <Dropdown.Item as={Link} to="/pedidos">
                                     Mis Pedidos
                                 </Dropdown.Item>
                                 <Dropdown.Divider />

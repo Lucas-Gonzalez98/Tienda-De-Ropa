@@ -1,10 +1,7 @@
 package com.tienda_ropa.ecommerce.service.Impls;
 
 import com.tienda_ropa.ecommerce.model.*;
-import com.tienda_ropa.ecommerce.repository.ClienteRepository;
-import com.tienda_ropa.ecommerce.repository.LocalidadRepository;
-import com.tienda_ropa.ecommerce.repository.TelefonoRepository;
-import com.tienda_ropa.ecommerce.repository.UsuarioRepository;
+import com.tienda_ropa.ecommerce.repository.*;
 import com.tienda_ropa.ecommerce.service.ClienteService;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
@@ -25,6 +22,7 @@ public class ClienteServiceImpl extends MasterServiceImpl<Cliente, Long> impleme
     private final LocalidadRepository localidadRepository;
     private final TelefonoRepository telefonoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final DomicilioRepository domicilioRepository;
     
     private static final Logger logger = LoggerFactory.getLogger(ClienteServiceImpl.class);
 
@@ -32,12 +30,14 @@ public class ClienteServiceImpl extends MasterServiceImpl<Cliente, Long> impleme
     public ClienteServiceImpl(ClienteRepository clienteRepository, 
                              LocalidadRepository localidadRepository,
                              TelefonoRepository telefonoRepository,
-                             UsuarioRepository usuarioRepository) {
+                             UsuarioRepository usuarioRepository,
+                              DomicilioRepository domicilioRepository) {
         super(clienteRepository);
         this.clienteRepository = clienteRepository;
         this.localidadRepository = localidadRepository;
         this.telefonoRepository = telefonoRepository;
         this.usuarioRepository = usuarioRepository;
+        this.domicilioRepository = domicilioRepository;
     }
 
     @Override
@@ -98,6 +98,40 @@ public class ClienteServiceImpl extends MasterServiceImpl<Cliente, Long> impleme
     public Optional<Cliente> findByUsuarioId(Long usuarioId) {
         return clienteRepository.findByUsuarioId(usuarioId);
     }
+    @Override
+    @Transactional
+    public Domicilio agregarDomicilio(Long clienteId, Domicilio domicilioRequest) {
+        Cliente cliente = clienteRepository.findById(clienteId)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
+
+        if (domicilioRequest.getLocalidad() == null || domicilioRequest.getLocalidad().getId() == null) {
+            throw new IllegalArgumentException("La localidad debe tener un ID válido.");
+        }
+
+        Localidad localidad = localidadRepository.findById(domicilioRequest.getLocalidad().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Localidad no encontrada"));
+
+        Domicilio domicilio = domicilioRequest.getId() != null ?
+                domicilioRepository.findById(domicilioRequest.getId())
+                        .map(existing -> {
+                            existing.setCalle(domicilioRequest.getCalle());
+                            existing.setNumero(domicilioRequest.getNumero());
+                            existing.setCodigoPostal(domicilioRequest.getCodigoPostal());
+                            existing.setReferencia(domicilioRequest.getReferencia());
+                            existing.setLocalidad(localidad);
+                            return existing;
+                        }).orElseThrow(() -> new EntityNotFoundException("Domicilio no encontrado"))
+                : domicilioRequest;
+
+        domicilio.setLocalidad(localidad);
+        Domicilio domicilioGuardado = domicilioRepository.save(domicilio);
+        cliente.getDomicilios().add(domicilioGuardado);
+        clienteRepository.save(cliente);
+
+        return domicilioGuardado;
+    }
+
+
 
 
     @Override

@@ -10,6 +10,7 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import FormProducto from './components/articulos/FormProductos.tsx'
 import FormCategoria from './components/articulos/FormCategoria.tsx'
+import Domicilios from "./components/auth/Domicilios.tsx";
 
 function App() {
   return (
@@ -22,6 +23,18 @@ function App() {
         
         {/* Rutas protegidas */}
         <Route path="/perfil" element={
+          <ProtectedRoute>
+            <Perfil />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/domicilios" element={
+          <ProtectedRoute>
+            <Domicilios />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/pedidos" element={
           <ProtectedRoute>
             <Perfil />
           </ProtectedRoute>

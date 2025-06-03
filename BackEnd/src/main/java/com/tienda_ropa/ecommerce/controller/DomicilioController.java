@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/domicilio")
+@CrossOrigin(origins = "*")
 public class DomicilioController extends MasterController<Domicilio, Long> {
 
     private final DomicilioService domicilioService;
