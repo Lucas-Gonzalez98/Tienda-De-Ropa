@@ -69,12 +69,13 @@ INSERT INTO `domicilio` (`id`, `eliminado`, `calle`, `codigo_postal`, `numero`, 
 -- Tabla: categoria
 -- =========================
 INSERT INTO `categoria` (`id`, `eliminado`, `denominacion`, `id_categoria_padre`) VALUES
-(1, b'0', 'Superior', NULL),
-(2, b'0', 'Inferior', NULL),
-(3, b'0', 'Abrigos', NULL),
-(4, b'0', 'Calzado', NULL),
-(5, b'0', 'Accesorios', NULL);
+(1, b'0', 'Raiz', NULL); -- Esta categoría no tiene padre
 
+INSERT INTO `categoria` (`id`, `eliminado`, `denominacion`, `id_categoria_padre`) VALUES                                                                                  (2, b'0', 'Superior', 1), -- El padre es 'Raiz' (ID 1)
+(3, b'0', 'Inferior', 1),  -- El padre es 'Raiz' (ID 1)
+(4, b'0', 'Abrigos', 1),   -- El padre es 'Raiz' (ID 1)
+(5, b'0', 'Calzado', 1),   -- El padre es 'Raiz' (ID 1)
+(6, b'0', 'Accesorios', 1); -- El padre es 'Raiz' (ID 1)
 INSERT INTO `categoria` (`id`, `eliminado`, `denominacion`, `id_categoria_padre`) VALUES
 (6, b'0', 'Remeras', 1),
 (7, b'0', 'Camisas', 1),
