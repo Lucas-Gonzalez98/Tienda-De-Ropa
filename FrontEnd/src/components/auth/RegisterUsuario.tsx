@@ -34,7 +34,18 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
 
     // Segundo paso
     const [fechaNacimiento, setFechaNacimiento] = useState("");
-    const [telefono, setTelefono] = useState("");
+    const [telefono, setTelefono] = useState(""); // solo números
+    const [telefonoFormateado, setTelefonoFormateado] = useState("");
+    const formatearTelefono = (valor: string): string => {
+        // Elimina cualquier cosa que no sea número
+        const soloNumeros = valor.replace(/\D/g, "").slice(0, 10); // máx 10 dígitos
+
+        if (soloNumeros.length <= 3) return soloNumeros;
+        if (soloNumeros.length <= 6) {
+            return `${soloNumeros.slice(0, 3)}-${soloNumeros.slice(3)}`;
+        }
+        return `${soloNumeros.slice(0, 3)}-${soloNumeros.slice(3, 6)}-${soloNumeros.slice(6)}`;
+    };
     const [paises, setPaises] = useState<Pais[]>([]);
     const [provincias, setProvincias] = useState<Provincia[]>([]);
     const [localidadesTodas, setLocalidadesTodas] = useState<Localidad[]>([]);
@@ -296,13 +307,19 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
 
                         <Form.Group controlId="telefono" className="mb-2">
                             <Form.Control
-                                type="number"
+                                type="text"
                                 placeholder="Teléfono"
-                                value={telefono}
-                                onChange={(e) => setTelefono(e.target.value)}
+                                value={telefonoFormateado}
+                                onChange={(e) => {
+                                    const input = e.target.value;
+                                    const soloNumeros = input.replace(/\D/g, "").slice(0, 10); // Solo 10 dígitos
+                                    setTelefono(soloNumeros); // Para guardar limpio
+                                    setTelefonoFormateado(formatearTelefono(soloNumeros)); // Para mostrar
+                                }}
                                 disabled={loading}
                             />
                         </Form.Group>
+
 
                         <Form.Group controlId="pais" className="mb-2">
                             <Form.Select 

@@ -45,9 +45,9 @@ dependencies {
     // WebClient (para llamadas API REST)
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
-    // Auth0
-    implementation 'com.auth0:auth0-spring-security-api:1.5.1'
-    implementation 'com.auth0:java-jwt:4.3.0'
+    // Firebase
+    implementation 'com.google.firebase:firebase-admin:9.2.0' // o la última
+
 }
 
 tasks.named('test') {
