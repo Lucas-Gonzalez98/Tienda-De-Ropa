@@ -7,13 +7,13 @@ import { getAuth } from "firebase/auth";
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-    apiKey: "AIzaSyDyPX9PphIV6_GHCbznGilEYB2wlC8jttU",
-    authDomain: "tienda-ropa-12375.firebaseapp.com",
-    projectId: "tienda-ropa-12375",
-    storageBucket: "tienda-ropa-12375.firebasestorage.app",
-    messagingSenderId: "313412113767",
-    appId: "1:313412113767:web:d68ccf309e2b3506f18bc2",
-    measurementId: "G-7NQ8HN7S90"
+    apiKey: "AIzaSyDrLI_1Gm0-mMAg36d2maOCdO_AwmTWqYI",
+    authDomain: "tienda-ropa-f352a.firebaseapp.com",
+    projectId: "tienda-ropa-f352a",
+    storageBucket: "tienda-ropa-f352a.firebasestorage.app",
+    messagingSenderId: "223914939112",
+    appId: "1:223914939112:web:e856cee0c319047c98ef5d",
+    measurementId: "G-2F0BQG1R47"
 };
 
 // Initialize Firebase
