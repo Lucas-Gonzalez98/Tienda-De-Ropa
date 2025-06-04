@@ -16,7 +16,6 @@ public class Producto extends Master {
 
     private String nombre;
     private String descripcion;
-    private double precio;
 
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore

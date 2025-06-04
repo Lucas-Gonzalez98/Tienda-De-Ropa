@@ -1,6 +1,7 @@
 package com.tienda_ropa.ecommerce.service.Impls;
 
 import com.tienda_ropa.ecommerce.model.Color;
+import com.tienda_ropa.ecommerce.model.Producto;
 import com.tienda_ropa.ecommerce.model.Stock;
 import com.tienda_ropa.ecommerce.model.Talle;
 import com.tienda_ropa.ecommerce.repository.StockRepository;
@@ -32,5 +33,9 @@ public class StockServiceImpl extends MasterServiceImpl<Stock, Long> implements 
     public List<Stock> getDisponibles() {
         return stockRepository.findByCantidadGreaterThan(0);
     }
-
+    // cantidad de stock por producto, talle y color)
+    @Override
+    public int obtenerCantidadStockDisponible(Producto producto, Talle talle, Color color) {
+        return stockRepository.obtenerCantidadStockDisponible(producto, talle, color);
+    }
 }
