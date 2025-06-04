@@ -1,1 +1,1 @@
-export type Estado = "PREPARACION" | "PENDIENTE" | "CANCELADO" | "RECHAZADO" | "ENTREGADO";
+export type Estado = "PENDIENTE" | "ENTREGADO";
