@@ -109,8 +109,8 @@ INSERT INTO `producto` (`id`, `eliminado`, `descripcion`, `nombre`, `precio`) VA
 -- Tabla: telefono
 -- =========================
 INSERT INTO `telefono` (`id`, `eliminado`, `numero`) VALUES
-(1, b'0', '+54 261 555-1234'),
-(2, b'0', '+54 02615355789');
+(1, b'0', '+54 2615551234'),
+(2, b'0', '+54 2615355789');
 
 -- =========================
 -- Tabla: usuario
