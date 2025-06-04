@@ -1,1 +1,6 @@
 .idea/
+# Ignorar archivos de credenciales de Firebase en backend
+BackEnd/src/main/resources/firebase/firebase-service-account-*.json
+
+# Ignorar archivo de configuración Firebase del frontend
+FrontEnd/src/components/auth/firebase.ts
