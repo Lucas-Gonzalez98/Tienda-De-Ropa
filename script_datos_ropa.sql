@@ -116,8 +116,8 @@ INSERT INTO `telefono` (`id`, `eliminado`, `numero`) VALUES
 -- Tabla: usuario
 -- =========================
 INSERT INTO `usuario` (`id`, `eliminado`, `email`, `firebase_uid`, `rol`) VALUES
-(1, b'0', 'mln204manutup@gmail.com', 'qeyBfa7sGlgpH9UP9Z3FOGUOGh53', 'ADMINISTRADOR'),
-(2, b'0', 'juan@hotmail.com', '0Peb6Omoy8b8qLVJevn5iN7bjb02', 'CLIENTE');
+(1, b'0', 'mln204manutup@gmail.com', '9xUDrdSpy3Q4dmIyVeUPWZ06uj52', 'ADMINISTRADOR'),
+(2, b'0', 'juan@hotmail.com', 'DbXoAIU7a0UsLiffiodLiI2NF9y2', 'CLIENTE');
 
 -- =========================
 -- Tabla: cliente
