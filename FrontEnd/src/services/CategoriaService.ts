@@ -48,7 +48,18 @@ class CategoriaService {
         }
     }
 
-    async create(articulo: any): Promise<any> {
+    async getByDenominacion(denominacion: String): Promise<Categoria> {
+        try {
+            const res = await fetch(`${API_URL}/${denominacion}`);
+            if (!res.ok) throw new Error("Error al obtener el la Categoria");
+            return await res.json();
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
+    async create(articulo: Categoria): Promise<Categoria> {
         try {
             const res = await fetch(`${API_URL}`, {
                 method: "POST",

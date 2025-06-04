@@ -48,6 +48,8 @@ function FormCategoria() {
     };
     if (categoriaPadreId) {
       categoria.categoriaPadre = { id: categoriaPadreId };
+    }else{
+      categoria.categoriaPadre = {id: 1};
     }
 
     try {
@@ -82,18 +84,18 @@ function FormCategoria() {
         <div>
           <label>Categoría Padre (opcional):</label>
           <select
-  value={categoriaPadreId}
-  onChange={e => setCategoriaPadreId(e.target.value ? Number(e.target.value) : "")}
->
-  <option value="">Sin categoría padre</option>
-  {categorias
-    .filter(cat => !idFromUrl || cat.id !== Number(idFromUrl)) // No puede ser su propio padre
-    .map(cat => (
-      <option key={cat.id} value={cat.id}>
-        {cat.denominacion}
-      </option>
-    ))}
-</select>
+              value={categoriaPadreId}
+              onChange={e => setCategoriaPadreId(e.target.value ? Number(e.target.value) : "")}
+            >
+            <option value="">Sin categoría padre</option>
+            {categorias
+              .filter(cat => !idFromUrl || cat.id !== Number(idFromUrl)) // No puede ser su propio padre
+              .map(cat => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.denominacion}
+                </option>
+              ))}
+          </select>
         </div>
         <div>
           <label>Estado:</label>

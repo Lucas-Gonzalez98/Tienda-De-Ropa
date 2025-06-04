@@ -12,12 +12,8 @@ function GrillaCategorias() {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Estado para el modal de "Ver"
   const [showModal, setShowModal] = useState(false);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<Categoria | null>(null);
-
-  // Estado para expandir/cerrar nodos
   const [expanded, setExpanded] = useState<{ [id: number]: boolean }>({});
 
   useEffect(() => {
@@ -77,10 +73,55 @@ function GrillaCategorias() {
     setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // Filtra solo las categorías padre (sin categoriaPadre)
-  const categoriasPadre = categorias.filter(cat => cat.subcategorias.length > 0);
-  // Si no hay categorías padre, muestra un mensaje
-  const categoriasNoPadreNoHija = categorias.filter(cat => cat.subcategorias.length == 0 && !categorias.some(c => c.subcategorias.some(sub => sub.id === cat.id)));
+  const CategoriaItem = ({ cat }: { cat: Categoria }) => {
+    const isExpanded = expanded[cat.id!];
+
+    return (
+      <div style={{ marginLeft: "1rem", borderLeft: "2px solid #eee", paddingLeft: "1rem", marginBottom: "0.5rem" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            cursor: cat.subcategorias?.length ? "pointer" : "default",
+            fontWeight: 600,
+            fontSize: 16,
+            color: "#444"
+          }}
+          onClick={() => cat.subcategorias?.length && toggleExpand(cat.id!)}
+        >
+          <span style={{ flex: 1 }}>{cat.denominacion}</span>
+          {cat.subcategorias?.length > 0 && (
+            <span style={{ fontSize: 18, marginLeft: 8 }}>
+              {isExpanded ? "↑" : "↓"}
+            </span>
+          )}
+          <div style={{ display: "flex", gap: 8, marginLeft: 16 }}>
+            <BotonVer onClick={() => handleVer(cat)} />
+            <BotonModificar onClick={() => handleActualizar(cat)} />
+            {!cat.eliminado ? (
+              <BotonEliminar onClick={() => eliminarCategoria(cat.id!)} />
+            ) : (
+              <BotonAlta onClick={() => darDeAlta(cat.id!)} />
+            )}
+          </div>
+        </div>
+
+        {isExpanded && cat.subcategorias?.length > 0 && (
+          <div style={{ marginTop: "0.5rem" }}>
+            {cat.subcategorias.map(sub => (
+              <CategoriaItem key={sub.id} cat={sub} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Filtra solo las categorías raíz (sin padre)
+  const categoriasRaiz = categorias.filter(cat =>
+    !categorias.some(c => c.subcategorias.some(sub => sub.id === cat.id))
+  );
+
   if (loading) return <div>Cargando categorías...</div>;
   if (error) return <div>{error}</div>;
 
@@ -93,114 +134,46 @@ function GrillaCategorias() {
         </Button>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        {categoriasPadre.map(cat => (
+        {categoriasRaiz.map(cat => (
           <div key={cat.id} style={{
             border: "1px solid #ddd",
             borderRadius: 8,
             background: "#fff",
-            boxShadow: "0 1px 4px #0001"
+            boxShadow: "0 1px 4px #0001",
+            padding: "1rem"
           }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                padding: "1rem",
-                cursor: cat.subcategorias && cat.subcategorias.length > 0 ? "pointer" : "default",
-                fontWeight: 600,
-                fontSize: 20,
-                borderBottom: cat.subcategorias && cat.subcategorias.length > 0 ? "1px solid #eee" : "none"
-              }}
-              onClick={() => cat.subcategorias && cat.subcategorias.length > 0 && toggleExpand(cat.id!)}
-            >
-              <span style={{ flex: 1 }}>{cat.denominacion}</span>
-              {cat.subcategorias && cat.subcategorias.length > 0 && (
-                <span style={{ fontSize: 22 }}>
-                  {expanded[cat.id!] ? "↑" : "↓"}
-                </span>
-              )}
-            </div>
-            {cat.subcategorias && cat.subcategorias.length > 0 && expanded[cat.id!] && (
-              <div style={{ padding: "0.5rem 1.5rem 1rem 1.5rem" }}>
-                {cat.subcategorias.map(hija => (
-                  <div
-                    key={hija.id}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      borderBottom: "1px solid #eee",
-                      padding: "0.5rem 0",
-                      color: "#888"
-                    }}
-                  >
-                    <span style={{ flex: 1 }}>{hija.denominacion}</span>
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <BotonVer onClick={() => handleVer(hija)} />
-                      <BotonModificar onClick={() => handleActualizar(hija)} />
-                      {!hija.eliminado ? (
-                        <BotonEliminar onClick={() => eliminarCategoria(hija.id!)} />
-                      ) : (
-                        <BotonAlta onClick={() => darDeAlta(hija.id!)} />
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-        {categoriasNoPadreNoHija.map(catHija => (
-          <div key={catHija.id} style={{
-                display: "flex",
-                alignItems: "center",
-                padding: "1rem",
-                cursor: catHija.subcategorias && catHija.subcategorias.length > 0 ? "pointer" : "default",
-                fontWeight: 600,
-                fontSize: 20,
-                borderBottom: catHija.subcategorias && catHija.subcategorias.length > 0 ? "1px solid #eee" : "none"
-              }}>
-            <span style={{ flex: 1 }}>{catHija.denominacion}</span>
-            <div style={{ display: "flex", gap: 8 }}>
-              <BotonVer onClick={() => handleVer(catHija)} />
-              <BotonModificar onClick={() => handleActualizar(catHija)} />
-              {!catHija.eliminado ? (
-                <BotonEliminar onClick={() => eliminarCategoria(catHija.id!)} />
-              ) : (
-                <BotonAlta onClick={() => darDeAlta(catHija.id!)} />
-              )}
-            </div>
+            <CategoriaItem cat={cat} />
           </div>
         ))}
       </div>
-      {/* Modal para ver información */}
+
+      {/* Modal de ver categoría */}
       <Modal show={showModal} onHide={handleCloseModal} centered>
         <Modal.Header closeButton>
-            <Modal.Title>Detalle de la Categoría</Modal.Title>
+          <Modal.Title>Detalle de la Categoría</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-            {categoriaSeleccionada && (
+          {categoriaSeleccionada && (
             <div>
-                <p><b>Nombre:</b> {categoriaSeleccionada.denominacion}</p>
-                <p>
+              <p><b>Nombre:</b> {categoriaSeleccionada.denominacion}</p>
+              <p>
                 <b>Categoría Padre:</b>{" "}
                 {
-                    // Busca el padre en el array de categorías
-                    categorias.find(cat =>
+                  categorias.find(cat =>
                     cat.subcategorias.some(sub => sub.id === categoriaSeleccionada.id)
-                    )?.denominacion || "Sin categoría padre"
+                  )?.denominacion || "Sin categoría padre"
                 }
-                </p>
-                <p>
-                <b>Estado:</b> {categoriaSeleccionada.eliminado ? "Eliminado" : "Activo"}
-                </p>
+              </p>
+              <p><b>Estado:</b> {categoriaSeleccionada.eliminado ? "Eliminado" : "Activo"}</p>
             </div>
-            )}
+          )}
         </Modal.Body>
         <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseModal}>
+          <Button variant="secondary" onClick={handleCloseModal}>
             Cerrar
-            </Button>
+          </Button>
         </Modal.Footer>
-        </Modal>
+      </Modal>
     </div>
   );
 }
