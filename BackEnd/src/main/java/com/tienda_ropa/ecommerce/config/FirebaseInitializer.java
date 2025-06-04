@@ -19,7 +19,7 @@ public class FirebaseInitializer {
 
         InputStream serviceAccount = getClass()
                 .getClassLoader()
-                .getResourceAsStream("firebase/firebase-service-account-tienda-ropa.json");
+                .getResourceAsStream("firebase/firebase-service-account-tienda.json");
 
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
