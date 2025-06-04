@@ -1,6 +1,7 @@
 package com.tienda_ropa.ecommerce.controller;
 
 import com.tienda_ropa.ecommerce.model.Categoria;
+import com.tienda_ropa.ecommerce.model.Pedido;
 import com.tienda_ropa.ecommerce.service.CategoriaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,4 +24,8 @@ public class CategoriaController extends MasterController<Categoria, Long> {
         return ResponseEntity.ok(categoriaService.findAllExcludingFirst());
     }
 
+    @GetMapping("/denominacion/{denominacion}")
+    public ResponseEntity<List<Categoria>> getByDenominacion(@PathVariable String denominacion) {
+        return ResponseEntity.ok(categoriaService.findByDenominacion(denominacion));
+    }
 }

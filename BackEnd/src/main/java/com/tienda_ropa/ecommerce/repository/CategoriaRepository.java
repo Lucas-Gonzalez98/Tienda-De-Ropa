@@ -11,4 +11,5 @@ public interface CategoriaRepository extends MasterRepository<Categoria, Long> {
     @Query("SELECT c FROM Categoria c WHERE c.id <> (SELECT MIN(c2.id) FROM Categoria c2)")
     List<Categoria> findAllExcludingFirst();
 
+    List<Categoria> findByDenominacion(String denominacion);
 }

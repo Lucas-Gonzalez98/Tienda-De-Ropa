@@ -23,4 +23,9 @@ public class CategoriaServiceImpl extends MasterServiceImpl<Categoria, Long> imp
         return categoriaRepository.findAllExcludingFirst();
     }
 
+    @Override
+    public List<Categoria> findByDenominacion(String denominacion) {
+        return categoriaRepository.findByDenominacion(denominacion);
+    }
+
 }

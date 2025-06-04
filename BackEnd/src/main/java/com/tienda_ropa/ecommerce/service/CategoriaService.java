@@ -9,4 +9,5 @@ import java.util.List;
 public interface CategoriaService extends MasterService<Categoria, Long> {
 
     List<Categoria> findAllExcludingFirst();
+    List<Categoria> findByDenominacion(String denominacion);
 }
