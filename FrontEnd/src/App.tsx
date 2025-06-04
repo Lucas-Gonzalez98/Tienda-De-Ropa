@@ -12,9 +12,12 @@ import FormProducto from './components/articulos/FormProductos.tsx'
 import FormCategoria from './components/articulos/FormCategoria.tsx'
 import Domicilios from "./components/auth/Domicilios.tsx";
 import DetalleProducto from './components/articulos/DetalleProducto.tsx'
+import { Carrito } from './components/articulos/Carrito.tsx'
+import { CarritoProvider } from './context/CarritoContext.tsx'
 
 function App() {
   return (
+    <CarritoProvider>
     <AuthProvider>
       <Navbar/>
       <Routes>
@@ -34,6 +37,10 @@ function App() {
           <ProtectedRoute clientOnly={true}>
             <Domicilios />
           </ProtectedRoute>
+        } />
+
+        <Route path="/carrito" element={
+            <Carrito />
         } />
 
         <Route path="/pedidos" element={
@@ -64,6 +71,7 @@ function App() {
       </Routes>
       <Footer/>
     </AuthProvider>
+    </CarritoProvider>
   )
 }
 

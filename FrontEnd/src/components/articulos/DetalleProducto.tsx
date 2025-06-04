@@ -7,8 +7,10 @@ import Spinner from "react-bootstrap/Spinner";
 import Alert from "react-bootstrap/Alert";
 import "../../styles/DetalleProducto.css"; // estilos opcionales adicionales
 import type Producto from "../../models/Producto";
+import { useCarrito } from "../../hooks/useCarrito";
 
 function DetalleProducto() {
+  const carritoCtx = useCarrito();
   const { id } = useParams();
   const [producto, setProducto] = useState<Producto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,7 +37,12 @@ function DetalleProducto() {
       setLoading(false);
     }
   };
-
+ const handleAgregarAlCarrito = () => {
+    if (carritoCtx && producto) {
+      console.log(producto)
+      carritoCtx.agregarAlCarrito(producto, 1);
+    }
+  };
   const coloresDisponibles = ["Negro", "Blanco", "Gris", "Bordó", "Azul acero"];
   const tallesDisponibles = ["S", "M", "L", "XL", "XXL"];
 
@@ -107,15 +114,20 @@ function DetalleProducto() {
             </div>
           </div>
 
-          <Button
-            className="mt-4 w-100"
-            variant="primary"
-            size="lg"
-            disabled={!colorSeleccionado || !talleSeleccionado}
-            onClick={() => alert("Compra realizada")}
-          >
-            Comprar ahora
-          </Button>
+          <button
+        onClick={handleAgregarAlCarrito}
+        style={{
+          padding: "10px 20px",
+          backgroundColor: "#4CAF50",
+          color: "white",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer",
+          marginTop: "10px"
+        }}
+      >
+        Agregar al carrito
+      </button>
         </div>
       </div>
     </div>

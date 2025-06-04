@@ -102,7 +102,9 @@ function Navbar() {
                     )}
 
                     {!isAdmin && (
-                        <img className='carrito' src={Vector} alt="logoCarrito" />
+                        <Link to="/carrito" className="nav-link carrito-link">
+                            <img className='carrito' src={Vector} alt="logoCarrito" />
+                        </Link>
                     )}
                 </div>
             </nav>
