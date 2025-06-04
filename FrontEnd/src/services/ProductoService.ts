@@ -82,7 +82,7 @@ class ProductoService {
 
     async changeEliminado(id: number): Promise<void> {
         try {
-            const res = await fetch(`${API_URL}/darAlta/${id}`, {
+            const res = await fetch(`${API_URL}/restore/${id}`, {
                 method: "PUT"
             });
             if (!res.ok) throw new Error("Error al dar de alta la Producto");
