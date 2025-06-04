@@ -3,5 +3,4 @@
 BackEnd/src/main/resources/firebase/firebase-service-account-*.json
 BackEnd/src/main/resources/firebase/archivo_prueba.json
 
-# Ignorar archivo de configuración Firebase del frontend
-FrontEnd/src/components/auth/firebase.ts
+
