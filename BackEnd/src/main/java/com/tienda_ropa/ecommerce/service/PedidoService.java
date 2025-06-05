@@ -1,7 +1,10 @@
 package com.tienda_ropa.ecommerce.service;
 
 import com.tienda_ropa.ecommerce.model.Pedido;
+import com.tienda_ropa.ecommerce.model.enums.Estado;
+import com.tienda_ropa.ecommerce.model.enums.Rol;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface PedidoService extends MasterService<Pedido, Long> {
@@ -11,5 +14,11 @@ public interface PedidoService extends MasterService<Pedido, Long> {
 
     //Realizar un pedido
     Pedido realizarPedido(Pedido pedido, Long clienteId, Long domicilioId);
+
+    //búsqueda filtrada para ver pedidos realizados
+    List<Pedido> getByFiltros(Long clienteId, String estado, LocalDate fechaDesde, LocalDate fechaHasta);
+
+    //actualizar el estado del pedido
+    void cambiarEstadoPedido(Long pedidoId, Estado nuevoEstado, Long usuarioId, Rol rol);
 
 }

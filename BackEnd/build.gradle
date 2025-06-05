@@ -33,6 +33,15 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
+    //Para generacion de pdf
+    implementation 'com.lowagie:itext:2.1.7'
+
+    //Para enviar emails
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    //Para context support. (para ByteArrayResource)
+    implementation 'org.springframework:spring-context-support'
+
     // MySQL driver
     runtimeOnly 'com.mysql:mysql-connector-j'
 
