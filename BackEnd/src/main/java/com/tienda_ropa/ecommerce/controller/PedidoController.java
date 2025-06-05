@@ -35,6 +35,4 @@ public class PedidoController extends MasterController<Pedido, Long> {
         Pedido nuevo = pedidoService.realizarPedido(pedido, clienteId, domicilioId);
         return ResponseEntity.ok(nuevo);
     }
-
-
 }

@@ -25,7 +25,7 @@ public class ProductoController extends MasterController<Producto, Long> {
 
     //SAVE de un producto (abajo estaria un ejemplo del JSON)
     @PostMapping("/crear-producto")
-    public ResponseEntity<Producto> crearProductoCompleto(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<Producto> crearProducto(@RequestBody Map<String, Object> payload) {
         ObjectMapper mapper = new ObjectMapper();
 
         // Mapear el producto
@@ -45,26 +45,33 @@ public class ProductoController extends MasterController<Producto, Long> {
         // Mapear las imágenes en base64
         List<String> imagenesBase64 = mapper.convertValue(payload.get("imagenes"), new TypeReference<List<String>>() {});
 
-        Producto creado = productoService.crearProductoCompleto(producto, stockSet, precioVenta, precioCompra, imagenesBase64);
+        Producto creado = productoService.crearProducto(producto, stockSet, precioVenta, precioCompra, imagenesBase64);
         return ResponseEntity.ok(creado);
     }
     /*
-    {
+     {
       "producto": {
         "nombre": "Remera básica",
         "descripcion": "Algodón 100%",
         "categorias": [{ "id": 1 }, { "id": 2 }]
       },
-      "stockInicial": [
+      "stock": [
         { "color": { "id": 1 }, "talle": { "id": 2 }, "cantidad": 50 },
         { "color": { "id": 2 }, "talle": { "id": 2 }, "cantidad": 20 }
       ],
       "precioVenta": 2999.99,
-      "precioCompra": 1500.00
+      "precioCompra": 1500.00,
+      "imagenes": [
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA...",
+        "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD..."
+      ]
     }
      */
 
 
-
+    @PutMapping("/{id}")
+    public ResponseEntity<Producto> editarProductoCompleto(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
+        return ResponseEntity.ok(productoService.editarProducto(id, payload));
+    }
 
 }

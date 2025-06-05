@@ -1,5 +1,6 @@
 package com.tienda_ropa.ecommerce.service.Impls;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tienda_ropa.ecommerce.model.*;
 import com.tienda_ropa.ecommerce.repository.*;
 import com.tienda_ropa.ecommerce.service.ProductoService;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductoServiceImpl extends MasterServiceImpl<Producto, Long> implements ProductoService {
@@ -18,6 +20,8 @@ public class ProductoServiceImpl extends MasterServiceImpl<Producto, Long> imple
     private final HistoricoPrecioVentaRepository historicoPrecioVentaRepository;
     private final HistoricoPrecioCompraRepository historicoPrecioCompraRepository;
     private final ImagenProductoRepository imagenProductoRepository;
+
+    private final ObjectMapper mapper;
 
     public ProductoServiceImpl(ProductoRepository productoRepository,
                                StockRepository stockRepository,
@@ -30,13 +34,14 @@ public class ProductoServiceImpl extends MasterServiceImpl<Producto, Long> imple
         this.historicoPrecioVentaRepository = historicoPrecioVentaRepository;
         this.historicoPrecioCompraRepository = historicoPrecioCompraRepository;
         this.imagenProductoRepository = imagenProductoRepository;
+        this.mapper = new ObjectMapper();
     }
 
 
     //Guardar un producto (CREAR)
     @Override
     @Transactional
-    public Producto crearProductoCompleto(Producto producto, Set<Stock> stock,
+    public Producto crearProducto(Producto producto, Set<Stock> stock,
                                           Double precioVentaInicial, Double precioCompraInicialOpcional,
                                           List<String> imagenesBase64) {
 
@@ -77,5 +82,77 @@ public class ProductoServiceImpl extends MasterServiceImpl<Producto, Long> imple
 
         return productoGuardado;
     }
+
+    //Editar un Producto
+    @Override
+    @Transactional
+    public Producto editarProducto(Long id, Map<String, Object> payload) {
+        Producto existente = productoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        // Mapear cambios básicos
+        Producto modificado = mapper.convertValue(payload.get("producto"), Producto.class);
+        existente.setNombre(modificado.getNombre());
+        existente.setDescripcion(modificado.getDescripcion());
+
+        // Categorías
+        List<Map<String, Object>> categoriasPayload = (List<Map<String, Object>>) payload.get("categorias");
+        Set<Categoria> categorias = categoriasPayload.stream()
+                .map(cat -> {
+                    Categoria categoria = new Categoria();
+                    categoria.setId(Long.valueOf(cat.get("id").toString()));
+                    return categoria;
+                }).collect(Collectors.toSet());
+        existente.setCategorias(categorias);
+
+        // Imágenes
+        List<Map<String, Object>> imagenesPayload = (List<Map<String, Object>>) payload.get("imagenes");
+        Set<ImagenProducto> imagenes = imagenesPayload.stream()
+                .map(img -> {
+                    ImagenProducto imagen = new ImagenProducto();
+                    imagen.setDenominacion(img.get("denominacion").toString());
+                    imagen.setProducto(existente);
+                    return imagen;
+                }).collect(Collectors.toSet());
+        existente.getImagenes().clear();
+        existente.getImagenes().addAll(imagenes);
+
+        // Precios
+        Double nuevoPrecioVenta = Double.valueOf(payload.get("precioVenta").toString());
+        Double nuevoPrecioCompra = Double.valueOf(payload.get("precioCompra").toString());
+
+        // Guardar solo si cambia
+        boolean cambiarVenta = existente.getId() == null ||
+                existente.getId() != null && (!existePrecioVenta(existente, nuevoPrecioVenta));
+        boolean cambiarCompra = existente.getId() == null ||
+                existente.getId() != null && (!existePrecioCompra(existente, nuevoPrecioCompra));
+
+        if (cambiarVenta) {
+            HistoricoPrecioVenta hventa = new HistoricoPrecioVenta();
+            hventa.setPrecio(nuevoPrecioVenta);
+            hventa.setFecha(LocalDateTime.now());
+            hventa.setProducto(existente);
+            existente.getDetalles().clear(); // por precaución
+        }
+
+        if (cambiarCompra) {
+            HistoricoPrecioCompra hcompra = new HistoricoPrecioCompra();
+            hcompra.setPrecio(nuevoPrecioCompra);
+            hcompra.setFecha(LocalDateTime.now());
+            hcompra.setProducto(existente);
+        }
+
+        return productoRepository.save(existente);
+    }
+
+
+    private boolean existePrecioVenta(Producto producto, Double precio) {
+        return historicoPrecioVentaRepository.existsByProductoIdAndPrecioVenta(producto.getId(), precio);
+    }
+
+    private boolean existePrecioCompra(Producto producto, Double precio) {
+        return historicoPrecioCompraRepository.existsByProductoIdAndPrecioCompra(producto.getId(), precio);
+    }
+
 
 }
