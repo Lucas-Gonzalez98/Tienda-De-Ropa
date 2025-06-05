@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tienda_ropa.ecommerce.model.Producto;
 import com.tienda_ropa.ecommerce.model.Stock;
 import com.tienda_ropa.ecommerce.service.ProductoService;
-import org.springframework.asm.TypeReference;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,14 +23,15 @@ public class ProductoController extends MasterController<Producto, Long> {
     }
 
 
-    @PostMapping("/completo")
+    //SAVE de un producto (abajo estaria un ejemplo del JSON)
+    @PostMapping("/crear-producto")
     public ResponseEntity<Producto> crearProductoCompleto(@RequestBody Map<String, Object> payload) {
         ObjectMapper mapper = new ObjectMapper();
 
         // Mapear el producto
         Producto producto = mapper.convertValue(payload.get("producto"), Producto.class);
 
-        // Mapear el stock inicial
+        // Mapear el stock
         List<Stock> stockList = mapper.convertValue(payload.get("stock"), new TypeReference<List<Stock>>() {});
         Set<Stock> stockSet = new HashSet<>(stockList);
 
@@ -41,9 +42,29 @@ public class ProductoController extends MasterController<Producto, Long> {
             precioCompra = Double.valueOf(payload.get("precioCompra").toString());
         }
 
-        Producto creado = productoService.crearProductoCompleto(producto, stockSet, precioVenta, precioCompra);
+        // Mapear las imágenes en base64
+        List<String> imagenesBase64 = mapper.convertValue(payload.get("imagenes"), new TypeReference<List<String>>() {});
+
+        Producto creado = productoService.crearProductoCompleto(producto, stockSet, precioVenta, precioCompra, imagenesBase64);
         return ResponseEntity.ok(creado);
     }
+    /*
+    {
+      "producto": {
+        "nombre": "Remera básica",
+        "descripcion": "Algodón 100%",
+        "categorias": [{ "id": 1 }, { "id": 2 }]
+      },
+      "stockInicial": [
+        { "color": { "id": 1 }, "talle": { "id": 2 }, "cantidad": 50 },
+        { "color": { "id": 2 }, "talle": { "id": 2 }, "cantidad": 20 }
+      ],
+      "precioVenta": 2999.99,
+      "precioCompra": 1500.00
+    }
+     */
+
+
 
 
 }
