@@ -17,7 +17,7 @@ function Productos(){
             { productos.length > 0 ? (
                 <div className="d-flex flex-wrap justify-content-center" style={{ gap: "1rem", padding: "1rem 5rem" }}>
                     {productos.map((producto) => (
-                        <CardProducto articulo={producto}/>
+                        <CardProducto producto={producto}/>
                     ))}
                 </div>
             ) : (

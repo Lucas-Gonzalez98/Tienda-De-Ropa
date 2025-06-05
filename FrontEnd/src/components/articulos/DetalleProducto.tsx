@@ -13,6 +13,7 @@ import TallesService from "../../services/TallesService";
 import Color from "../../models/Color";
 import Talle from "../../models/Talle";
 import ColorService from "../../services/ColorService";
+import HistoricoPrecioventaService from "../../services/HistoricoPrecioventaService";
 
 function DetalleProducto() {
   const carritoCtx = useCarrito();
@@ -27,7 +28,8 @@ function DetalleProducto() {
   const [talles, setTalles] = useState<Talle[]>([]);
   const [stockMap, setStockMap] = useState<Record<string, number>>({});
   const [stockDisponible, setStockDisponible] = useState<number | null>(null);
-
+  const [precioHistorico, setPrecioHistorico] = useState<number | null>(null);
+    
   useEffect(() => {
     const fetchDatos = async () => {
       try {
@@ -40,7 +42,8 @@ function DetalleProducto() {
         setImagenSeleccionada(productoData.imagenes?.[0] || null);
         setTalles(tallesData);
         setColores(coloresData);
-
+          const historico = await HistoricoPrecioventaService.ultimoById(productoData );
+          setPrecioHistorico(historico.precio);
         // Consultar stock para cada combinación
         const stockTemp: Record<string, number> = {};
         for (const color of coloresData) {
@@ -121,6 +124,7 @@ function DetalleProducto() {
           <h3>{producto.nombre}</h3>
           <p className="text-muted">{producto.descripcion}</p>
           <p><strong>Stock disponible:</strong> {stockDisponible ?? "Seleccioná talle y color"}</p>
+          <p><strong>Precio:</strong> {precioHistorico ?? precioHistorico}</p>
 
           {/* Colores */}
           <div className="mt-4">

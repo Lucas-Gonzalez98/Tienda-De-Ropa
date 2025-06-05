@@ -10,9 +10,11 @@ import BotonModificar from "../layout/BotonModificar";
 import BotonAlta from "../layout/BotonAlta";
 import "../../styles/GrillaProductos.css"; // Importar estilos específicos
 import HistoricoPrecioventaService from "../../services/HistoricoPrecioventaService";
+type ProductoConPrecio = Producto & { precioHistorico?: number | null };
+
 // ...existing code...
 function GrillaProductos() {
-  const [productos, setProductos] = useState<Producto[]>([]);
+  const [productos, setProductos] = useState<ProductoConPrecio[]>([]);
   const [precioHistorico, setPrecioHistorico] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,17 +28,28 @@ function GrillaProductos() {
   }, []);
 
   const cargarProductos = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await ProductoService.getAll();
-      setProductos(data);
-    } catch (err) {
-      setError("Error al cargar los productos");
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  setError(null);
+  try {
+    const data = await ProductoService.getAll();
+    const productosConPrecios = await Promise.all(
+      data.map(async (prod: Producto) => {
+        try {
+          const historico = await HistoricoPrecioventaService.ultimoById(prod);
+          return { ...prod, precioHistorico: historico.precio };
+        } catch (err) {
+          return { ...prod, precioHistorico: null }; // o 0 si preferís
+        }
+      })
+    );
+    setProductos(productosConPrecios);
+  } catch (err) {
+    setError("Error al cargar los productos");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const darDeAlta = async (id: number) => {
     if (!window.confirm("¿Seguro que desea dar de alta este producto?")) return;
@@ -87,10 +100,12 @@ function GrillaProductos() {
   const columns = [
     { key: "nombre", label: "Nombre" },
     { key: "descripcion", label: "Descripción" },
-    { 
+    {
       key: "precio", 
       label: "Precio",
-      render: (value: number) => `$${value?.toFixed(2) || 0}`
+      render: (_: any, row: ProductoConPrecio) => row.precioHistorico !== undefined 
+        ? `$${row.precioHistorico?.toFixed(2) || 0}`
+        : "Sin datos"
     },
     {
       key: "eliminado",

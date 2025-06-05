@@ -1,17 +1,36 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Articulo from "../../models/Producto";
+import Producto from "../../models/Producto";
 import "../../styles/productocard.css"; // Import your CSS styles
+import HistoricoPrecioventaService from "../../services/HistoricoPrecioventaService";
 interface Props {
-  articulo: Articulo;
+  producto: Producto;
 }
 
-const CardArticulo: React.FC<Props> = ({ articulo }) => {
+const CardProducto: React.FC<Props> = ({ producto }) => {
   const navigate = useNavigate();
+  const [precioHistorico, setPrecioHistorico] = useState<number | null>(null);
+  
+  useEffect(() => {
+  const obtenerPrecio = async () => {
+      if (!producto) return;
+
+      try {
+        const historico = await HistoricoPrecioventaService.ultimoById(producto);
+        setPrecioHistorico(historico.precio);
+      } catch (error) {
+        console.error("Error al obtener el precio histórico", error);
+        setPrecioHistorico(null);
+      }
+    };
+
+    obtenerPrecio();
+  }, [producto]);
+
 
   return (
     <div
-      className="card-articulo"
+      className="card-producto"
       style={{
         border: "1px solid #ccc",
         borderRadius: "8px",
@@ -19,19 +38,19 @@ const CardArticulo: React.FC<Props> = ({ articulo }) => {
         width: "400px",
         cursor: "pointer",
       }}
-      onClick={() => navigate(`/articulo/${articulo.id}`)}
+      onClick={() => navigate(`/producto/${producto.id}`)}
     >
       <img
-        src={articulo.imagenes[0]?.denominacion || "/placeholder.png"}
-        alt={articulo.nombre || "Artículo sin imagen"}
+        src={producto.imagenes[0]?.denominacion || "/placeholder.png"}
+        alt={producto.nombre || "Artículo sin imagen"}
         style={{ width: "100%", height: "120px", objectFit: "cover" }}
       />
       <div className="card-body">
-        <h6>{articulo.nombre}</h6>
-        <p>${articulo.precio}</p>
+        <h6>{producto.nombre}</h6>
+        <p>${precioHistorico}</p>
       </div>
     </div>
   );
 };
 
-export default CardArticulo;
+export default CardProducto;
