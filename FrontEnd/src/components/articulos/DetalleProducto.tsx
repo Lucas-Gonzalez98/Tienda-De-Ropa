@@ -5,9 +5,14 @@ import ImagenProducto from "../../models/ImagenProducto";
 import Button from "react-bootstrap/Button";
 import Spinner from "react-bootstrap/Spinner";
 import Alert from "react-bootstrap/Alert";
-import "../../styles/DetalleProducto.css"; // estilos opcionales adicionales
+import "../../styles/DetalleProducto.css";
 import type Producto from "../../models/Producto";
 import { useCarrito } from "../../hooks/useCarrito";
+import StockService from "../../services/StockService";
+import TallesService from "../../services/TallesService";
+import Color from "../../models/Color";
+import Talle from "../../models/Talle";
+import ColorService from "../../services/ColorService";
 
 function DetalleProducto() {
   const carritoCtx = useCarrito();
@@ -16,35 +21,69 @@ function DetalleProducto() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [imagenSeleccionada, setImagenSeleccionada] = useState<ImagenProducto | null>(null);
-  const [colorSeleccionado, setColorSeleccionado] = useState<string | null>(null);
-  const [talleSeleccionado, setTalleSeleccionado] = useState<string | null>(null);
+  const [colorSeleccionado, setColorSeleccionado] = useState<Color | null>(null);
+  const [talleSeleccionado, setTalleSeleccionado] = useState<Talle | null>(null);
+  const [colores, setColores] = useState<Color[]>([]);
+  const [talles, setTalles] = useState<Talle[]>([]);
+  const [stockMap, setStockMap] = useState<Record<string, number>>({});
+  const [stockDisponible, setStockDisponible] = useState<number | null>(null);
 
   useEffect(() => {
-    cargarProducto();
-  }, []);
+    const fetchDatos = async () => {
+      try {
+        const [productoData, tallesData, coloresData] = await Promise.all([
+          ProductoService.getById(parseInt(id!)),
+          TallesService.getAll(),
+          ColorService.getAll()
+        ]);
+        setProducto(productoData);
+        setImagenSeleccionada(productoData.imagenes?.[0] || null);
+        setTalles(tallesData);
+        setColores(coloresData);
 
-  const cargarProducto = async () => {
-    setLoading(true);
-    try {
-      const data = await ProductoService.getById(parseInt(id!));
-      setProducto(data);
-      if (data.imagenes && data.imagenes.length > 0) {
-        setImagenSeleccionada(data.imagenes[0]);
+        // Consultar stock para cada combinación
+        const stockTemp: Record<string, number> = {};
+        for (const color of coloresData) {
+          for (const talle of tallesData) {
+            const cantidad = await StockService.consultarStock(productoData.id, talle.id, color.id);
+            stockTemp[`${color.id}-${talle.id}`] = cantidad;
+          }
+        }
+        setStockMap(stockTemp);
+      } catch (err) {
+        setError("Error al cargar el producto o datos asociados.");
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setError("Error al cargar el producto.");
-    } finally {
-      setLoading(false);
+    };
+
+    fetchDatos();
+  }, [id]);
+
+  useEffect(() => {
+    if (colorSeleccionado && talleSeleccionado) {
+      const stock = stockMap[`${colorSeleccionado.id}-${talleSeleccionado.id}`] ?? null;
+      setStockDisponible(stock);
+    } else {
+      setStockDisponible(null);
+    }
+  }, [colorSeleccionado, talleSeleccionado, stockMap]);
+
+  const handleAgregarAlCarrito = () => {
+    if (carritoCtx && producto && stockDisponible && stockDisponible > 0) {
+      carritoCtx.agregarAlCarrito(producto, 1); // Podrías incluir color y talle aquí si lo manejás
     }
   };
- const handleAgregarAlCarrito = () => {
-    if (carritoCtx && producto) {
-      console.log(producto)
-      carritoCtx.agregarAlCarrito(producto, 1);
-    }
+
+  const isColorHabilitado = (color: Color) => {
+    if (!talleSeleccionado) return true;
+    return stockMap[`${color.id}-${talleSeleccionado.id}`] > 0;
   };
-  const coloresDisponibles = ["Negro", "Blanco", "Gris", "Bordó", "Azul acero"];
-  const tallesDisponibles = ["S", "M", "L", "XL", "XXL"];
+
+  const isTalleHabilitado = (talle: Talle) => {
+    if (!colorSeleccionado) return true;
+    return stockMap[`${colorSeleccionado.id}-${talle.id}`] > 0;
+  };
 
   if (loading) return <Spinner animation="border" className="mt-5" />;
   if (error) return <Alert variant="danger" className="mt-5">{error}</Alert>;
@@ -81,53 +120,65 @@ function DetalleProducto() {
         <div className="col-md-6">
           <h3>{producto.nombre}</h3>
           <p className="text-muted">{producto.descripcion}</p>
-          <h4 className="text-success">${producto.precio.toLocaleString()}</h4>
-          <p><strong>Stock disponible:</strong> 1 unidad</p>
+          <p><strong>Stock disponible:</strong> {stockDisponible ?? "Seleccioná talle y color"}</p>
 
+          {/* Colores */}
           <div className="mt-4">
             <p><strong>Color:</strong></p>
             <div className="d-flex flex-wrap gap-2">
-              {coloresDisponibles.map((color) => (
+              {colores.map((color) => (
                 <Button
-                  key={color}
-                  variant={colorSeleccionado === color ? "dark" : "outline-secondary"}
-                  onClick={() => setColorSeleccionado(color)}
+                  key={color.id}
+                  variant={colorSeleccionado?.id === color.id ? "dark" : "outline-secondary"}
+                  onClick={() =>
+                    colorSeleccionado?.id === color.id
+                      ? setColorSeleccionado(null)
+                      : setColorSeleccionado(color)
+                  }
+                  disabled={!isColorHabilitado(color)}
                 >
-                  {color}
+                  {color.nombre}
                 </Button>
               ))}
             </div>
           </div>
 
+          {/* Talles */}
           <div className="mt-3">
             <p><strong>Talle:</strong></p>
             <div className="d-flex flex-wrap gap-2">
-              {tallesDisponibles.map((talle) => (
+              {talles.map((talle) => (
                 <Button
-                  key={talle}
-                  variant={talleSeleccionado === talle ? "dark" : "outline-secondary"}
-                  onClick={() => setTalleSeleccionado(talle)}
+                  key={talle.id}
+                  variant={talleSeleccionado?.id === talle.id ? "dark" : "outline-secondary"}
+                  onClick={() =>
+                    talleSeleccionado?.id === talle.id
+                      ? setTalleSeleccionado(null)
+                      : setTalleSeleccionado(talle)
+                  }
+                  disabled={!isTalleHabilitado(talle)}
                 >
-                  {talle}
+                  {talle.nombre}
                 </Button>
               ))}
             </div>
           </div>
-
+          {/* Botón agregar */}
           <button
-        onClick={handleAgregarAlCarrito}
-        style={{
-          padding: "10px 20px",
-          backgroundColor: "#4CAF50",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
-          cursor: "pointer",
-          marginTop: "10px"
-        }}
-      >
-        Agregar al carrito
-      </button>
+            onClick={handleAgregarAlCarrito}
+            disabled={!stockDisponible}
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#4CAF50",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: stockDisponible ? "pointer" : "not-allowed",
+              marginTop: "10px"
+            }}
+          >
+            Agregar al carrito
+          </button>
         </div>
       </div>
     </div>
