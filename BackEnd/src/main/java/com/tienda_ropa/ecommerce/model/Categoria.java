@@ -25,4 +25,7 @@ public class Categoria extends Master {
     @OneToMany(mappedBy = "categoriaPadre", cascade = CascadeType.ALL)
     @JsonManagedReference
     private Set<Categoria> subcategorias = new HashSet<>();
+
+    @ManyToMany(mappedBy = "categorias")
+    private Set<Producto> productos = new HashSet<>();
 }

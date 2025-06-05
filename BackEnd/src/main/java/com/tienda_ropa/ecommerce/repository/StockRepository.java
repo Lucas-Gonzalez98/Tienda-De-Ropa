@@ -7,7 +7,7 @@ import com.tienda_ropa.ecommerce.model.Talle;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
+import java.util.*;
 
 public interface StockRepository extends MasterRepository<Stock, Long> {
 
@@ -23,5 +23,11 @@ public interface StockRepository extends MasterRepository<Stock, Long> {
                                        @Param("talle") Talle talle,
                                        @Param("color") Color color);
 
-
+    // Esto es para consultar si tenemos stock para el carrito (pedido)
+    @Query("SELECT s FROM Stock s WHERE s.producto.id = :productoId AND s.color.id = :colorId AND s.talle.id = :talleId AND s.eliminado = false")
+    Optional<Stock> findStockDisponible(
+            @Param("productoId") Long productoId,
+            @Param("colorId") Long colorId,
+            @Param("talleId") Long talleId
+    );
 }
