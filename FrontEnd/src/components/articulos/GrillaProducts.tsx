@@ -9,9 +9,11 @@ import BotonEliminar from "../layout/BotonEliminar";
 import BotonModificar from "../layout/BotonModificar";
 import BotonAlta from "../layout/BotonAlta";
 import "../../styles/GrillaProductos.css"; // Importar estilos específicos
+import HistoricoPrecioventaService from "../../services/HistoricoPrecioventaService";
 // ...existing code...
 function GrillaProductos() {
   const [productos, setProductos] = useState<Producto[]>([]);
+  const [precioHistorico, setPrecioHistorico] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,15 +64,24 @@ function GrillaProductos() {
     window.location.href = `/fromproducto?id=${prod.id}`;
   };
 
-  const handleVer = (prod: Producto) => {
-    setProductoSeleccionado(prod);
-    setShowModal(true);
-  };
+  const handleVer = async (prod: Producto) => {
+  setProductoSeleccionado(prod);
+  setShowModal(true);
+  try {
+    const historico = await HistoricoPrecioventaService.ultimoById(prod);
+    setPrecioHistorico(historico.precio);
+  } catch (e) {
+    setPrecioHistorico(null); // o mostrar mensaje de error si querés
+  }
+};
+
 
   const handleCloseModal = () => {
-    setShowModal(false);
-    setProductoSeleccionado(null);
-  };
+  setShowModal(false);
+  setProductoSeleccionado(null);
+  setPrecioHistorico(null);
+};
+
 
   // Definición de columnas para la tabla reusable
   const columns = [
@@ -79,7 +90,7 @@ function GrillaProductos() {
     { 
       key: "precio", 
       label: "Precio",
-      render: (value: number) => `$${value.toFixed(2)}`
+      render: (value: number) => `$${value?.toFixed(2) || 0}`
     },
     {
       key: "eliminado",
@@ -111,7 +122,7 @@ function GrillaProductos() {
 
   if (loading) return <div>Cargando productos...</div>;
   if (error) return <div>{error}</div>;
-
+  console.log(precioHistorico)
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
@@ -131,7 +142,9 @@ function GrillaProductos() {
             <div>
               <p><b>Nombre:</b> {productoSeleccionado.nombre}</p>
               <p><b>Descripción:</b> {productoSeleccionado.descripcion}</p>
-              <p><b>Precio:</b> ${productoSeleccionado.precio.toFixed(2)}</p>
+              {precioHistorico !== null && (
+                <p><b>Precio:</b> ${precioHistorico.toFixed(2)}</p>
+              )}
               <p><b>Estado:</b> {productoSeleccionado.eliminado ? "Eliminado" : "Activo"}</p>
               {productoSeleccionado.imagenes && productoSeleccionado.imagenes.length > 0 && (
                 <img
