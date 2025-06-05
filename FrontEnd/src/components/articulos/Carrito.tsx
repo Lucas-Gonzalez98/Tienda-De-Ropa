@@ -51,16 +51,16 @@ export function Carrito() {
   };
   
   return (
-    <div className="w-full p-4">
+    <div className="m-auto container">
         {carrito.length === 0 ? (
           <p>El carrito está vacío.</p>
         ) : (
           carrito.map((item) => (
-            <div key={item.producto.id} className="d-flex align-items-center mb-3 border-bottom pb-2">
+            <div key={item.producto.id} className="row d-flex align-items-center mb-3 border-bottom pb-2">
               <Image
                 src={item.producto.imagenes[0]?.denominacion}
                 alt={"Imagen del artículo"}
-                style={{ width: "60px", height: "60px", objectFit: "cover", marginRight: "10px" }}
+                style={{ width: "200px", height: "auto", objectFit: "cover", marginRight: "10px" }}
                 rounded
                 />
               <div className="flex-grow-1">
@@ -76,10 +76,22 @@ export function Carrito() {
                   </Button>
                 </div>
                 <div className="d-flex align-items-center justify-content-between">
-                  <small>
-                    Precio: $
-                    {preciosActualizados[item.producto.id]?.toFixed(2) ?? "Cargando..."}
-                  </small>
+                  <div className="d-flex flex-column align-items-start">
+                    <small>
+                      Talle: 
+                      {item.producto.talle?.nombre}
+                    </small>
+
+                    <small>
+                      Color: 
+                      {item.producto.color?.nombre}
+                    </small>
+
+                    <small>
+                      Precio: $
+                      {preciosActualizados[item.producto.id]?.toFixed(2) ?? "Cargando..."}
+                    </small>
+                  </div>
 
                   <div className="d-flex align-items-center mx-2">
                     <Button
@@ -101,7 +113,7 @@ export function Carrito() {
                     </Button>
                   </div>
                 </div>
-                <div>
+                <div className="text-end">
                   Subtotal: $
                   {((preciosActualizados[item.producto.id] ?? 0) * item.cantidad).toFixed(2)}
                 </div>

@@ -27,27 +27,31 @@ export function CarritoProvider({ children }: { children: ReactNode }) {
     return nuevoPedido;
   });
 
-  const agregarAlCarrito = (Producto: Producto, cantidad: number) => {
+  const agregarAlCarrito = (producto: Producto, cantidad: number) => {
   setPedido((prevPedido) => {
     const detallesExistente = prevPedido.detalles.find(
-      (d) => d.producto.id === Producto.id,
+      (d) => d.producto.id === producto.id &&
+      d.producto.talle?.id === producto.talle?.id &&
+      d.producto.color?.id === producto.color?.id
     );
     let nuevosdetalles: PedidoDetalle[];
     if (detallesExistente) {
       nuevosdetalles = prevPedido.detalles.map((d) => {
-        if (d.producto.id === Producto.id) {
+        if (d.producto.id === producto.id &&
+      d.producto.talle?.id === producto.talle?.id &&
+      d.producto.color?.id === producto.color?.id) {
           const nuevaCantidad = d.cantidad + cantidad;
           return {
             ...d,
             cantidad: nuevaCantidad,
-            subTotal: Producto.precio * nuevaCantidad, // <--- aquí
+            subTotal: producto.precio * nuevaCantidad, // <--- aquí
           };
         }
         return d;
       });
     } else {
       const nuevoDetalles = new PedidoDetalle();
-      nuevoDetalles.producto = Producto;
+      nuevoDetalles.producto = producto;
       nuevoDetalles.cantidad = cantidad;
       nuevosdetalles = [...prevPedido.detalles, nuevoDetalles];
     }

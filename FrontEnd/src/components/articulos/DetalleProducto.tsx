@@ -73,10 +73,25 @@ function DetalleProducto() {
   }, [colorSeleccionado, talleSeleccionado, stockMap]);
 
   const handleAgregarAlCarrito = () => {
-    if (carritoCtx && producto && stockDisponible && stockDisponible > 0) {
-      carritoCtx.agregarAlCarrito(producto, 1); // Podrías incluir color y talle aquí si lo manejás
-    }
-  };
+  if (
+    carritoCtx &&
+    producto &&
+    stockDisponible &&
+    stockDisponible > 0 &&
+    talleSeleccionado &&
+    colorSeleccionado
+  ) {
+    // Asignar talle y color directamente al producto
+    const productoConVariantes = { ...producto };
+    productoConVariantes.talle = talleSeleccionado;
+    productoConVariantes.color = colorSeleccionado;
+
+    carritoCtx.agregarAlCarrito(productoConVariantes, 1);
+  } else {
+    alert("Debés seleccionar un talle y un color antes de agregar al carrito.");
+  }
+};
+
 
   const isColorHabilitado = (color: Color) => {
     if (!talleSeleccionado) return true;
