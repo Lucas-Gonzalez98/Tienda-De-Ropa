@@ -25,6 +25,14 @@ public class Producto extends Master {
     @JsonManagedReference
     private Set<ImagenProducto> imagenes = new HashSet<>();
 
+    @ManyToMany
+    @JoinTable(
+            name = "categoria_producto",
+            joinColumns = @JoinColumn(name = "id_producto"),
+            inverseJoinColumns = @JoinColumn(name = "id_categoria")
+    )
+    private Set<Categoria> categorias = new HashSet<>();
+
 
     //Esto es para realizar un pedido
     @Transient
