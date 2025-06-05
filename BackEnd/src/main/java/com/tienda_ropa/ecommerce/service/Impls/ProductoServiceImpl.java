@@ -1,13 +1,7 @@
 package com.tienda_ropa.ecommerce.service.Impls;
 
-import com.tienda_ropa.ecommerce.model.HistoricoPrecioCompra;
-import com.tienda_ropa.ecommerce.model.HistoricoPrecioVenta;
-import com.tienda_ropa.ecommerce.model.Producto;
-import com.tienda_ropa.ecommerce.model.Stock;
-import com.tienda_ropa.ecommerce.repository.HistoricoPrecioCompraRepository;
-import com.tienda_ropa.ecommerce.repository.HistoricoPrecioVentaRepository;
-import com.tienda_ropa.ecommerce.repository.ProductoRepository;
-import com.tienda_ropa.ecommerce.repository.StockRepository;
+import com.tienda_ropa.ecommerce.model.*;
+import com.tienda_ropa.ecommerce.repository.*;
 import com.tienda_ropa.ecommerce.service.ProductoService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,22 +17,28 @@ public class ProductoServiceImpl extends MasterServiceImpl<Producto, Long> imple
     private final StockRepository stockRepository;
     private final HistoricoPrecioVentaRepository historicoPrecioVentaRepository;
     private final HistoricoPrecioCompraRepository historicoPrecioCompraRepository;
+    private final ImagenProductoRepository imagenProductoRepository;
 
     public ProductoServiceImpl(ProductoRepository productoRepository,
                                StockRepository stockRepository,
                                HistoricoPrecioVentaRepository historicoPrecioVentaRepository,
-                               HistoricoPrecioCompraRepository historicoPrecioCompraRepository) {
+                               HistoricoPrecioCompraRepository historicoPrecioCompraRepository,
+                               ImagenProductoRepository imagenProductoRepository) {
         super(productoRepository);
         this.productoRepository = productoRepository;
         this.stockRepository = stockRepository;
         this.historicoPrecioVentaRepository = historicoPrecioVentaRepository;
         this.historicoPrecioCompraRepository = historicoPrecioCompraRepository;
+        this.imagenProductoRepository = imagenProductoRepository;
     }
 
+
+    //Guardar un producto (CREAR)
     @Override
     @Transactional
     public Producto crearProductoCompleto(Producto producto, Set<Stock> stock,
-                                          Double precioVentaInicial, Double precioCompraInicialOpcional) {
+                                          Double precioVentaInicial, Double precioCompraInicialOpcional,
+                                          List<String> imagenesBase64) {
 
         // Guardamos el producto
         Producto productoGuardado = productoRepository.save(producto);
@@ -48,6 +48,16 @@ public class ProductoServiceImpl extends MasterServiceImpl<Producto, Long> imple
             s.setProducto(productoGuardado);
         }
         stockRepository.saveAll(stock);
+
+        // Creamos y guardamos las imágenes
+        if (imagenesBase64 != null) {
+            for (String base64 : imagenesBase64) {
+                ImagenProducto imagen = new ImagenProducto();
+                imagen.setProducto(productoGuardado);
+                imagen.setDenominacion(base64);  // aquí guardas la cadena base64 directamente
+                imagenProductoRepository.save(imagen);
+            }
+        }
 
         // Creamos precio de venta inicial
         HistoricoPrecioVenta precioVenta = new HistoricoPrecioVenta();
