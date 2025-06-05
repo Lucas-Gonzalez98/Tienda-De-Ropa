@@ -25,5 +25,13 @@ public class Producto extends Master {
     @JsonManagedReference
     private Set<ImagenProducto> imagenes = new HashSet<>();
 
+
+    //Esto es para realizar un pedido
+    @Transient
+    private Color color;
+
+    @Transient
+    private Talle talle;
+
 }
 

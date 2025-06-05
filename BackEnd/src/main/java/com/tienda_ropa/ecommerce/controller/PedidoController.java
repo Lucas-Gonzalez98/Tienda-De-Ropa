@@ -25,5 +25,16 @@ public class PedidoController extends MasterController<Pedido, Long> {
         return ResponseEntity.ok(pedidoService.getByClienteId(clienteId));
     }
 
+    //Realizar un pedido.
+    @PostMapping("/realizar/{clienteId}/{domicilioId}")
+    public ResponseEntity<Pedido> realizarPedido(
+            @RequestBody Pedido pedido,
+            @PathVariable Long clienteId,
+            @PathVariable Long domicilioId
+    ) {
+        Pedido nuevo = pedidoService.realizarPedido(pedido, clienteId, domicilioId);
+        return ResponseEntity.ok(nuevo);
+    }
+
 
 }
