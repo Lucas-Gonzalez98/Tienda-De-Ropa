@@ -16,5 +16,4 @@ public interface StockService extends MasterService<Stock, Long> {
     // cantidad de stock por producto, talle y color)
     int obtenerCantidadStockDisponible(Producto producto, Talle talle, Color color);
 
-
 }

@@ -2,6 +2,7 @@ package com.tienda_ropa.ecommerce.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.tienda_ropa.ecommerce.model.enums.Estado;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,7 +18,9 @@ import java.util.*;
 public class Pedido extends Master {
 
     private LocalDate fecha;
-    private String estado;
+
+    @Enumerated(EnumType.STRING)
+    private Estado estado;
 
     @ManyToOne
     @JoinColumn(name = "cliente_id")
