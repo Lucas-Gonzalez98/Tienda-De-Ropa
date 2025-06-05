@@ -18,12 +18,11 @@ public class PedidoDetalle extends Master {
 
     @ManyToOne
     @JoinColumn(name = "pedido_id")
-    @JsonBackReference
+    @JsonBackReference("pedido-detalle")
     private Pedido pedido;
 
     @ManyToOne
     @JoinColumn(name = "producto_id")
-    @JsonManagedReference
     private Producto producto;
 }
 

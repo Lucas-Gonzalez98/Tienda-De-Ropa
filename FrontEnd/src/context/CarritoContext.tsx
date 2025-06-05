@@ -44,7 +44,6 @@ export function CarritoProvider({ children }: { children: ReactNode }) {
           return {
             ...d,
             cantidad: nuevaCantidad,
-            subTotal: producto.precio * nuevaCantidad, // <--- aquí
           };
         }
         return d;
@@ -70,7 +69,6 @@ const restarDelCarrito = (idProducto: number) => {
           return {
             ...d,
             cantidad: nuevaCantidad,
-            subTotal: nuevaCantidad * d.producto.precio, // <--- aquí
           };
         }
         return d;
@@ -107,6 +105,7 @@ const restarDelCarrito = (idProducto: number) => {
       const ahora = new Date();
       const horaActual = ahora.toTimeString().split(' ')[0];
       console.log("Hora actual:", horaActual);
+      pedido.estado = "PENDIENTE";
       PedidoService.create(pedido)
     } catch (error) {
       console.error(error);

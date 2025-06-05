@@ -28,7 +28,7 @@ public class Pedido extends Master {
     private Cliente cliente;
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @JsonManagedReference("pedido-detalle")
     private Set<PedidoDetalle> detalles = new HashSet<>();
 }
 

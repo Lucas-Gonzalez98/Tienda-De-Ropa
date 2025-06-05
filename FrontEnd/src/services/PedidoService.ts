@@ -15,7 +15,7 @@ class PedidoService {
     }
     async create(articulo: Pedido): Promise<Pedido> {
         try {
-            const res = await fetch(`${API_URL}`, {
+            const res = await fetch(`${API_URL}/realizar/1/2`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(articulo)
