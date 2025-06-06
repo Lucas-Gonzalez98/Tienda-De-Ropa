@@ -20,7 +20,6 @@ public class HistoricoPrecioVenta extends Master {
 
     @ManyToOne
     @JoinColumn(name = "id_producto", nullable = false)
-    @JsonIgnore
     private Producto producto;
 }
 

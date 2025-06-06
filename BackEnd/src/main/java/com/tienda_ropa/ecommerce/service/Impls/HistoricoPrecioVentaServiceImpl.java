@@ -1,7 +1,9 @@
 package com.tienda_ropa.ecommerce.service.Impls;
 
 import com.tienda_ropa.ecommerce.model.HistoricoPrecioVenta;
+import com.tienda_ropa.ecommerce.model.Producto;
 import com.tienda_ropa.ecommerce.repository.HistoricoPrecioVentaRepository;
+import com.tienda_ropa.ecommerce.repository.ProductoRepository;
 import com.tienda_ropa.ecommerce.service.HistoricoPrecioVentaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,25 @@ public class HistoricoPrecioVentaServiceImpl extends MasterServiceImpl<Historico
     public HistoricoPrecioVentaServiceImpl(HistoricoPrecioVentaRepository historicoPrecioVentaRepository) {
         super(historicoPrecioVentaRepository);
         this.historicoPrecioVentaRepository = historicoPrecioVentaRepository;
+    }
+    @Autowired
+    private ProductoRepository productoRepository;
+
+    public HistoricoPrecioVenta crear(HistoricoPrecioVenta historico) {
+        Long productoId = historico.getProducto().getId();
+
+        Producto producto = productoRepository.findById(productoId)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        historico.setProducto(producto); // Producto ahora es una entidad gestionada
+
+        return historicoPrecioVentaRepository.save(historico);
+    }
+
+    @Override
+    public HistoricoPrecioVenta save(HistoricoPrecioVenta historicoPrecioVenta) {
+        historicoPrecioVenta.setProducto(historicoPrecioVenta.getProducto());
+        return historicoPrecioVentaRepository.save(historicoPrecioVenta);
     }
 
     @Override

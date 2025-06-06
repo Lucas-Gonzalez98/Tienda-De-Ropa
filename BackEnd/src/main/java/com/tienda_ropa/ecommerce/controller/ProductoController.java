@@ -31,9 +31,12 @@ public class ProductoController extends MasterController<Producto, Long> {
         // Mapear el producto
         Producto producto = mapper.convertValue(payload.get("producto"), Producto.class);
 
-        // Mapear el stock
-        List<Stock> stockList = mapper.convertValue(payload.get("stock"), new TypeReference<List<Stock>>() {});
-        Set<Stock> stockSet = new HashSet<>(stockList);
+        // Mapear el stock solo si existe en el payload
+        Set<Stock> stockSet = new HashSet<>();
+        if (payload.containsKey("stock") && payload.get("stock") != null) {
+            List<Stock> stockList = mapper.convertValue(payload.get("stock"), new TypeReference<List<Stock>>() {});
+            stockSet.addAll(stockList);
+        }
 
         // Mapear los precios
         Double precioVenta = Double.valueOf(payload.get("precioVenta").toString());
@@ -42,12 +45,16 @@ public class ProductoController extends MasterController<Producto, Long> {
             precioCompra = Double.valueOf(payload.get("precioCompra").toString());
         }
 
-        // Mapear las imágenes en base64
-        List<String> imagenesBase64 = mapper.convertValue(payload.get("imagenes"), new TypeReference<List<String>>() {});
+        // Mapear imágenes solo si existen
+        List<String> imagenesBase64 = new ArrayList<>();
+        if (payload.containsKey("imagenes") && payload.get("imagenes") != null) {
+            imagenesBase64 = mapper.convertValue(payload.get("imagenes"), new TypeReference<List<String>>() {});
+        }
 
         Producto creado = productoService.crearProductoCompleto(producto, stockSet, precioVenta, precioCompra, imagenesBase64);
         return ResponseEntity.ok(creado);
     }
+
     /*
     {
       "producto": {

@@ -10,6 +10,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/historico-precio-ventas")
+@CrossOrigin(origins ="*")
 public class HistoricoPrecioVentaController extends MasterController<HistoricoPrecioVenta, Long> {
 
     private final HistoricoPrecioVentaService historicoPrecioVentaService;
