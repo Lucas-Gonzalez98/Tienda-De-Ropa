@@ -46,14 +46,22 @@ public class ClienteServiceImpl extends MasterServiceImpl<Cliente, Long> impleme
         
         try {
             // 1. Manejar Teléfono
-            if (cliente.getTelefono() != null) {
-                // Si el teléfono no tiene ID, es nuevo
-                if (cliente.getTelefono().getId() == null) {
-                    Telefono telefonoGuardado = telefonoRepository.save(cliente.getTelefono());
+            if (cliente.getTelefono() != null && cliente.getTelefono().getNumero() != null) {
+                String numeroTelefono = cliente.getTelefono().getNumero().trim();
+
+                Optional<Telefono> telefonoExistente = telefonoRepository.findByNumero(numeroTelefono);
+
+                if (telefonoExistente.isPresent()) {
+                    logger.info("Teléfono ya existe. Asociando con ID: {}", telefonoExistente.get().getId());
+                    cliente.setTelefono(telefonoExistente.get());
+                } else {
+                    Telefono nuevoTelefono = cliente.getTelefono();
+                    Telefono telefonoGuardado = telefonoRepository.save(nuevoTelefono);
                     cliente.setTelefono(telefonoGuardado);
-                    logger.info("Teléfono guardado con ID: {}", telefonoGuardado.getId());
+                    logger.info("Teléfono nuevo guardado con ID: {}", telefonoGuardado.getId());
                 }
             }
+
 
             // 2. Manejar Usuario
             if (cliente.getUsuario() != null) {
