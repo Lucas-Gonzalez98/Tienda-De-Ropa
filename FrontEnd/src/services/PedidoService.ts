@@ -6,22 +6,22 @@ class PedidoService {
     async getAll(): Promise<Pedido[]> {
         try {
             const res = await fetch(`${API_URL}`);
-            if (!res.ok) throw new Error("Error al obtener productos");
+            if (!res.ok) throw new Error("Error al obtener los pedido");
             return await res.json();
         } catch (error) {
             console.error(error);
             throw error;
         }
     }
-    async create(articulo: Pedido): Promise<Pedido> {
+    async create(pedido: Pedido): Promise<Pedido> {
         try {
-            const res = await fetch(`${API_URL}/realizar/1/2`, {
+            const res = await fetch(`${API_URL}/realizar/${pedido.cliente.id}/${pedido.cliente.domicilios[0].id}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(articulo)
+                body: JSON.stringify(pedido)
             });
-            console.log(JSON.stringify(articulo));
-            if (!res.ok) throw new Error("Error al crear artículo manufacturado");
+            console.log(JSON.stringify(pedido));
+            if (!res.ok) throw new Error("Error al crear el pedido");
             return await res.json();
         } catch (error) {
             console.error(error);
