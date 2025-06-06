@@ -13,7 +13,7 @@ import TallesService from "../../services/TallesService";
 import Color from "../../models/Color";
 import Talle from "../../models/Talle";
 import ColorService from "../../services/ColorService";
-import HistoricoPrecioventaService from "../../services/HistoricoPrecioventaService";
+import HistoricoPrecioventaService from "../../services/HistoricoPrecioVentaService";
 
 function DetalleProducto() {
   const carritoCtx = useCarrito();
@@ -42,14 +42,18 @@ function DetalleProducto() {
         setImagenSeleccionada(productoData.imagenes?.[0] || null);
         setTalles(tallesData);
         setColores(coloresData);
-          const historico = await HistoricoPrecioventaService.ultimoById(productoData );
+        if (productoData.id){
+          const historico = await HistoricoPrecioventaService.ultimoById(productoData.id);
           setPrecioHistorico(historico.precio);
+        }
         // Consultar stock para cada combinación
         const stockTemp: Record<string, number> = {};
         for (const color of coloresData) {
           for (const talle of tallesData) {
-            const cantidad = await StockService.consultarStock(productoData.id, talle.id, color.id);
-            stockTemp[`${color.id}-${talle.id}`] = cantidad;
+            if (productoData.id){
+              const cantidad = await StockService.consultarStock(productoData.id, talle.id, color.id);
+              stockTemp[`${color.id}-${talle.id}`] = cantidad;
+            }
           }
         }
         setStockMap(stockTemp);

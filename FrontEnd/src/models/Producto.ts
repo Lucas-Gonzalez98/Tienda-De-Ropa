@@ -5,13 +5,13 @@ import type Promocion from "./Promocion";
 import type Talle from "./Talle";
 
 export default class Pedido {
-    id!: number;
+    id?: number;
     nombre: string = "";
     descripcion: string = "";
-    imagenes?: ImagenProducto[];
-    categorias?: Categoria[];
+    imagenes!: ImagenProducto[];
     talle?: Talle;
-    color?: Color;
-    detallePromocion?: Promocion
+    color?: Color;  
+    precio?: number;
+    categorias!: Categoria[];
     eliminado!: boolean;
 }

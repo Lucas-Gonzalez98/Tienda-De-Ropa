@@ -1,5 +1,4 @@
 import HistoricoPrecioVenta from "../models/HistoricoPrecioVenta";
-import type Producto from "../models/Producto";
 
 const API_URL = "http://localhost:8080/api/historico-precio-ventas";
 
@@ -15,10 +14,26 @@ class HistoricoPrecioVentaService {
         }
     }
 
-    async ultimoById(producto: Producto): Promise<HistoricoPrecioVenta> {
+    async ultimoById(id: number): Promise<HistoricoPrecioVenta> {
         try {
-            const res = await fetch(`${API_URL}/ultimo/${producto.id}`);
+            const res = await fetch(`${API_URL}/ultimo/${id}`);
             if (!res.ok) throw new Error("Error al obtener productos");
+            return await res.json();
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
+    async create(historico: HistoricoPrecioVenta): Promise<HistoricoPrecioVenta> {
+        try {
+            const res = await fetch(`${API_URL}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(historico)
+            });
+            console.log(JSON.stringify(historico));
+            if (!res.ok) throw new Error("Error al crear la Categoria");
             return await res.json();
         } catch (error) {
             console.error(error);

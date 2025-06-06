@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Producto from "../../models/Producto";
 import "../../styles/productocard.css"; // Import your CSS styles
-import HistoricoPrecioventaService from "../../services/HistoricoPrecioventaService";
+import HistoricoPrecioventaService from "../../services/HistoricoPrecioVentaService";
 interface Props {
   producto: Producto;
 }
@@ -16,8 +16,12 @@ const CardProducto: React.FC<Props> = ({ producto }) => {
       if (!producto) return;
 
       try {
-        const historico = await HistoricoPrecioventaService.ultimoById(producto);
-        setPrecioHistorico(historico.precio);
+        if (producto.id){
+          const historico = await HistoricoPrecioventaService.ultimoById(producto.id);
+          setPrecioHistorico(historico.precio);
+        }else{
+          setPrecioHistorico(0)
+        }
       } catch (error) {
         console.error("Error al obtener el precio histórico", error);
         setPrecioHistorico(null);

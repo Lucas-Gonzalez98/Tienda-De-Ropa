@@ -17,8 +17,8 @@ import { CarritoProvider } from './context/CarritoContext.tsx'
 
 function App() {
   return (
-    <CarritoProvider>
     <AuthProvider>
+    <CarritoProvider>
       <Navbar/>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -70,8 +70,8 @@ function App() {
         <Route path="*" element={<Home />} />
       </Routes>
       <Footer/>
-    </AuthProvider>
     </CarritoProvider>
+    </AuthProvider>
   )
 }
 
