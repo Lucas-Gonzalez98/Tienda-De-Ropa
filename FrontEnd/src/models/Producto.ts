@@ -1,14 +1,17 @@
+import type Categoria from "./Categoria";
 import type Color from "./Color";
 import type ImagenProducto from "./ImagenProducto";
+import type Promocion from "./Promocion";
 import type Talle from "./Talle";
 
 export default class Pedido {
     id!: number;
     nombre: string = "";
     descripcion: string = "";
-    precio: number = 0;
-    imagenes!: ImagenProducto[];
+    imagenes?: ImagenProducto[];
+    categorias?: Categoria[];
     talle?: Talle;
     color?: Color;
+    detallePromocion?: Promocion
     eliminado!: boolean;
 }

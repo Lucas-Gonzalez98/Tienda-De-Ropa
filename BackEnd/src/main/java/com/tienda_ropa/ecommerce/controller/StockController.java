@@ -60,5 +60,15 @@ public class StockController extends MasterController<Stock, Long> {
 
         return ResponseEntity.ok(cantidadDisponible);
     }
+    // actualizar la cantidad de stock
+    @PutMapping("/actualizar")
+    public ResponseEntity<Stock> actualizarCantidad(
+            @RequestParam Long idProducto,
+            @RequestParam Long idColor,
+            @RequestParam Long idTalle,
+            @RequestParam Integer cantidad
+    ) {
+        return ResponseEntity.ok(stockService.actualizarCantidad(idProducto, idColor, idTalle, cantidad));
+    }
 
 }

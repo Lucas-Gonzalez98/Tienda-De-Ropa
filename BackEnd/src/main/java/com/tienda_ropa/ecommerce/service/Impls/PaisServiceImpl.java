@@ -14,4 +14,6 @@ public class PaisServiceImpl extends MasterServiceImpl<Pais, Long> implements Pa
         super(paisRepository);
     }
 
+
+
 }

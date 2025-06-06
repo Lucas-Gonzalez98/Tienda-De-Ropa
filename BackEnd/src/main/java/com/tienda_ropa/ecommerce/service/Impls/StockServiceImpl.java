@@ -6,6 +6,7 @@ import com.tienda_ropa.ecommerce.model.Stock;
 import com.tienda_ropa.ecommerce.model.Talle;
 import com.tienda_ropa.ecommerce.repository.StockRepository;
 import com.tienda_ropa.ecommerce.service.StockService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -37,5 +38,15 @@ public class StockServiceImpl extends MasterServiceImpl<Stock, Long> implements 
     @Override
     public int obtenerCantidadStockDisponible(Producto producto, Talle talle, Color color) {
         return stockRepository.obtenerCantidadStockDisponible(producto, talle, color);
+    }
+
+    // actualizar stock para una combinación
+    @Override
+    @Transactional
+    public Stock actualizarCantidad(Long idProducto, Long idColor, Long idTalle, Integer nuevaCantidad) {
+        Stock stock = stockRepository.findStockDisponible(idProducto, idColor, idTalle)
+                .orElseThrow(() -> new RuntimeException("Stock no encontrado para la combinación"));
+        stock.setCantidad(nuevaCantidad);
+        return stockRepository.save(stock);
     }
 }
