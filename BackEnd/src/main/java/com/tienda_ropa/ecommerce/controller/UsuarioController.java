@@ -28,6 +28,14 @@ public class UsuarioController extends MasterController<Usuario, Long> {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/email/{email}")
+    public ResponseEntity<Usuario> getByEmail(@PathVariable String email) {
+        return usuarioService.findByEmail(email)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+
     @Autowired
     private FirebaseUserService firebaseUserService;
 

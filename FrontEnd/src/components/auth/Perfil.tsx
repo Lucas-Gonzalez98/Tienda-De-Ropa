@@ -8,6 +8,7 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { useState } from 'react';
 import axios from 'axios';
+import {obtenerUsuarioPorEmail} from "../../services/UsuarioService.ts";
 
 
 function Perfil() {
@@ -16,10 +17,18 @@ function Perfil() {
     const [showModal, setShowModal] = useState(false);
     const [newEmail1, setNewEmail1] = useState('');
     const [newEmail2, setNewEmail2] = useState('');
+
+    const [email1Error, setEmail1Error] = useState('');
+    const [email2Error, setEmail2Error] = useState('');
+
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
+    const [success, setSuccess] = useState('')
 
+    const esEmailValido = (email: string): boolean => {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(email);
+    };
     const handleCerrarSesion = async () => {
         if (window.confirm("¿Seguro que quieres cerrar sesion?")){
         await logout();
@@ -27,12 +36,63 @@ function Perfil() {
         }
     };
 
+    const handleNewEmail1Change = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setNewEmail1(value);
+        setEmail1Error('');
+
+        if (!esEmailValido(value)) {
+            setEmail1Error('Ingresá un email válido');
+            return;
+        }
+
+        if (value === usuario.email) {
+            setEmail1Error('Este ya es tu email actual');
+            return;
+        }
+
+        try {
+            const usuarioExistente = await obtenerUsuarioPorEmail(value);
+            if (usuarioExistente) {
+                setEmail1Error('El email ya está en uso');
+            }
+        } catch (err) {
+            console.error("Error verificando email:", err);
+        }
+    };
+
+    const handleNewEmail2Change = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setNewEmail2(value);
+        setEmail2Error('');
+
+        if (newEmail1 && value !== newEmail1) {
+            setEmail2Error('Los emails no coinciden');
+        }
+    };
+
+
     const handleEmailChange = async () => {
         setError('');
         setSuccess('');
 
+        if (!newEmail1 || !newEmail2) {
+            setError('Completá ambos campos de email.');
+            return;
+        }
+
+        if (!esEmailValido(newEmail1)) {
+            setEmail1Error('Ingresá un email válido');
+            return;
+        }
+
         if (newEmail1 !== newEmail2) {
-            setError('Los correos no coinciden.');
+            setEmail2Error('Los emails no coinciden');
+            return;
+        }
+
+        if (email1Error || email2Error) {
+            setError('Revisá los campos con error.');
             return;
         }
 
@@ -138,19 +198,29 @@ function Perfil() {
                             <Form.Control
                                 type="email"
                                 value={newEmail1}
-                                onChange={(e) => setNewEmail1(e.target.value)}
+                                onChange={handleNewEmail1Change}
                                 placeholder="Ingresá tu nuevo email"
+                                isInvalid={!!email1Error}
                             />
+                            <Form.Control.Feedback type="invalid">
+                                {email1Error}
+                            </Form.Control.Feedback>
                         </Form.Group>
+
                         <Form.Group>
                             <Form.Label>Repetir Email</Form.Label>
                             <Form.Control
                                 type="email"
                                 value={newEmail2}
-                                onChange={(e) => setNewEmail2(e.target.value)}
+                                onChange={handleNewEmail2Change}
                                 placeholder="Repetí tu nuevo email"
+                                isInvalid={!!email2Error}
                             />
+                            <Form.Control.Feedback type="invalid">
+                                {email2Error}
+                            </Form.Control.Feedback>
                         </Form.Group>
+
                         <Form.Group className="mt-3">
                             <Form.Label>Contraseña actual</Form.Label>
                             <Form.Control

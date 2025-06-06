@@ -54,6 +54,7 @@ dependencies {
     // WebClient (para llamadas API REST)
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
+
     // Firebase
     implementation 'com.google.firebase:firebase-admin:9.2.0' // o la última
 
