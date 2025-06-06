@@ -118,8 +118,8 @@ public class ProductoServiceImpl extends MasterServiceImpl<Producto, Long> imple
         existente.getImagenes().addAll(imagenes);
 
         // Precios
-        Double nuevoPrecioVenta = Double.valueOf(payload.get("precioVenta").toString());
-        Double nuevoPrecioCompra = Double.valueOf(payload.get("precioCompra").toString());
+        Double nuevoPrecioVenta = Double.valueOf(payload.get("precio").toString());
+        Double nuevoPrecioCompra = Double.valueOf(payload.get("precio").toString());
 
         // Guardar solo si cambia
         boolean cambiarVenta = existente.getId() == null ||
@@ -147,11 +147,11 @@ public class ProductoServiceImpl extends MasterServiceImpl<Producto, Long> imple
 
 
     private boolean existePrecioVenta(Producto producto, Double precio) {
-        return historicoPrecioVentaRepository.existsByProductoIdAndPrecioVenta(producto.getId(), precio);
+        return historicoPrecioVentaRepository.existsByProductoIdAndPrecio(producto.getId(), precio);
     }
 
     private boolean existePrecioCompra(Producto producto, Double precio) {
-        return historicoPrecioCompraRepository.existsByProductoIdAndPrecioCompra(producto.getId(), precio);
+        return historicoPrecioCompraRepository.existsByProductoIdAndPrecio(producto.getId(), precio);
     }
 
 

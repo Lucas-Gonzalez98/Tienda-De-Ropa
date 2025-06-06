@@ -16,5 +16,5 @@ public interface HistoricoPrecioVentaRepository extends MasterRepository<Histori
     List<HistoricoPrecioVenta> findAllByProductoIdAndEliminadoFalseOrderByFechaDesc(Long productoId);
 
     //para el update de producto
-    boolean existsByProductoIdAndPrecioVenta(Long productoId, Double precioVenta);
+    boolean existsByProductoIdAndPrecio(Long productoId, Double precio);
 }
