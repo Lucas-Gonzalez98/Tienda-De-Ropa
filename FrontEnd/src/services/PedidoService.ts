@@ -28,6 +28,24 @@ class PedidoService {
             throw error;
         }
     }
+    async getByCliente(clienteId: number): Promise<Pedido[]> {
+        const res = await fetch(`${API_URL}/cliente/${clienteId}`);
+        if (!res.ok) throw new Error("Error al obtener pedidos del cliente");
+        return await res.json();
+    }
+
+    async getPedidosFiltrados(clienteId: number, estado?: string, fechaDesde?: string, fechaHasta?: string): Promise<Pedido[]> {
+        const params = new URLSearchParams();
+        if (clienteId) params.append('clienteId', clienteId.toString());
+        if (estado) params.append('estado', estado);
+        if (fechaDesde) params.append('fechaDesde', fechaDesde);
+        if (fechaHasta) params.append('fechaHasta', fechaHasta);
+
+        const res = await fetch(`${API_URL}/filtro?${params.toString()}`);
+        if (!res.ok) throw new Error("Error al filtrar pedidos");
+        return await res.json();
+    }
+
 }
 
 export default new PedidoService();

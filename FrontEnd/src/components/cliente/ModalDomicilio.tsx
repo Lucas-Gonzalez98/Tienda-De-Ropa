@@ -7,7 +7,7 @@ import {
     Pais,
     Provincia,
     Localidad
-} from "../../services/LocalizacionApi";
+} from "../../services/LocalizacionApi.ts";
 import {useAuth} from "../../context/AuthContext.tsx";
 
 interface Props {

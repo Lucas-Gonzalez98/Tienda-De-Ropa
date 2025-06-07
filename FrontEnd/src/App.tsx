@@ -9,7 +9,8 @@ import {AuthProvider, useAuth} from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import FormProducto from './components/articulos/FormProductos.tsx'
 import FormCategoria from './components/articulos/FormCategoria.tsx'
-import Domicilios from "./components/auth/Domicilios.tsx";
+import Domicilios from "./components/cliente/Domicilios.tsx";
+import PedidoCliente from "./components/cliente/PedidoCliente.tsx";
 import DetalleProducto from './components/articulos/DetalleProducto.tsx'
 import { Carrito } from './components/articulos/Carrito.tsx'
 import { CarritoProvider } from './context/CarritoContext.tsx'
@@ -45,7 +46,7 @@ function App() {
 
         <Route path="/pedidos" element={
           <ProtectedRoute clientOnly={true}>
-            <Perfil /> {/* o el componente correcto de pedidos si tenés otro */}
+            <PedidoCliente /> {/* o el componente correcto de pedidos si tenés otro */}
           </ProtectedRoute>
         } />
 
