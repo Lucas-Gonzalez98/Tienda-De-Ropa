@@ -38,18 +38,78 @@ public class ProductoServiceImpl extends MasterServiceImpl<Producto, Long> imple
     }
 
 
+
+
+    //Editar un Producto
+    @Override
+    @Transactional
+    public Producto editarProducto(Long id, Producto modificado) {
+        Producto existente = productoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        // Cambios básicos
+        existente.setNombre(modificado.getNombre());
+        existente.setDescripcion(modificado.getDescripcion());
+
+        // Categorías
+        if (modificado.getCategorias() != null) {
+            Set<Categoria> categorias = modificado.getCategorias().stream()
+                    .map(cat -> {
+                        Categoria c = new Categoria();
+                        c.setId(cat.getId());
+                        return c;
+                    }).collect(Collectors.toSet());
+            existente.setCategorias(categorias);
+        }
+
+        // Imágenes
+        if (modificado.getImagenes() != null) {
+            Set<ImagenProducto> imagenes = modificado.getImagenes().stream()
+                    .map(img -> {
+                        ImagenProducto imagen = new ImagenProducto();
+                        imagen.setDenominacion(img.getDenominacion());
+                        imagen.setProducto(existente);
+                        return imagen;
+                    }).collect(Collectors.toSet());
+
+            existente.getImagenes().clear();
+            existente.getImagenes().addAll(imagenes);
+        }
+
+        // Precio de venta (si cambió)
+        Optional<Double> nuevoPrecioOpt = modificado.getHistoricoPreciosVenta()
+                .stream().map(HistoricoPrecioVenta::getPrecio).findFirst();
+
+        if (nuevoPrecioOpt.isPresent()) {
+            Double nuevoPrecio = nuevoPrecioOpt.get();
+            Optional<HistoricoPrecioVenta> ultimoPrecioOpt = existente.getHistoricoPreciosVenta()
+                    .stream().max(Comparator.comparing(HistoricoPrecioVenta::getFecha));
+
+            if (ultimoPrecioOpt.isEmpty() || !ultimoPrecioOpt.get().getPrecio().equals(nuevoPrecio)) {
+                HistoricoPrecioVenta nuevoHist = new HistoricoPrecioVenta();
+                nuevoHist.setFecha(LocalDateTime.now());
+                nuevoHist.setPrecio(nuevoPrecio);
+                nuevoHist.setProducto(existente);
+                existente.getHistoricoPreciosVenta().add(nuevoHist);
+            }
+        }
+        return productoRepository.save(existente);
+    }
+
+
+    /*
     //Guardar un producto (CREAR)
     @Override
     @Transactional
     public Producto crearProducto(Producto producto, Set<Stock> stock,
-                                          Double precioVentaInicial, Double precioCompraInicialOpcional,
-                                          List<String> imagenesBase64) {
+                                  Double precioVentaInicial, Double precioCompraInicialOpcional,
+                                  List<String> imagenesBase64) {
 
         // Guardamos el producto
         Producto productoGuardado = productoRepository.save(producto);
 
         // Asociamos y guardamos el stock
-        if(stock != null){
+        if (stock != null) {
             for (Stock s : stock) {
                 s.setProducto(productoGuardado);
             }
@@ -63,88 +123,8 @@ public class ProductoServiceImpl extends MasterServiceImpl<Producto, Long> imple
         precioVenta.setFecha(LocalDateTime.now());
         historicoPrecioVentaRepository.save(precioVenta);
 
-        // Si hay precio de compra, lo registramos también
-        if (precioCompraInicialOpcional != null) {
-            HistoricoPrecioCompra precioCompra = new HistoricoPrecioCompra();
-            precioCompra.setProducto(productoGuardado);
-            precioCompra.setPrecio(precioCompraInicialOpcional);
-            precioCompra.setFecha(LocalDateTime.now());
-            historicoPrecioCompraRepository.save(precioCompra);
-        }
-
         return productoGuardado;
     }
 
-    //Editar un Producto
-    @Override
-    @Transactional
-    public Producto editarProducto(Long id, Map<String, Object> payload) {
-        Producto existente = productoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
-
-        // Mapear cambios básicos
-        Producto modificado = mapper.convertValue(payload.get("producto"), Producto.class);
-        existente.setNombre(modificado.getNombre());
-        existente.setDescripcion(modificado.getDescripcion());
-
-        // Categorías
-        List<Map<String, Object>> categoriasPayload = (List<Map<String, Object>>) payload.get("categorias");
-        Set<Categoria> categorias = categoriasPayload.stream()
-                .map(cat -> {
-                    Categoria categoria = new Categoria();
-                    categoria.setId(Long.valueOf(cat.get("id").toString()));
-                    return categoria;
-                }).collect(Collectors.toSet());
-        existente.setCategorias(categorias);
-
-        // Imágenes
-        List<Map<String, Object>> imagenesPayload = (List<Map<String, Object>>) payload.get("imagenes");
-        Set<ImagenProducto> imagenes = imagenesPayload.stream()
-                .map(img -> {
-                    ImagenProducto imagen = new ImagenProducto();
-                    imagen.setDenominacion(img.get("denominacion").toString());
-                    imagen.setProducto(existente);
-                    return imagen;
-                }).collect(Collectors.toSet());
-        existente.getImagenes().clear();
-        existente.getImagenes().addAll(imagenes);
-
-        // Precios
-        Double nuevoPrecioVenta = Double.valueOf(payload.get("precio").toString());
-        Double nuevoPrecioCompra = Double.valueOf(payload.get("precio").toString());
-
-        // Guardar solo si cambia
-        boolean cambiarVenta = existente.getId() == null ||
-                existente.getId() != null && (!existePrecioVenta(existente, nuevoPrecioVenta));
-        boolean cambiarCompra = existente.getId() == null ||
-                existente.getId() != null && (!existePrecioCompra(existente, nuevoPrecioCompra));
-
-        if (cambiarVenta) {
-            HistoricoPrecioVenta hventa = new HistoricoPrecioVenta();
-            hventa.setPrecio(nuevoPrecioVenta);
-            hventa.setFecha(LocalDateTime.now());
-            hventa.setProducto(existente);
-            existente.getDetalles().clear(); // por precaución
-        }
-
-        if (cambiarCompra) {
-            HistoricoPrecioCompra hcompra = new HistoricoPrecioCompra();
-            hcompra.setPrecio(nuevoPrecioCompra);
-            hcompra.setFecha(LocalDateTime.now());
-            hcompra.setProducto(existente);
-        }
-
-        return productoRepository.save(existente);
-    }
-
-
-    private boolean existePrecioVenta(Producto producto, Double precio) {
-        return historicoPrecioVentaRepository.existsByProductoIdAndPrecio(producto.getId(), precio);
-    }
-
-    private boolean existePrecioCompra(Producto producto, Double precio) {
-        return historicoPrecioCompraRepository.existsByProductoIdAndPrecio(producto.getId(), precio);
-    }
-
-
+     */
 }

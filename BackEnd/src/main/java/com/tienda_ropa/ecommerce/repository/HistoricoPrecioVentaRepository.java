@@ -1,6 +1,7 @@
 package com.tienda_ropa.ecommerce.repository;
 
 import com.tienda_ropa.ecommerce.model.HistoricoPrecioVenta;
+import com.tienda_ropa.ecommerce.model.Producto;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
@@ -17,4 +18,6 @@ public interface HistoricoPrecioVentaRepository extends MasterRepository<Histori
 
     //para el update de producto
     boolean existsByProductoIdAndPrecio(Long productoId, Double precio);
+
+    Optional<HistoricoPrecioVenta> findTopByProductoOrderByFechaDesc(Producto producto);
 }

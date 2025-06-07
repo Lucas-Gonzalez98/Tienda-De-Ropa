@@ -7,12 +7,14 @@ import java.util.*;
 
 public interface ProductoService extends MasterService<Producto, Long> {
 
-
+    /*
     //Guardar un producto (CREAR)
     Producto crearProducto(Producto producto, Set<Stock> stock,
                                    Double precioVentaInicial, Double precioCompraInicialOpcional,
                                    List<String> imagenesBase64);
 
+
+     */
     //Editar un producto (solo su Categoria, precios, y caracteristicas)
-    Producto editarProducto(Long id, Map<String, Object> payload);
+    Producto editarProducto(Long id, Producto producto);
 }

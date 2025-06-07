@@ -22,5 +22,12 @@ public class ProductoController extends MasterController<Producto, Long> {
         this.productoService = productoService;
     }
 
+    @PutMapping("/{id}/editar")
+    public ResponseEntity<Producto> editarProducto(@PathVariable Long id, @RequestBody Producto producto) {
+        Producto actualizado = productoService.editarProducto(id, producto);
+        return ResponseEntity.ok(actualizado);
+    }
+
+
 
 }
