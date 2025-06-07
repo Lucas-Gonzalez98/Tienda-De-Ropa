@@ -1,5 +1,6 @@
 package com.tienda_ropa.ecommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.tienda_ropa.ecommerce.model.enums.Estado;
@@ -24,8 +25,12 @@ public class Pedido extends Master {
 
     @ManyToOne
     @JoinColumn(name = "cliente_id")
-    @JsonIgnore
+    @JsonBackReference("cliente-pedido")
     private Cliente cliente;
+
+    @ManyToOne
+    @JoinColumn(name = "domicilio_id", nullable = false)
+    private Domicilio domicilio;
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference("pedido-detalle")

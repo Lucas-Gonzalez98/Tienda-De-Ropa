@@ -52,17 +52,31 @@ public class PedidoServiceImpl extends MasterServiceImpl<Pedido, Long> implement
         return pedidoRepository.findByClienteIdAndEliminadoFalse(clienteId);
     }
 
-    //Realizar un pedido
     @Override
     @Transactional
     public Pedido realizarPedido(Pedido pedido, Long clienteId, Long domicilioId) {
         Cliente cliente = clienteRepository.findById(clienteId)
                 .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
 
-        Domicilio domicilio = domicilioRepository.findById(domicilioId)
-                .orElseThrow(() -> new EntityNotFoundException("Domicilio no encontrado"));
+        // Asociar domicilio existente o guardar uno nuevo
+        Domicilio domicilio;
+
+        if (domicilioId != null) {
+            domicilio = domicilioRepository.findById(domicilioId)
+                    .orElseThrow(() -> new EntityNotFoundException("Domicilio no encontrado"));
+        } else if (pedido.getDomicilio() != null) {
+            // Verificar si ya existe uno igual (opcional: comparación por calle, número y código postal)
+            domicilio = domicilioRepository.save(pedido.getDomicilio());
+
+            // Opcional: agregar domicilio nuevo al cliente si corresponde
+            cliente.getDomicilios().add(domicilio);
+            clienteRepository.save(cliente);
+        } else {
+            throw new IllegalArgumentException("Debe especificarse un domicilio existente o uno nuevo");
+        }
 
         pedido.setCliente(cliente);
+        pedido.setDomicilio(domicilio);
         pedido.setFecha(LocalDate.now());
         pedido.setEstado(Estado.PENDIENTE);
 
@@ -85,10 +99,10 @@ public class PedidoServiceImpl extends MasterServiceImpl<Pedido, Long> implement
             detalle.setPedido(pedido);
             detalle.setProducto(producto);
 
-            // Precio desde histórico o algún valor actual
             HistoricoPrecioVenta ultimoPrecio = historicoPrecioVentaRepository
                     .findUltimoByProductoId(producto.getId())
                     .orElseThrow(() -> new EntityNotFoundException("No hay precio para producto"));
+
             detalle.setPrecio(ultimoPrecio.getPrecio());
         }
 

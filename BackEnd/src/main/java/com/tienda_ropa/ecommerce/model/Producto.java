@@ -33,6 +33,14 @@ public class Producto extends Master {
     )
     private Set<Categoria> categorias = new HashSet<>();
 
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("producto-historico-venta")
+    private Set<HistoricoPrecioVenta> historicoPreciosVenta = new HashSet<>();
+
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("producto-historico-compra")
+    private Set<HistoricoPrecioCompra> historicoPreciosCompra = new HashSet<>();
+
 
     //Esto es para realizar un pedido
     @Transient

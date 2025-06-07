@@ -60,15 +60,31 @@ public class StockController extends MasterController<Stock, Long> {
 
         return ResponseEntity.ok(cantidadDisponible);
     }
-    // actualizar la cantidad de stock
-    @PutMapping("/actualizar")
-    public ResponseEntity<Stock> actualizarCantidad(
+
+    //Crear nuevo Stock
+    @PostMapping("/crear")
+    public ResponseEntity<Stock> crearStock(
             @RequestParam Long idProducto,
             @RequestParam Long idColor,
             @RequestParam Long idTalle,
-            @RequestParam Integer cantidad
+            @RequestParam Integer cantidad,
+            @RequestParam Double precioCompra
     ) {
-        return ResponseEntity.ok(stockService.actualizarCantidad(idProducto, idColor, idTalle, cantidad));
+        Stock nuevoStock = stockService.crearStock(idProducto, idColor, idTalle, cantidad, precioCompra);
+        return ResponseEntity.ok(nuevoStock);
+    }
+
+    // Actualizar stock existente
+    @PutMapping("/actualizar")
+    public ResponseEntity<Stock> actualizarStock(
+            @RequestParam Long idProducto,
+            @RequestParam Long idColor,
+            @RequestParam Long idTalle,
+            @RequestParam Integer cantidadAdicional,
+            @RequestParam Double nuevoPrecioCompra
+    ) {
+        Stock stockActualizado = stockService.actualizarStock(idProducto, idColor, idTalle, cantidadAdicional, nuevoPrecioCompra);
+        return ResponseEntity.ok(stockActualizado);
     }
 
 }

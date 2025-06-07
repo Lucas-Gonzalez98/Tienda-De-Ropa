@@ -17,4 +17,7 @@ public interface HistoricoPrecioCompraRepository extends MasterRepository<Histor
 
     //para el update de producto
     boolean existsByProductoIdAndPrecio(Long productoId, Double precio);
+
+    //Buscar el ultimo precio compra
+    Optional<HistoricoPrecioCompra> findTopByProductoIdOrderByFechaDesc(Long productoId);
 }

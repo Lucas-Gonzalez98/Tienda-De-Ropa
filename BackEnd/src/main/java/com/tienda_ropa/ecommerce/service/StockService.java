@@ -16,7 +16,9 @@ public interface StockService extends MasterService<Stock, Long> {
     // cantidad de stock por producto, talle y color)
     int obtenerCantidadStockDisponible(Producto producto, Talle talle, Color color);
 
-    // actualizar stock para una combinación
-    Stock actualizarCantidad(Long idProducto, Long idColor, Long idTalle, Integer nuevaCantidad);
+    // actualizar stock para una combinación + historico compra
+    Stock actualizarStock(Long idProducto, Long idColor, Long idTalle, Integer cantidadAdicional, Double nuevoPrecioCompra);
 
+    //crear stock
+    Stock crearStock(Long idProducto, Long idColor, Long idTalle, Integer cantidad, Double precio);
 }
