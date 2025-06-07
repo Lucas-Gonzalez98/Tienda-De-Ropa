@@ -207,7 +207,7 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                 nombre: nombre,
                 apellido: apellido,
                 telefono: {
-                    numero: `+54 ${telefono}`,
+                    numero: telefono,
                     eliminado: false
                 },
                 fechaNacimiento: new Date(fechaNacimiento),

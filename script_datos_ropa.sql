@@ -66,11 +66,11 @@ INSERT INTO `domicilio` (`id`, `eliminado`, `calle`, `codigo_postal`, `numero`, 
 (2, b'0', 'Bahia Blanca', 5500, '3256', 'casa', 1);
 
 -- =========================
--- Tabla: telefono
+-- Tabla: telefono pagina argentina no hacemos envios internacionales
 -- =========================
 INSERT INTO `telefono` (`id`, `eliminado`, `numero`) VALUES
-                                                         (1, b'0', '+54 2615551234'),
-                                                         (2, b'0', '+54 2615355789');
+                                                         (1, b'0', '2615551234'),
+                                                         (2, b'0', '2615355789');
 
 -- =========================
 -- Tabla: usuario

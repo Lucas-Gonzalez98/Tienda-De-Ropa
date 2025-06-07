@@ -9,11 +9,12 @@ import Form from 'react-bootstrap/Form';
 import { useState } from 'react';
 import axios from 'axios';
 import {obtenerUsuarioPorEmail} from "../../services/UsuarioService.ts";
+import type Cliente from "../../models/Cliente.ts";
 
 
 function Perfil() {
     const { userData, usuario, isAdmin, isClient, logout } = useAuth();
-
+// modal email
     const [showModal, setShowModal] = useState(false);
     const [newEmail1, setNewEmail1] = useState('');
     const [newEmail2, setNewEmail2] = useState('');
@@ -24,6 +25,37 @@ function Perfil() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('')
+
+    const [showPersonalModal, setShowPersonalModal] = useState(false);
+    const [nombre, setNombre] = useState(userData.nombre);
+    const [apellido, setApellido] = useState(userData.apellido);
+    const [fechaNacimiento, setFechaNacimiento] = useState(
+        isClient && userData.fechaNacimiento
+            ? userData.fechaNacimiento.split('T')[0]
+            : ''
+    );// para input date
+    const [telefono, setTelefono] = useState(userData.telefono?.numero || '');
+    const [telefonoFormateado, setTelefonoFormateado] = useState(userData.telefono?.numero || '');
+    const [telefonoError, setTelefonoError] = useState('');
+
+
+    const esTelefonoValido = (telefono: string): boolean => {
+        const soloNumeros = telefono.replace(/\D/g, "");
+        return soloNumeros.length === 10;
+    };
+
+
+    const formatearTelefono = (valor: string): string => {
+        // Elimina cualquier cosa que no sea número
+        const soloNumeros = valor.replace(/\D/g, "").slice(0, 10); // máx 10 dígitos
+
+        if (soloNumeros.length <= 3) return soloNumeros;
+        if (soloNumeros.length <= 6) {
+            return `${soloNumeros.slice(0, 3)}-${soloNumeros.slice(3)}`;
+        }
+        return `${soloNumeros.slice(0, 3)}-${soloNumeros.slice(3, 6)}-${soloNumeros.slice(6)}`;
+    };
+
 
     const esEmailValido = (email: string): boolean => {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -158,13 +190,15 @@ function Perfil() {
             <h1 className="perfilTitle d-flex align-items-center flex-column">Mi Perfil</h1>
             <div className="perfilContainer d-flex">
                 <div className="perfilInfo text-start">
-                    <h2 className="perfilInfoTitle">Información Personal</h2>
                     <p className="perfilInfoText">Nombre: {userData.nombre} {userData.apellido}</p>
                     <p className="perfilInfoText">Email: {usuario.email}</p>
 
                     {isClient && (
                         <>
-                            <p className="perfilInfoText">Fecha de Nacimiento: {new Date(userData.fechaNacimiento).toLocaleDateString()}</p>
+                            <p>
+                                Fecha de Nacimiento: {userData.fechaNacimiento.split('T')[0].split('-').reverse().join('/')}
+                            </p>
+
                         </>
                     )}
 
@@ -180,11 +214,16 @@ function Perfil() {
             </div>
 
             <div className="buttons d-flex flex-column justify-content-center align-items-center">
-                <button className="perfilButton">Cambiar datos personales</button>
+                { isClient && (
+                <button className="perfilButton" onClick={() => setShowPersonalModal(true)}>
+                    Cambiar datos personales
+                </button>
+                )}
                 <button className="perfilButton" onClick={() => setShowModal(true)}>Cambiar el Mail</button>
                 <button className="perfilButton" onClick={handleCambiarContrasena}>Cambiar Contraseña</button>
                 <button className="perfilButton" onClick={handleCerrarSesion}>Cerrar Sesión</button>
             </div>
+            {/* modal email */ }
             <Modal show={showModal} onHide={() => setShowModal(false)} centered>
                 <Modal.Header closeButton>
                     <Modal.Title>Cambiar Email</Modal.Title>
@@ -240,6 +279,108 @@ function Perfil() {
                     </Button>
                     <Button variant="primary" onClick={handleEmailChange}>
                         Cambiar Email
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+            {/* modal personal */ }
+
+            <Modal show={showPersonalModal} onHide={() => setShowPersonalModal(false)} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Cambiar Datos Personales</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group>
+                            <Form.Label>Nombre</Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={nombre}
+                                onChange={(e) => setNombre(e.target.value)}
+                            />
+                        </Form.Group>
+
+                        <Form.Group>
+                            <Form.Label>Apellido</Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={apellido}
+                                onChange={(e) => setApellido(e.target.value)}
+                            />
+                        </Form.Group>
+
+                        <Form.Group controlId="fechaNacimiento" className="mb-2">
+                            <div className="d-flex p-1 align-items-end" style={{ width: "100%" }}>
+                                <Form.Label style={{ width: "300px" }}> Fecha de nacimiento: </Form.Label>
+                                <Form.Control
+                                    type="date"
+                                    value={fechaNacimiento}
+                                    onChange={(e) => setFechaNacimiento(e.target.value)}
+                                    max={new Date().toISOString().split("T")[0]}
+                                />
+                            </div>
+                        </Form.Group>
+
+                        <Form.Group controlId="telefono" className="mb-2">
+                            <Form.Control
+                                type="text"
+                                placeholder="Teléfono"
+                                value={telefonoFormateado}
+                                onChange={(e) => {
+                                    const input = e.target.value;
+                                    const soloNumeros = input.replace(/\D/g, "").slice(0, 10); // Solo 10 dígitos
+
+                                    setTelefono(soloNumeros); // Guardamos sin formato
+                                    setTelefonoFormateado(formatearTelefono(soloNumeros)); // Mostramos formateado
+
+                                    // Validamos longitud
+                                    if (soloNumeros.length < 10) {
+                                        setTelefonoError("El número debe tener exactamente 10 dígitos.");
+                                    } else {
+                                        setTelefonoError('');
+                                    }
+                                }}
+                                isInvalid={!!telefonoError}
+
+                            />
+                            <Form.Control.Feedback type="invalid">
+                                {telefonoError}
+                            </Form.Control.Feedback>
+                            <Form.Text className="text-muted">
+                                El número debe tener 10 dígitos, sin el 15 y con el código de área.
+                            </Form.Text>
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowPersonalModal(false)}>
+                        Cancelar
+                    </Button>
+                    <Button
+                        variant="primary"
+                        onClick={async () => {
+                            try {
+                                if (!esTelefonoValido(telefono)) {
+                                    setTelefonoError("El número debe tener exactamente 10 dígitos.");
+                                    return;
+                                }
+
+
+                                await axios.put(`http://localhost:8080/api/cliente/${userData?.id}`, {
+                                    ...userData,
+                                    nombre,
+                                    apellido,
+                                    fechaNacimiento,
+                                    telefono: { ...userData.telefono, numero: telefono }
+                                });
+                                alert('Datos actualizados correctamente');
+                                window.location.reload();
+                            } catch (err) {
+                                alert('Error al actualizar los datos');
+                                console.error(err);
+                            }
+                        } }
+                    >
+                        Guardar Cambios
                     </Button>
                 </Modal.Footer>
             </Modal>

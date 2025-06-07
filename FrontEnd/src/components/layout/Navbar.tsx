@@ -52,7 +52,9 @@ function Navbar() {
         <>
             <nav>
                 <a className='homeNav' href="/"><img className='logoEmpresa' src={IconoEmpresa} alt="Icono Empresa" /><span>M- SHOP</span></a>
+                {!isAdmin && (
                 <Buscador />
+                )}
                 <div className="navButtons">
                     <Link className="nav-link" to="/productos">Tienda</Link>
                     
