@@ -15,6 +15,7 @@ import DetalleProducto from './components/articulos/DetalleProducto.tsx'
 import { Carrito } from './components/articulos/Carrito.tsx'
 import { CarritoProvider } from './context/CarritoContext.tsx'
 import Footer from "./components/layout/Footer.tsx";
+import { FormStock } from './components/articulos/FormStock.tsx'
 
 function App() {
   return (
@@ -65,6 +66,11 @@ function App() {
         <Route path="/fromcategoria" element={
           <ProtectedRoute adminOnly={true}>
             <FormCategoria />
+          </ProtectedRoute>
+        } />
+        <Route path="/fromStock" element={
+          <ProtectedRoute adminOnly={true}>
+            <FormStock />
           </ProtectedRoute>
         } />
         

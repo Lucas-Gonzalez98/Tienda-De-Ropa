@@ -1,7 +1,7 @@
 import type Categoria from "./Categoria";
 import type Color from "./Color";
+import type HistoricoPrecioVenta from "./HistoricoPrecioVenta";
 import type ImagenProducto from "./ImagenProducto";
-import type Promocion from "./Promocion";
 import type Talle from "./Talle";
 
 export default class Pedido {
@@ -12,6 +12,7 @@ export default class Pedido {
     talle?: Talle;
     color?: Color;  
     precio?: number;
+    historicoPreciosVenta!: HistoricoPrecioVenta[];
     categorias!: Categoria[];
     eliminado!: boolean;
 }

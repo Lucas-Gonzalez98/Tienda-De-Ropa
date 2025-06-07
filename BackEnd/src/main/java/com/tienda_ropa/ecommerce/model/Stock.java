@@ -16,7 +16,6 @@ public class Stock extends Master {
 
     @ManyToOne
     @JoinColumn(name = "id_producto", nullable = false)
-    @JsonBackReference
     private Producto producto;
 
     @ManyToOne

@@ -9,7 +9,7 @@ import BotonEliminar from "../layout/BotonEliminar";
 import BotonModificar from "../layout/BotonModificar";
 import BotonAlta from "../layout/BotonAlta";
 import "../../styles/GrillaProductos.css"; // Importar estilos específicos
-import HistoricoPrecioventaService from "../../services/HistoricoPrecioventaService";
+import HistoricoPrecioventaService from "../../services/HistoricoPrecioVentaService";
 type ProductoConPrecio = Producto & { precioHistorico?: number | null };
 
 // ...existing code...
@@ -28,27 +28,27 @@ function GrillaProductos() {
   }, []);
 
   const cargarProductos = async () => {
-  setLoading(true);
-  setError(null);
-  try {
-    const data = await ProductoService.getAll();
-    const productosConPrecios = await Promise.all(
-      data.map(async (prod: Producto) => {
-        try {
-          const historico = await HistoricoPrecioventaService.ultimoById(prod.id);
-          return { ...prod, precioHistorico: historico.precio };
-        } catch (err) {
-          return { ...prod, precioHistorico: null }; // o 0 si preferís
-        }
-      })
-    );
-    setProductos(productosConPrecios);
-  } catch (err) {
-    setError("Error al cargar los productos");
-  } finally {
-    setLoading(false);
-  }
-};
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await ProductoService.getAll();
+      const productosConPrecios = await Promise.all(
+        data.map(async (prod: Producto) => {
+          try {
+            const historico = await HistoricoPrecioventaService.ultimoById(prod.id!);
+            return { ...prod, precioHistorico: historico.precio };
+          } catch (err) {
+            return { ...prod, precioHistorico: null }; // o 0 si preferís
+          }
+        })
+      );
+      setProductos(productosConPrecios);
+    } catch (err) {
+      setError("Error al cargar los productos");
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   const darDeAlta = async (id: number) => {
@@ -81,7 +81,7 @@ function GrillaProductos() {
   setProductoSeleccionado(prod);
   setShowModal(true);
   try {
-    const historico = await HistoricoPrecioventaService.ultimoById(prod.id);
+    const historico = await HistoricoPrecioventaService.ultimoById(prod.id!);
     setPrecioHistorico(historico.precio);
   } catch (e) {
     setPrecioHistorico(null); // o mostrar mensaje de error si querés

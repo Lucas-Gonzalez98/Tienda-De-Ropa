@@ -48,18 +48,12 @@ class ProductoService {
         }
     }
 
-    async create(producto: Producto, precioVentaInicial: number): Promise<any> {
+    async create(producto: Producto): Promise<any> {
         try {
-            const body = {
-                producto,
-                precioVenta: precioVentaInicial,
-                imagenes: producto.imagenes?.map(img => img.denominacion),
-            };
-
-            const res = await fetch(`${API_URL}/crear-producto`, {
+            const res = await fetch(`${API_URL}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body),
+                body: JSON.stringify(producto),
             });
 
             if (!res.ok) throw new Error("Error al crear el Producto");

@@ -16,6 +16,7 @@ function FormProducto() {
     const [precio, setPrecio] = useState<number>(0);
     const [categorias, setCategorias] = useState<Categoria[]>([]);
     const [precioHistorico, setPrecioHistorico] = useState<number>(0);
+    const [historicoPreciosVenta, sethistoricoPreciosVenta] = useState<HistoricoPrecioVenta[]>([]);
     const [eliminado, setEliminado] = useState(false);
     const [searchParams] = useSearchParams();
     const idFromUrl = searchParams.get("id");
@@ -31,6 +32,9 @@ function FormProducto() {
                 HistoricoPrecioventaService.ultimoById(Number(idFromUrl)).then((historico: HistoricoPrecioVenta) => {
                     setPrecio(historico.precio)
                     setPrecioHistorico(historico.precio)
+                })
+                HistoricoPrecioventaService.getAllProductoId(Number(idFromUrl)).then((historicos) => {
+                    sethistoricoPreciosVenta(historicos)
                 })
                 setCategorias(producto.categorias);
                 setEliminado(!!producto.eliminado);
@@ -93,6 +97,7 @@ function FormProducto() {
             nombre,
             descripcion,
             categorias,
+            historicoPreciosVenta,
             eliminado,
             imagenes: imagenesFinales
         };
@@ -104,13 +109,16 @@ function FormProducto() {
                     const historico = new HistoricoPrecioVenta();
                     historico.fecha = new Date();
                     historico.precio = precio;
-                    historico.producto = producto;
-                    await HistoricoPrecioventaService.create(historico)
+                    producto.historicoPreciosVenta = [...historicoPreciosVenta, historico]
                 }
                 await ProductoService.update(Number(idFromUrl), producto);
             } else {
                 console.log("creando", producto)
-                await ProductoService.create(producto, precio);
+                const historico = new HistoricoPrecioVenta();
+                historico.fecha = new Date();
+                historico.precio = precio;
+                producto.historicoPreciosVenta = [historico]
+                await ProductoService.create(producto);
             }
             alert("Producto guardado exitosamente");
             window.location.href = "/admin";

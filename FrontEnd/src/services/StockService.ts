@@ -1,18 +1,34 @@
-import Pedido from "../models/Pedido";
+import type Stock from "../models/Stock";
 
 const API_URL = "http://localhost:8080/api/stock";
 
 class PedidoService {
-    async getAll(): Promise<Pedido[]> {
+    async getAll(): Promise<Stock[]> {
         try {
             const res = await fetch(`${API_URL}`);
-            if (!res.ok) throw new Error("Error al obtener productos");
+            if (!res.ok) throw new Error("Error al obtener los stocks");
             return await res.json();
         } catch (error) {
             console.error(error);
             throw error;
         }
     }
+
+    async create(stock: Stock): Promise<any> {
+        try {
+            const res = await fetch(`${API_URL}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(stock),
+            });
+            if (!res.ok) throw new Error("Error al crear el Stock");
+            return await res.json();  
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
     async consultarStock(productoId: number, talleId: number, colorId: number): Promise<number> {
         try {
             const queryParams = new URLSearchParams({
@@ -36,7 +52,29 @@ class PedidoService {
         }
     }
 
+    async delete(id: number): Promise<void> {
+        try {
+            const res = await fetch(`${API_URL}/${id}`, {
+                method: "DELETE"
+            });
+            if (!res.ok) throw new Error("Error al eliminar la Stock");
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
 
+    async changeEliminado(id: number): Promise<void> {
+        try {
+            const res = await fetch(`${API_URL}/restore/${id}`, {
+                method: "PUT"
+            });
+            if (!res.ok) throw new Error("Error al dar de alta la Stock");
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
 }
 
 export default new PedidoService();

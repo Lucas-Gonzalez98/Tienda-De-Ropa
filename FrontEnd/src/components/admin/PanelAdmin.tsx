@@ -5,6 +5,7 @@ import AdminPanelIcon from '../../assets/admin_panel.svg'; // Importa el SVG
 import GrillaProductos from '../articulos/GrillaProducts';
 import GrillaCategorias from '../articulos/GrillaCategoria';
 import GrillaCliente from "./GrillaCliente.tsx";
+import { GrillaStock } from '../articulos/GrillaStock.tsx';
 
 function PanelAdmin() {
     const [selected, setSelected] = useState('Productos');
@@ -23,6 +24,8 @@ function PanelAdmin() {
                 return <GrillaCliente/>;
             case 'Historicos':
                 return <div>Componente Historicos</div>;
+            case 'Stock':
+                return <GrillaStock/>;
             default:
                 return <div>Bienvenido al panel</div>;
         }
@@ -45,7 +48,7 @@ function PanelAdmin() {
                         </div>
                     </div>
                     <Nav className="flex-column">
-                        {['Productos', 'Categorias', 'Promociones', 'Pedidos', 'Clientes', 'Historicos'].map((item) => (
+                        {['Productos', 'Categorias', 'Promociones', 'Pedidos', 'Clientes', 'Historicos','Stock'].map((item) => (
                             <Nav.Link
                                 key={item}
                                 onClick={() => setSelected(item)}

@@ -14,6 +14,17 @@ class HistoricoPrecioVentaService {
         }
     }
 
+    async getAllProductoId(id: number): Promise<HistoricoPrecioVenta[]> {
+        try {
+            const res = await fetch(`${API_URL}/producto/${id}`);
+            if (!res.ok) throw new Error("Error al obtener productos");
+            return await res.json();
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
     async ultimoById(id: number): Promise<HistoricoPrecioVenta> {
         try {
             const res = await fetch(`${API_URL}/ultimo/${id}`);

@@ -12,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/stock")
+@CrossOrigin(origins = "*")
 public class StockController extends MasterController<Stock, Long> {
 
     private final StockService stockService;
