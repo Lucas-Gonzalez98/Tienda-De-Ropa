@@ -75,6 +75,35 @@ class PedidoService {
             throw error;
         }
     }
+
+    async getById(id: number): Promise<Stock> {
+        try {
+            const res = await fetch(`${API_URL}/${id}`, {
+                method: "GET"
+            });
+            if (!res.ok) throw new Error("Error al dar de alta la Stock");
+            return await res.json()
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
+    async update(id: number, stock: Stock): Promise<Stock> {
+        try {
+            const res = await fetch(`${API_URL}/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(stock)
+            });
+            console.log(JSON.stringify(stock))
+            if (!res.ok) throw new Error("Error al actualizar el stock");
+            return await res.json();
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
 }
 
 export default new PedidoService();

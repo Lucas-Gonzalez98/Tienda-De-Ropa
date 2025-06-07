@@ -8,6 +8,7 @@ import ProductoService from "../../services/ProductoService"
 import { Button } from "react-bootstrap"
 import StockService from "../../services/StockService"
 import Stock from "../../models/Stock"
+import { useSearchParams } from "react-router-dom"
 
 
 export function FormStock(){
@@ -18,21 +19,54 @@ export function FormStock(){
     const [ productos, setProductos ] = useState<Producto[]>([])
     const [ producto, setProducto ] = useState<number | "">(0)
     const [ cantidad, setCantidad ] = useState<number>(0)
+    const [searchParams] = useSearchParams();
+    const idFromUrl = searchParams.get("id");
+
+    const cargarTalles = () =>{
+        TalleService.getAll().then((talles)=>setTalles(talles))
+    }
+    const cargarColores = () =>{
+        ColorService.getAll().then((colores)=>setColores(colores))
+    } 
+    const cargarProductos = () =>{
+        ProductoService.getAll().then((productos)=>setProductos(productos))
+    } 
+    useEffect(()=>{
+        cargarTalles()
+        cargarColores()
+        cargarProductos()
+    },[]);
 
     useEffect(()=>{
-        TalleService.getAll().then((talles)=>setTalles(talles))
-        ColorService.getAll().then((colores)=>setColores(colores))
-        ProductoService.getAll().then((productos)=>setProductos(productos))
-    }),[];
+        if (idFromUrl) {
+        StockService.getById(Number(idFromUrl)).then((sto) => {
+            setCantidad(sto.cantidad);
+            sto.producto.id && setProducto(sto.producto.id);
+            setTalle(sto.talle.id);
+            setColor(sto.color.id);
+        });
+    }
+    },[idFromUrl]);
 
     const Guardar = async () =>{
-        const stock = new Stock()
-        stock.cantidad = cantidad
-        stock.talle = { id: talle } as Talle 
-        stock.color = { id: color } as Color 
-        stock.producto = { id: producto }  as Producto
-        StockService.create(stock);
-        alert("Stock agregado exitosamente");
+        const stockNuevo = new Stock()
+        stockNuevo.cantidad = cantidad
+        stockNuevo.talle = { id: talle } as Talle 
+        stockNuevo.color = { id: color } as Color 
+        stockNuevo.producto = { id: producto }  as Producto
+        StockService.create(stockNuevo);
+        if(idFromUrl){
+            await StockService.update(Number(idFromUrl), stockNuevo);
+            alert("Categoría actualizada correctamente");
+        }else{
+            const stockNuevo = new Stock()
+            stockNuevo.cantidad = cantidad
+            stockNuevo.talle = { id: talle } as Talle 
+            stockNuevo.color = { id: color } as Color 
+            stockNuevo.producto = { id: producto }  as Producto
+            StockService.create(stockNuevo);
+            alert("Stock agregado exitosamente");
+        }
         window.location.href = "/admin";
     }
 
@@ -54,6 +88,7 @@ export function FormStock(){
                 <div>
                     <label>Producto</label>
                     <select
+                        value={producto}
                         onChange={e => setProducto(e.target.value ? Number(e.target.value) : "")}
                         >
                         <option value="">Elija una opcion</option>
@@ -68,6 +103,7 @@ export function FormStock(){
                 <div>
                     <label>Talle</label>
                     <select
+                        value={talle}
                         onChange={e => setTalle(e.target.value ? Number(e.target.value) : "")}
                         >
                         <option value="">Elija una opcion</option>
@@ -82,6 +118,7 @@ export function FormStock(){
                 <div>
                     <label>Color</label>
                     <select
+                        value={color}
                         onChange={e => setColor(e.target.value ? Number(e.target.value) : "")}
                         >
                         <option value="">Elija una opcion</option>
@@ -97,9 +134,9 @@ export function FormStock(){
                     variant="success"
                     className="mt-3"
                     onClick={Guardar}
-                    disabled={cantidad <= 0}
+                    disabled={cantidad <= 0 || producto === "" || talle === "" || color === ""}
                 >
-                    Agregar
+                    {idFromUrl ? "Actualizar" : "Agregar"}
                 </Button>
             </form>
         </>
