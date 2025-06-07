@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { Button, Card, Container, Row, Col } from 'react-bootstrap';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
-import ModalDomicilio from './ModalDomicilio'; // Asegurate que el path sea correcto
+import ModalDomicilio from './ModalDomicilio.tsx'; // Asegurate que el path sea correcto
 
 const Domicilios: React.FC = () => {
     const { userData } = useAuth();

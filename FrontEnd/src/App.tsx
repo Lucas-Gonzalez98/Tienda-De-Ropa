@@ -1,24 +1,25 @@
 import './App.css'
 import Navbar from './components/layout/Navbar'
-import Footer from './components/layout/Footer'
 import { Route, Routes } from 'react-router-dom'
 import Home from './components/layout/Home'
 import Perfil from './components/auth/Perfil'
 import Productos from "./components/articulos/Productos.tsx";
 import PanelAdmin from "./components/admin/PanelAdmin.tsx";
-import { AuthProvider } from './context/AuthContext';
+import {AuthProvider, useAuth} from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import FormProducto from './components/articulos/FormProductos.tsx'
 import FormCategoria from './components/articulos/FormCategoria.tsx'
-import Domicilios from "./components/auth/Domicilios.tsx";
+import Domicilios from "./components/cliente/Domicilios.tsx";
+import PedidoCliente from "./components/cliente/PedidoCliente.tsx";
 import DetalleProducto from './components/articulos/DetalleProducto.tsx'
 import { Carrito } from './components/articulos/Carrito.tsx'
 import { CarritoProvider } from './context/CarritoContext.tsx'
+import Footer from "./components/layout/Footer.tsx";
 
 function App() {
   return (
-    <CarritoProvider>
     <AuthProvider>
+    <CarritoProvider>
       <Navbar/>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -45,7 +46,7 @@ function App() {
 
         <Route path="/pedidos" element={
           <ProtectedRoute clientOnly={true}>
-            <Perfil /> {/* o el componente correcto de pedidos si tenés otro */}
+            <PedidoCliente /> {/* o el componente correcto de pedidos si tenés otro */}
           </ProtectedRoute>
         } />
 
@@ -69,10 +70,15 @@ function App() {
         
         <Route path="*" element={<Home />} />
       </Routes>
-      <Footer/>
-    </AuthProvider>
+
+      <ConditionalFooter/>
     </CarritoProvider>
+    </AuthProvider>
   )
 }
 
+function ConditionalFooter() {
+  const { isAdmin } = useAuth();
+  return !isAdmin ? <Footer /> : null;
+}
 export default App

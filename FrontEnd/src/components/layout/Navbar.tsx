@@ -12,14 +12,15 @@ import { useAuth } from '../../context/AuthContext';
 function Navbar() {
     const [showModal, setShowModal] = useState(false);
     const [isLoginView, setIsLoginView] = useState(true);
-    const { currentUser, userData, isAdmin, logout } = useAuth();
+    const { currentUser, userData, isAdmin, logout, loginExitoso } = useAuth();
 
     // Cerrar modal cuando el usuario se autentica
     useEffect(() => {
-        if (currentUser) {
+        if (loginExitoso) {
             setShowModal(false);
         }
-    }, [currentUser]);
+    }, [loginExitoso]);
+
 
     const handleOpenLogin = () => {
         setIsLoginView(true);
@@ -52,7 +53,9 @@ function Navbar() {
         <>
             <nav>
                 <a className='homeNav' href="/"><img className='logoEmpresa' src={IconoEmpresa} alt="Icono Empresa" /><span>M- SHOP</span></a>
+                {!isAdmin && (
                 <Buscador />
+                )}
                 <div className="navButtons">
                     <Link className="nav-link" to="/productos">Tienda</Link>
                     

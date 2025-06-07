@@ -4,6 +4,8 @@ import Producto from "../models/Producto";
 import Pedido from "../models/Pedido";
 import PedidoDetalle from "../models/PedidoDetalle";
 import PedidoService from "../services/PedidoService";
+import { useAuth } from "./AuthContext";
+import type Cliente from "../models/Cliente";
 
 interface CarritoContextProps {
   pedido: Pedido;
@@ -18,12 +20,14 @@ interface CarritoContextProps {
 export const carritoContext = createContext<CarritoContextProps | undefined>(undefined);
 
 export function CarritoProvider({ children }: { children: ReactNode }) {
+  const { userData } = useAuth();
   const [pedido, setPedido] = useState<Pedido>(() => {
     const nuevoPedido = new Pedido();
     const hoy = new Date();
     const soloFecha = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
     nuevoPedido.fecha = soloFecha;
     nuevoPedido.detalles = [];
+    nuevoPedido.cliente = userData as Cliente
     return nuevoPedido;
   });
 
@@ -133,7 +137,6 @@ const restarDelCarrito = (idProducto: number) => {
       return null;
     }
   };
-  console.log(carritoContext)
   return (
     <carritoContext.Provider
       value={{

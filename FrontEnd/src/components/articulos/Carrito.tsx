@@ -2,14 +2,13 @@ import { useEffect, useState } from "react";
 import { Button, Image } from "react-bootstrap";
 import Pedido from "../../models/Pedido";
 import { useCarrito } from "../../hooks/useCarrito";
-import HistoricoPrecioventaService from "../../services/HistoricoPrecioventaService";
+import HistoricoPrecioventaService from "../../services/HistoricoPrecioVentaService";
 import trashIcon from "../../assets/trash-xmark-svgrepo-com.svg";
 
 export function Carrito() {
   const carritoCtx = useCarrito();
   const [pedidoGuardado, setPedidoGuardado] = useState<Pedido | null>(null);
   const [preciosActualizados, setPreciosActualizados] = useState<Record<number, number>>({});
-  
   if (!carritoCtx) return null;
 
   const {
@@ -28,10 +27,14 @@ export function Carrito() {
       const precios: Record<number, number> = {};
       for (const item of carrito) {
         try {
-          const historico = await HistoricoPrecioventaService.ultimoById(item.producto);
-          precios[item.producto.id] = historico.precio;
+          if(item.producto.id){
+            const historico = await HistoricoPrecioventaService.ultimoById(item.producto.id);
+            precios[item.producto.id] = historico.precio;
+          }
         } catch {
-          precios[item.producto.id] = item.producto.precio; // fallback al precio del modelo
+          if(item.producto.id){
+            precios[item.producto.id] = item.producto.precio ?? 0; // fallback con default
+          }
         }
       }
       setPreciosActualizados(precios);
@@ -86,13 +89,13 @@ export function Carrito() {
                       Color: 
                       {item.producto.color?.nombre}
                     </small>
-
-                    <small>
-                      Precio: $
-                      {preciosActualizados[item.producto.id]?.toFixed(2) ?? "Cargando..."}
-                    </small>
+                    {item.producto.id !== undefined &&
+                      <small>
+                        Precio: $
+                        {preciosActualizados[item.producto.id]?.toFixed(2) ?? "Cargando..."}
+                      </small>
+                    }
                   </div>
-
                   <div className="d-flex align-items-center mx-2">
                     <Button
                       style={{ background: "white", color: "black" }}
@@ -113,11 +116,12 @@ export function Carrito() {
                     </Button>
                   </div>
                 </div>
+                {item.producto.id !== undefined &&
                 <div className="text-end">
                   Subtotal: $
                   {((preciosActualizados[item.producto.id] ?? 0) * item.cantidad).toFixed(2)}
                 </div>
-
+                }
               </div>
             </div>
           ))
@@ -128,7 +132,11 @@ export function Carrito() {
               <strong>
                 Total: $
                 {carrito
-                  .reduce((acc, item) => acc + (preciosActualizados[item.producto.id] ?? 0) * item.cantidad, 0)
+                  .reduce((acc, item) => {
+                    const id = item.producto.id;
+                    const precio = typeof id === "number" ? preciosActualizados[id] ?? 0 : 0;
+                    return acc + precio * item.cantidad;
+                  }, 0)
                   .toFixed(2)}
               </strong>
             </div>

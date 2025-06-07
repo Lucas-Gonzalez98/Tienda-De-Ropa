@@ -35,7 +35,7 @@ function GrillaProductos() {
     const productosConPrecios = await Promise.all(
       data.map(async (prod: Producto) => {
         try {
-          const historico = await HistoricoPrecioventaService.ultimoById(prod);
+          const historico = await HistoricoPrecioventaService.ultimoById(prod.id);
           return { ...prod, precioHistorico: historico.precio };
         } catch (err) {
           return { ...prod, precioHistorico: null }; // o 0 si preferís
@@ -81,7 +81,7 @@ function GrillaProductos() {
   setProductoSeleccionado(prod);
   setShowModal(true);
   try {
-    const historico = await HistoricoPrecioventaService.ultimoById(prod);
+    const historico = await HistoricoPrecioventaService.ultimoById(prod.id);
     setPrecioHistorico(historico.precio);
   } catch (e) {
     setPrecioHistorico(null); // o mostrar mensaje de error si querés

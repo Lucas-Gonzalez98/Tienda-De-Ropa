@@ -24,6 +24,11 @@ public class UsuarioServiceImpl extends MasterServiceImpl<Usuario, Long> impleme
     public Optional<Usuario> findByFirebaseUid(String firebaseUid) {
         return usuarioRepository.findByFirebaseUid(firebaseUid);
     }
+    @Override
+    public Optional<Usuario> findByEmail(String email) {
+        return usuarioRepository.findByEmail(email);
+    }
+
 
     @Override
     @Transactional

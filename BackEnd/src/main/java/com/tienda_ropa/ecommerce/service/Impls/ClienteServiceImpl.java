@@ -46,14 +46,22 @@ public class ClienteServiceImpl extends MasterServiceImpl<Cliente, Long> impleme
         
         try {
             // 1. Manejar Teléfono
-            if (cliente.getTelefono() != null) {
-                // Si el teléfono no tiene ID, es nuevo
-                if (cliente.getTelefono().getId() == null) {
-                    Telefono telefonoGuardado = telefonoRepository.save(cliente.getTelefono());
+            if (cliente.getTelefono() != null && cliente.getTelefono().getNumero() != null) {
+                String numeroTelefono = cliente.getTelefono().getNumero().trim();
+
+                Optional<Telefono> telefonoExistente = telefonoRepository.findByNumero(numeroTelefono);
+
+                if (telefonoExistente.isPresent()) {
+                    logger.info("Teléfono ya existe. Asociando con ID: {}", telefonoExistente.get().getId());
+                    cliente.setTelefono(telefonoExistente.get());
+                } else {
+                    Telefono nuevoTelefono = cliente.getTelefono();
+                    Telefono telefonoGuardado = telefonoRepository.save(nuevoTelefono);
                     cliente.setTelefono(telefonoGuardado);
-                    logger.info("Teléfono guardado con ID: {}", telefonoGuardado.getId());
+                    logger.info("Teléfono nuevo guardado con ID: {}", telefonoGuardado.getId());
                 }
             }
+
 
             // 2. Manejar Usuario
             if (cliente.getUsuario() != null) {
@@ -94,6 +102,42 @@ public class ClienteServiceImpl extends MasterServiceImpl<Cliente, Long> impleme
             throw new RuntimeException("Error al guardar cliente: " + e.getMessage(), e);
         }
     }
+
+    public Cliente updateWithRelatedEntities(Long id, Cliente cliente) {
+        logger.info("Actualizando cliente con ID {} y entidades relacionadas", id);
+
+        Cliente clienteExistente = getById(id); // o findById(id).orElseThrow...
+
+        // 1. Teléfono
+        if (cliente.getTelefono() != null && cliente.getTelefono().getNumero() != null) {
+            String numeroTelefono = cliente.getTelefono().getNumero().trim();
+
+            Optional<Telefono> telefonoExistente = telefonoRepository.findByNumero(numeroTelefono);
+
+            if (telefonoExistente.isPresent()) {
+                cliente.setTelefono(telefonoExistente.get());
+            } else {
+                // No uses el ID si el número es nuevo
+                Telefono nuevoTelefono = new Telefono();
+                nuevoTelefono.setNumero(numeroTelefono);
+                nuevoTelefono.setEliminado(false); // si lo usás
+                Telefono telefonoGuardado = telefonoRepository.save(nuevoTelefono);
+                cliente.setTelefono(telefonoGuardado);
+            }
+        }
+
+        // 2. Usuario (no debería cambiar en update normalmente, pero se puede actualizar algún campo si querés)
+
+        // 3. Domicilios (si permitís editar en esta pantalla, podrías actualizar eso también)
+
+        // 4. Preservar relaciones necesarias desde el cliente existente
+        cliente.setId(id);
+        cliente.setUsuario(clienteExistente.getUsuario()); // Ojo con esto si no viene del frontend
+        // Otros campos que no vienen desde el frontend y deban mantenerse...
+
+        return super.update(id, cliente);
+    }
+
     @Override
     public Optional<Cliente> findByUsuarioId(Long usuarioId) {
         return clienteRepository.findByUsuarioId(usuarioId);

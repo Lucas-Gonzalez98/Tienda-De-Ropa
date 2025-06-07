@@ -14,6 +14,7 @@ interface AuthContextType {
     isClient: boolean;
     login: (firebaseUser: User) => Promise<void>;
     logout: () => Promise<void>;
+    loginExitoso: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,53 +36,49 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [userData, setUserData] = useState<Cliente | Administrador | null>(null);
     const [usuario, setUsuario] = useState<Usuario | null>(null);
     const [loading, setLoading] = useState(true);
+    const loginExitoso = !!currentUser && !!userData;
+
 
     const fetchUserData = async (firebaseUid: string, retries = 3) => {
-        try {
-            // Buscar el usuario por Firebase UID
-            const usuarioResponse = await fetch(`http://localhost:8080/api/usuario/firebase/${firebaseUid}`);
-            
-            if (!usuarioResponse.ok) {
-                if (retries > 0) {
-                    // Reintentar después de 1 segundo (útil para registros recientes)
-                    console.log(`Usuario no encontrado, reintentando... (${retries} intentos restantes)`);
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    return await fetchUserData(firebaseUid, retries - 1);
-                }
-                throw new Error('Usuario no encontrado en la base de datos');
+        // Buscar el usuario por Firebase UID
+        const usuarioResponse = await fetch(`http://localhost:8080/api/usuario/firebase/${firebaseUid}`);
+
+        if (!usuarioResponse.ok) {
+            if (retries > 0) {
+                console.log(`Usuario no encontrado, reintentando... (${retries} intentos restantes)`);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                return await fetchUserData(firebaseUid, retries - 1);
+            }
+            throw new Error('Usuario no encontrado en la base de datos');
+        }
+
+        const usuarioData: Usuario = await usuarioResponse.json();
+        setUsuario(usuarioData);
+
+        // Obtener datos del rol
+        if (usuarioData.rol === 'ADMINISTRADOR') {
+            const adminResponse = await fetch(`http://localhost:8080/api/administrador/usuario/${usuarioData.id}`);
+            if (!adminResponse.ok) throw new Error('Error al obtener datos del administrador');
+            const adminData: Administrador = await adminResponse.json();
+            setUserData(adminData);
+        } else if (usuarioData.rol === 'CLIENTE') {
+            const clienteResponse = await fetch(`http://localhost:8080/api/cliente/usuario/${usuarioData.id}`);
+            if (!clienteResponse.ok) throw new Error('Error al obtener datos del cliente');
+            const clienteData: Cliente = await clienteResponse.json();
+
+            if (clienteData.eliminado) {
+                await auth.signOut();
+                throw new Error("Cuenta inactiva");
             }
 
-            const usuarioData: Usuario = await usuarioResponse.json();
-            setUsuario(usuarioData);
-
-            // Según el rol, obtener los datos completos usando el ID del usuario
-            if (usuarioData.rol === 'ADMINISTRADOR') {
-                const adminResponse = await fetch(`http://localhost:8080/api/administrador/usuario/${usuarioData.id}`);
-                if (adminResponse.ok) {
-                    const adminData: Administrador = await adminResponse.json();
-                    setUserData(adminData);
-                } else {
-                    console.error('Error al obtener datos del administrador');
-                }
-            } else if (usuarioData.rol === 'CLIENTE') {
-                const clienteResponse = await fetch(`http://localhost:8080/api/cliente/usuario/${usuarioData.id}`);
-                if (clienteResponse.ok) {
-                    const clienteData: Cliente = await clienteResponse.json();
-                    setUserData(clienteData);
-                } else {
-                    console.error('Error al obtener datos del cliente');
-                }
-            }
-        } catch (error) {
-            console.error('Error al obtener datos del usuario:', error);
-            setUsuario(null);
-            setUserData(null);
+            setUserData(clienteData);
         }
     };
 
-    const login = async (firebaseUser: User) => {
-        setCurrentUser(firebaseUser);
+
+    const login = async (firebaseUser: User): Promise<void> => {
         await fetchUserData(firebaseUser.uid);
+        setCurrentUser(firebaseUser);
     };
 
     const logout = async () => {
@@ -122,7 +119,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isAdmin,
         isClient,
         login,
-        logout
+        logout,
+        loginExitoso
     };
 
     return (

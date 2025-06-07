@@ -9,10 +9,11 @@ import {
     getPaises,
     getProvincias,
     getLocalidades,
-     Pais,
-     Provincia,
-     Localidad
+    type Pais,
+    type Provincia,
+    type Localidad
 } from "../../services/LocalizacionApi.ts";
+import {obtenerUsuarioPorEmail} from "../../services/UsuarioService.ts";
 
 interface Props {
     onBackToLogin: () => void;
@@ -24,6 +25,9 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [formError, setFormError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [emailError, setEmailError] = useState<string | null>(null);
+    const [telefonoError, setTelefonoError] = useState('');
+
 
     // Primer paso
     const [nombre, setNombre] = useState("");
@@ -36,6 +40,13 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
     const [fechaNacimiento, setFechaNacimiento] = useState("");
     const [telefono, setTelefono] = useState(""); // solo números
     const [telefonoFormateado, setTelefonoFormateado] = useState("");
+
+    const esTelefonoValido = (telefono: string): boolean => {
+        const soloNumeros = telefono.replace(/\D/g, "");
+        return soloNumeros.length === 10;
+    };
+
+
     const formatearTelefono = (valor: string): string => {
         // Elimina cualquier cosa que no sea número
         const soloNumeros = valor.replace(/\D/g, "").slice(0, 10); // máx 10 dígitos
@@ -71,17 +82,70 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
     const [numero, setNumero] = useState("");
     const [referencia, setReferencia] = useState("");
 
-    const validateStep1 = () => {
+
+    const passwordValida = (password: string): boolean => {
+        const tieneLongitudMinima = password.length >= 8;
+        const tieneMayuscula = /[A-Z]/.test(password);
+        const tieneMinuscula = /[a-z]/.test(password);
+        const tieneSimbolo = /[^A-Za-z0-9]/.test(password);
+
+        return tieneLongitudMinima && tieneMayuscula && tieneMinuscula && tieneSimbolo;
+    };
+
+    const esEmailValido = (email: string): boolean => {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(email);
+    };
+
+    const handleEmailChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newEmail = e.target.value;
+        setEmail(newEmail);
+        setEmailError(null);
+
+        if (!esEmailValido(newEmail)) {
+            setEmailError("Ingresá un email válido");
+            return;
+        }
+
+        try {
+            const usuario = await obtenerUsuarioPorEmail(newEmail);
+            if (usuario) {
+                setEmailError("El email ya está en uso");
+            }
+        } catch (error) {
+            console.error("Error al verificar email:", error);
+        }
+    };
+
+    const handleNumeroChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        if (/^\d*$/.test(value)) {
+            setNumero(value);
+        }
+    };
+
+    const validateStep1 = async () => {
         if (!nombre || !apellido || !email || !contrasena || !confirmarContrasena) {
             setFormError("Por favor completá todos los campos.");
             return;
         }
+        if (!esEmailValido(email)) {
+            setFormError("Ingresá un email válido.");
+            return;
+        }
+
         if (contrasena !== confirmarContrasena) {
             setFormError("Las contraseñas no coinciden.");
             return;
         }
-        if (contrasena.length < 6) {
-            setFormError("La contraseña debe tener al menos 6 caracteres.");
+        if (!passwordValida(contrasena)) {
+            setFormError("La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo.");
+            return;
+        }
+        const usuarioPorEmail = await obtenerUsuarioPorEmail(email);
+        if (usuarioPorEmail) {
+            setFormError("El email ya está registrado.");
+            setLoading(false);
             return;
         }
 
@@ -112,11 +176,22 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
             setFormError("Por favor completá todos los campos del segundo paso.");
             return;
         }
+        if (!esTelefonoValido(telefono)) {
+            setTelefonoError("El número debe tener exactamente 10 dígitos.");
+            return;
+        }
 
         setLoading(true);
         setFormError(null);
 
         try {
+            const usuarioPorEmail = await obtenerUsuarioPorEmail(email);
+            if (usuarioPorEmail) {
+                setFormError("El email ya está registrado.");
+                setLoading(false);
+                return;
+            }
+
             // Crear usuario en Firebase
             const userCredential = await createUserWithEmailAndPassword(auth, email, contrasena);
 
@@ -132,7 +207,7 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                 nombre: nombre,
                 apellido: apellido,
                 telefono: {
-                    numero: `+54 ${telefono}`,
+                    numero: telefono,
                     eliminado: false
                 },
                 fechaNacimiento: new Date(fechaNacimiento),
@@ -219,6 +294,7 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                                 value={nombre}
                                 onChange={(e) => setNombre(e.target.value)}
                                 disabled={loading}
+                                required
                             />
                         </Form.Group>
 
@@ -229,6 +305,7 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                                 value={apellido}
                                 onChange={(e) => setApellido(e.target.value)}
                                 disabled={loading}
+                                required
                             />
                         </Form.Group>
 
@@ -237,9 +314,14 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                                 type="email"
                                 placeholder="Email"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                onChange={handleEmailChange}
+                                isInvalid={!!emailError}
                                 disabled={loading}
+                                required
                             />
+                            <Form.Control.Feedback type="invalid">
+                                {emailError}
+                            </Form.Control.Feedback>
                         </Form.Group>
 
                         <Form.Group controlId="contrasena" className="mb-3">
@@ -251,14 +333,17 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                                     onChange={(e) => setContrasena(e.target.value)}
                                     disabled={loading}
                                 />
-                                <Button 
-                                    variant="outline-secondary" 
+                                <Button
+                                    variant="outline-secondary"
                                     onClick={() => setShowPassword(!showPassword)}
                                     disabled={loading}
                                 >
                                     {showPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
                                 </Button>
                             </div>
+                            <Form.Text className="text-muted">
+                                La contraseña debe tener al menos 8 caracteres, una letra mayúscula, una letra minúscula y un símbolo.
+                            </Form.Text>
                         </Form.Group>
 
                         <Form.Group controlId="confirmarContrasena" className="mb-3">
@@ -270,8 +355,8 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                                     onChange={(e) => setConfirmarContrasena(e.target.value)}
                                     disabled={loading}
                                 />
-                                <Button 
-                                    variant="outline-secondary" 
+                                <Button
+                                    variant="outline-secondary"
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                     disabled={loading}
                                 >
@@ -294,16 +379,19 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                 {step === 2 && (
                     <>
                         <Form.Group controlId="fechaNacimiento" className="mb-2">
-                            <div className="d-flex p-1 align-items-end" style={{width: "100%"}}>
-                                <Form.Label style={{width:"300px"}}>Fecha de nacimiento:</Form.Label>
+                            <div className="d-flex p-1 align-items-end" style={{ width: "100%" }}>
+                                <Form.Label style={{ width: "300px" }}> Fecha de nacimiento: </Form.Label>
                                 <Form.Control
                                     type="date"
                                     value={fechaNacimiento}
                                     onChange={(e) => setFechaNacimiento(e.target.value)}
+                                    max={new Date().toISOString().split("T")[0]}
                                     disabled={loading}
+                                    required
                                 />
                             </div>
                         </Form.Group>
+
 
                         <Form.Group controlId="telefono" className="mb-2">
                             <Form.Control
@@ -313,12 +401,28 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                                 onChange={(e) => {
                                     const input = e.target.value;
                                     const soloNumeros = input.replace(/\D/g, "").slice(0, 10); // Solo 10 dígitos
-                                    setTelefono(soloNumeros); // Para guardar limpio
-                                    setTelefonoFormateado(formatearTelefono(soloNumeros)); // Para mostrar
+
+                                    setTelefono(soloNumeros); // Guardamos sin formato
+                                    setTelefonoFormateado(formatearTelefono(soloNumeros)); // Mostramos formateado
+
+                                    // Validamos longitud
+                                    if (soloNumeros.length < 10) {
+                                        setTelefonoError("El número debe tener exactamente 10 dígitos.");
+                                    } else {
+                                        setTelefonoError('');
+                                    }
                                 }}
+                                isInvalid={!!telefonoError}
                                 disabled={loading}
                             />
+                            <Form.Control.Feedback type="invalid">
+                                {telefonoError}
+                            </Form.Control.Feedback>
+                            <Form.Text className="text-muted">
+                                El número debe tener 10 dígitos, sin el 15 y con el código de área.
+                            </Form.Text>
                         </Form.Group>
+
 
 
                         <Form.Group controlId="pais" className="mb-2">
@@ -375,6 +479,7 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                                 value={codigoPostal}
                                 onChange={(e) => setCodigoPostal(e.target.value)}
                                 disabled={loading}
+                                required
                             />
                         </Form.Group>
 
@@ -385,16 +490,18 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                                 value={calle}
                                 onChange={(e) => setCalle(e.target.value)}
                                 disabled={loading}
+                                required
                             />
                         </Form.Group>
 
                         <div className="d-flex gap-2 mb-2">
                             <Form.Control
-                                type="number"
+                                type="text"
                                 placeholder="Número"
                                 value={numero}
-                                onChange={(e) => setNumero(e.target.value)}
+                                onChange={handleNumeroChange}
                                 disabled={loading}
+                                required
                             />
                         </div>
 
@@ -405,6 +512,7 @@ const RegisterUsuario = ({ onBackToLogin }: Props) => {
                                 value={referencia}
                                 onChange={(e) => setReferencia(e.target.value)}
                                 disabled={loading}
+                                required
                             />
                         </Form.Group>
 

@@ -49,19 +49,11 @@ public class ProductoServiceImpl extends MasterServiceImpl<Producto, Long> imple
         Producto productoGuardado = productoRepository.save(producto);
 
         // Asociamos y guardamos el stock
-        for (Stock s : stock) {
-            s.setProducto(productoGuardado);
-        }
-        stockRepository.saveAll(stock);
-
-        // Creamos y guardamos las imágenes
-        if (imagenesBase64 != null) {
-            for (String base64 : imagenesBase64) {
-                ImagenProducto imagen = new ImagenProducto();
-                imagen.setProducto(productoGuardado);
-                imagen.setDenominacion(base64);  // aquí guardas la cadena base64 directamente
-                imagenProductoRepository.save(imagen);
+        if(stock != null){
+            for (Stock s : stock) {
+                s.setProducto(productoGuardado);
             }
+            stockRepository.saveAll(stock);
         }
 
         // Creamos precio de venta inicial

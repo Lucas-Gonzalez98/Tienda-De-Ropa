@@ -66,6 +66,38 @@ INSERT INTO `domicilio` (`id`, `eliminado`, `calle`, `codigo_postal`, `numero`, 
 (2, b'0', 'Bahia Blanca', 5500, '3256', 'casa', 1);
 
 -- =========================
+-- Tabla: telefono pagina argentina no hacemos envios internacionales
+-- =========================
+INSERT INTO `telefono` (`id`, `eliminado`, `numero`) VALUES
+                                                         (1, b'0', '2615551234'),
+                                                         (2, b'0', '2615355789');
+
+-- =========================
+-- Tabla: usuario
+-- =========================
+INSERT INTO `usuario` (`id`, `eliminado`, `email`, `firebase_uid`, `rol`) VALUES
+                                                                              (1, b'0', 'mln204manutup@gmail.com', '9xUDrdSpy3Q4dmIyVeUPWZ06uj52', 'ADMINISTRADOR'),
+                                                                              (2, b'0', 'juan@hotmail.com', 'DbXoAIU7a0UsLiffiodLiI2NF9y2', 'CLIENTE');
+
+-- =========================
+-- Tabla: cliente
+-- =========================
+INSERT INTO `cliente` (`id`, `eliminado`, `apellido`, `fecha_nacimiento`, `nombre`, `id_telefono`, `id_usuario`) VALUES
+    (1, b'0', 'Gonzalez', '1999-09-25', 'Juan Cruz', 2, 2);
+
+-- =========================
+-- Tabla: cliente_domicilio
+-- =========================
+INSERT INTO `cliente_domicilio` (`cliente_id`, `domicilio_id`) VALUES
+    (1, 2);
+
+-- =========================
+-- Tabla: administrador
+-- =========================
+INSERT INTO `administrador` (`id`, `eliminado`, `apellido`, `nombre`, `id_domicilio`, `id_telefono`, `id_usuario`) VALUES
+    (1, b'0', 'Rodriguez', 'Manuel', 1, 1, 1);
+
+-- =========================
 -- Tabla: categoria
 -- =========================
 INSERT INTO `categoria` (`id`, `eliminado`, `denominacion`, `id_categoria_padre`) VALUES
@@ -93,7 +125,7 @@ INSERT INTO `categoria` (`id`, `eliminado`, `denominacion`, `id_categoria_padre`
 -- Tabla: producto
 -- =========================
 INSERT INTO `producto` (`id`, `eliminado`, `descripcion`, `nombre`, `precio`) VALUES
-(1, b'0', 'Remera de algodón 100% color blanco', 'Remera Básica', 6000),
+(1, b'0', 'Remera de algodón 100% color', 'Remera Básica', 6000),
 (2, b'0', 'Jean azul corte slim fit', 'Jean Slim', 13000),
 (3, b'0', 'Campera sintética negra', 'Campera de Cuero', 24999),
 (4, b'1', 'Zapatillas deportivas urbanas', 'Zapatillas Urbanas', 17999.99),
@@ -105,34 +137,3 @@ INSERT INTO `producto` (`id`, `eliminado`, `descripcion`, `nombre`, `precio`) VA
 (10, b'0', 'Jogger de algodón negro', 'Pantalón Jogger', 7999.99),
 (11, b'1', '654', 'Hamburguesa nueva', 654);
 
--- =========================
--- Tabla: telefono
--- =========================
-INSERT INTO `telefono` (`id`, `eliminado`, `numero`) VALUES
-(1, b'0', '+54 2615551234'),
-(2, b'0', '+54 2615355789');
-
--- =========================
--- Tabla: usuario
--- =========================
-INSERT INTO `usuario` (`id`, `eliminado`, `email`, `firebase_uid`, `rol`) VALUES
-(1, b'0', 'mln204manutup@gmail.com', '9xUDrdSpy3Q4dmIyVeUPWZ06uj52', 'ADMINISTRADOR'),
-(2, b'0', 'juan@hotmail.com', 'DbXoAIU7a0UsLiffiodLiI2NF9y2', 'CLIENTE');
-
--- =========================
--- Tabla: cliente
--- =========================
-INSERT INTO `cliente` (`id`, `eliminado`, `apellido`, `fecha_nacimiento`, `nombre`, `id_telefono`, `id_usuario`) VALUES
-(1, b'0', 'Gonzalez', '1999-09-25', 'Juan Cruz', 2, 2);
-
--- =========================
--- Tabla: cliente_domicilio
--- =========================
-INSERT INTO `cliente_domicilio` (`cliente_id`, `domicilio_id`) VALUES
-(1, 2);
-
--- =========================
--- Tabla: administrador
--- =========================
-INSERT INTO `administrador` (`id`, `eliminado`, `apellido`, `nombre`, `id_domicilio`, `id_telefono`, `id_usuario`) VALUES
-(1, b'0', 'Rodriguez', 'Manuel', 1, 1, 1);

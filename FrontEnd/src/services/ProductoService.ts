@@ -48,21 +48,28 @@ class ProductoService {
         }
     }
 
-    async create(articulo: any): Promise<any> {
+    async create(producto: Producto, precioVentaInicial: number): Promise<any> {
         try {
-            const res = await fetch(`${API_URL}`, {
+            const body = {
+                producto,
+                precioVenta: precioVentaInicial,
+                imagenes: producto.imagenes?.map(img => img.denominacion),
+            };
+
+            const res = await fetch(`${API_URL}/crear-producto`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(articulo)
+                body: JSON.stringify(body),
             });
-            console.log(JSON.stringify(articulo));
-            if (!res.ok) throw new Error("Error al crear la Producto");
+
+            if (!res.ok) throw new Error("Error al crear el Producto");
             return await res.json();
         } catch (error) {
             console.error(error);
             throw error;
         }
     }
+
 
     async update(id: number, articulo: Producto): Promise<Producto> {
         try {

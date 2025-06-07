@@ -1,46 +1,52 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import ProductoService from "../../services/ProductoService";
+import ImagenesnubeService from "../../services/ImagenesNubeService";
 import { Button } from "react-bootstrap";
 import type Producto from "../../models/Producto";
 import type ImagenProducto from "../../models/ImagenProducto";
-import "../../styles/FormProducto.css"; // Asegúrate de tener este archivo CSS para estilos personalizados
+import "../../styles/FormProducto.css";
+import HistoricoPrecioVenta from "../../models/HistoricoPrecioVenta";
+import HistoricoPrecioventaService from "../../services/HistoricoPrecioVentaService";
+import type Categoria from "../../models/Categoria";
 
 function FormProducto() {
     const [nombre, setNombre] = useState("");
     const [descripcion, setDescripcion] = useState("");
     const [precio, setPrecio] = useState<number>(0);
+    const [categorias, setCategorias] = useState<Categoria[]>([]);
+    const [precioHistorico, setPrecioHistorico] = useState<number>(0);
     const [eliminado, setEliminado] = useState(false);
     const [searchParams] = useSearchParams();
     const idFromUrl = searchParams.get("id");
+
     const [imagenesExistentes, setImagenesExistentes] = useState<ImagenProducto[]>([]);
     const [imagenes, setImagenes] = useState<File[]>([]);
 
     useEffect(() => {
         if (idFromUrl) {
-            ProductoService.getById(Number(idFromUrl))
-                .then((producto: Producto) => {
-                    setNombre(producto.nombre);
-                    setDescripcion(producto.descripcion);
-                    setPrecio(producto.precio);
-                    setEliminado(!!producto.eliminado);
-                    setImagenesExistentes(producto.imagenes || []);
-                });
+            ProductoService.getById(Number(idFromUrl)).then((producto: Producto) => {
+                setNombre(producto.nombre);
+                setDescripcion(producto.descripcion);
+                HistoricoPrecioventaService.ultimoById(Number(idFromUrl)).then((historico: HistoricoPrecioVenta) => {
+                    setPrecio(historico.precio)
+                    setPrecioHistorico(historico.precio)
+                })
+                setCategorias(producto.categorias);
+                setEliminado(!!producto.eliminado);
+                setImagenesExistentes(producto.imagenes || []);
+            });
         }
     }, [idFromUrl]);
 
-    // Maneja la selección de imágenes nuevas, evitando duplicados con existentes y entre sí
     const handleImagenesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const nuevosArchivos = Array.from(e.target.files as FileList);
-
-            // Nombres de imágenes existentes (tanto en backend como en nuevas seleccionadas)
             const nombresExistentes = [
                 ...imagenesExistentes.filter(img => !img.eliminado).map(img => img.denominacion.split("/").pop()),
                 ...imagenes.map(img => img.name)
             ];
 
-            // Filtra para evitar duplicados por nombre
             const archivosFiltrados = nuevosArchivos.filter(nuevo =>
                 !nombresExistentes.includes(nuevo.name)
             );
@@ -53,63 +59,67 @@ function FormProducto() {
         }
     };
 
-    // Elimina una imagen existente (marca como eliminada)
     const eliminarImagenExistente = (idx: number) => {
         setImagenesExistentes(prev =>
             prev.map((img, i) => (i === idx ? { ...img, eliminado: true } : img))
         );
     };
 
-    // Elimina una imagen nueva (de la lista de archivos seleccionados)
     const eliminarImagenNueva = (idx: number) => {
         setImagenes(prev => prev.filter((_, i) => i !== idx));
     };
 
-    const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-};
+    const Guardar = async () => {
+        const nuevasImagenes = await Promise.all(
+            imagenes.map(async (file) => {
+                const imagenSubida = await ImagenesnubeService.subirImagen(file);
+                return {
+                    denominacion: imagenSubida.denominacion,
+                    eliminado: false,
+                };
+            })
+        );
 
-const Guardar = async () => {
-    // Convierte las imágenes nuevas a base64
-    const imagenesNuevasBase64 = await Promise.all(
-        imagenes.map(async (file) => ({
-            denominacion: await fileToBase64(file)
-        }))
-    );
+        const imagenesFinales = [
+            ...imagenesExistentes.filter(img => !img.eliminado).map(img => ({
+                id: img.id,
+                denominacion: img.denominacion,
+            })),
+            ...nuevasImagenes
+        ];
 
-    // Solo envía las imágenes existentes que no estén marcadas como eliminadas
-    const imagenesFinales = [
-        ...imagenesExistentes.filter(img => !img.eliminado).map(img => ({ id: img.id, denominacion: img.denominacion })),
-        ...imagenesNuevasBase64
-    ];
+        const producto: Producto = {
+             ...(idFromUrl && { id: Number(idFromUrl) }), // solo si hay id
+            nombre,
+            descripcion,
+            categorias,
+            eliminado,
+            imagenes: imagenesFinales
+        };
 
-    const producto: any = {
-        id: idFromUrl ? Number(idFromUrl) : undefined,
-        nombre,
-        descripcion,
-        precio,
-        eliminado,
-        imagenes: imagenesFinales
+        try {
+            if (idFromUrl) {
+                console.log("actualizando", producto)
+                if(precio != precioHistorico){
+                    const historico = new HistoricoPrecioVenta();
+                    historico.fecha = new Date();
+                    historico.precio = precio;
+                    historico.producto = producto;
+                    await HistoricoPrecioventaService.create(historico)
+                }
+                await ProductoService.update(Number(idFromUrl), producto);
+            } else {
+                console.log("creando", producto)
+                await ProductoService.create(producto, precio);
+            }
+            alert("Producto guardado exitosamente");
+            window.location.href = "/admin";
+        } catch (error) {
+            console.error("Error al guardar el producto:", error);
+            alert("Error al guardar el producto");
+        }
     };
 
-    try {
-        if (idFromUrl) {
-            await ProductoService.update(Number(idFromUrl), producto);
-        } else {
-            await ProductoService.create(producto);
-        }
-        alert("Producto guardado exitosamente");
-        window.location.href = "/admin";
-    } catch (error) {
-        console.error("Error al guardar el producto:", error);
-        alert("Error al guardar el producto");
-    }
-};
     return (
         <>
             <h2 className="mt-5">{idFromUrl ? "Actualizar" : "Crear"} Producto</h2>
@@ -133,6 +143,7 @@ const Guardar = async () => {
                         required
                     />
                 </div>
+
                 {/* Imágenes */}
                 <div>
                     <label>Imágenes:</label>
@@ -142,12 +153,13 @@ const Guardar = async () => {
                         multiple
                         onChange={handleImagenesChange}
                     />
+
                     {/* Imágenes existentes */}
                     {imagenesExistentes.filter(img => !img.eliminado).length > 0 && (
                         <div className="preview-imagenes mt-2 d-flex gap-2 flex-wrap">
                             {imagenesExistentes.map((img, idx) =>
                                 !img.eliminado && (
-                                    <div key={img.id || idx} style={{ position: "relative", display: "inline-block", width: "fit-content"}}>
+                                    <div key={img.id || idx} style={{ position: "relative", display: "inline-block", width: "fit-content" }}>
                                         <img
                                             src={img.denominacion}
                                             alt={`img-existente-${idx}`}
@@ -179,6 +191,7 @@ const Guardar = async () => {
                             )}
                         </div>
                     )}
+
                     {/* Imágenes nuevas */}
                     {imagenes.length > 0 && (
                         <div className="preview-imagenes mt-2 d-flex gap-2 flex-wrap">
@@ -212,6 +225,7 @@ const Guardar = async () => {
                         </div>
                     )}
                 </div>
+
                 <div>
                     <label>Estado:</label>
                     <select
@@ -222,6 +236,7 @@ const Guardar = async () => {
                         <option value="eliminado">Eliminado</option>
                     </select>
                 </div>
+
                 <Button
                     variant="success"
                     className="mt-3"
