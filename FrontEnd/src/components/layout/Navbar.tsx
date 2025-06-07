@@ -12,14 +12,15 @@ import { useAuth } from '../../context/AuthContext';
 function Navbar() {
     const [showModal, setShowModal] = useState(false);
     const [isLoginView, setIsLoginView] = useState(true);
-    const { currentUser, userData, isAdmin, logout } = useAuth();
+    const { currentUser, userData, isAdmin, logout, loginExitoso } = useAuth();
 
     // Cerrar modal cuando el usuario se autentica
     useEffect(() => {
-        if (currentUser) {
+        if (loginExitoso) {
             setShowModal(false);
         }
-    }, [currentUser]);
+    }, [loginExitoso]);
+
 
     const handleOpenLogin = () => {
         setIsLoginView(true);

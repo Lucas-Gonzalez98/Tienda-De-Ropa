@@ -34,9 +34,14 @@ const LoginUsuario = ({ onRegisterClick }: Props) => {
             setMessage("¡Inicio de sesión exitoso!");
             
             // El modal se cerrará automáticamente por el useEffect en Navbar
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error al iniciar sesión:", error);
-            setError("Email o contraseña incorrectos.");
+            if (error.message === "Cuenta inactiva") {
+                setError("Tu cuenta está inactiva. Si creés que esto es un error, escribinos a mshop@gmail.com");
+            } else {
+                setError("Email o contraseña incorrectos.");
+
+            }
         } finally {
             setLoading(false);
         }

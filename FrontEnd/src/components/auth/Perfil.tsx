@@ -370,7 +370,9 @@ function Perfil() {
                                     nombre,
                                     apellido,
                                     fechaNacimiento,
-                                    telefono: { ...userData.telefono, numero: telefono }
+                                    telefono: telefono !== userData.telefono.numero
+                                        ? { numero: telefono } // nuevo teléfono → sin id
+                                        : { ...userData.telefono, numero: telefono }
                                 });
                                 alert('Datos actualizados correctamente');
                                 window.location.reload();

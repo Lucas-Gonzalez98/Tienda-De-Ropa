@@ -36,6 +36,18 @@ public class ClienteController extends MasterController<Cliente, Long> {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+    @PutMapping("/{id}")
+    @Override
+    public ResponseEntity<Cliente> update(@PathVariable Long id, @RequestBody Cliente cliente) {
+        try {
+            Cliente actualizado = clienteService.updateWithRelatedEntities(id, cliente);
+            return ResponseEntity.ok(actualizado);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
 
     @GetMapping("/usuario/{usuarioId}")
