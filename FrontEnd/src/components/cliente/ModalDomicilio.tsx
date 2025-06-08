@@ -128,7 +128,6 @@ const ModalDomicilio: React.FC<Props> = ({ show, onHide, onSubmit, direccionActu
             const result = await response.json();
             console.log(`Domicilio ${direccionActual ? 'actualizado' : 'guardado'}:`, result);
             onSubmit(result);
-            window.location.reload()
         } catch (error) {
             console.error("Error al guardar domicilio:", error);
             alert("Ocurrió un error al guardar el domicilio.");

@@ -6,6 +6,7 @@ import PedidoDetalle from "../models/PedidoDetalle";
 import PedidoService from "../services/PedidoService";
 import { useAuth } from "./AuthContext";
 import type Cliente from "../models/Cliente";
+import HistoricoPrecioVentaService from "../services/HistoricoPrecioVentaService";
 
 interface CarritoContextProps {
   pedido: Pedido;
@@ -56,6 +57,10 @@ export function CarritoProvider({ children }: { children: ReactNode }) {
       const nuevoDetalles = new PedidoDetalle();
       nuevoDetalles.producto = producto;
       nuevoDetalles.cantidad = cantidad;
+      const nuevoPrecio = () =>{
+        HistoricoPrecioVentaService.ultimoById(producto.id!).then((res) => nuevoDetalles.precio = res.precio)
+      } 
+      nuevoPrecio()
       nuevosdetalles = [...prevPedido.detalles, nuevoDetalles];
     }
 
@@ -128,9 +133,7 @@ const restarDelCarrito = (idProducto: number) => {
       const horaActual = ahora.toTimeString().split(' ')[0];
       console.log("Hora actual:", horaActual);
 
-      PedidoService.create(pedido)
-      const pedidoTemporal = new Pedido();
-      return pedidoTemporal;
+      return pedido;
     } catch (error) {
       console.error(error);
       alert("Hubo un error al guardar el pedido.");

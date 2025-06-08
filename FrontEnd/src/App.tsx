@@ -16,6 +16,7 @@ import { Carrito } from './components/articulos/Carrito.tsx'
 import { CarritoProvider } from './context/CarritoContext.tsx'
 import Footer from "./components/layout/Footer.tsx";
 import { FormStock } from './components/articulos/FormStock.tsx'
+import { PedidoConfirmado } from './components/articulos/PedidoConfirmado.tsx'
 
 function App() {
   return (
@@ -43,6 +44,12 @@ function App() {
 
         <Route path="/carrito" element={
             <Carrito />
+        } />
+
+        <Route path="/confirmado" element={
+          <ProtectedRoute clientOnly={true}>
+            <PedidoConfirmado />
+          </ProtectedRoute>
         } />
 
         <Route path="/pedidos" element={

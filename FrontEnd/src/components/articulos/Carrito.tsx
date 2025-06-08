@@ -4,6 +4,7 @@ import Pedido from "../../models/Pedido";
 import { useCarrito } from "../../hooks/useCarrito";
 import HistoricoPrecioventaService from "../../services/HistoricoPrecioVentaService";
 import trashIcon from "../../assets/trash-xmark-svgrepo-com.svg";
+import { Link } from "react-router-dom";
 
 export function Carrito() {
   const carritoCtx = useCarrito();
@@ -20,7 +21,7 @@ export function Carrito() {
     enviarPedido,
     guardarPedidoYObtener
   } = carritoCtx;
-  
+
   const carrito = pedido.detalles;
   useEffect(() => {
     const obtenerPrecios = async () => {
@@ -44,15 +45,6 @@ export function Carrito() {
       obtenerPrecios();
     }
   }, [carrito]);
-  console.log("Carrito:", carrito);
-  const handlePagarConMP = async () => {
-    const pedidoFinal = await guardarPedidoYObtener();
-    if (pedidoFinal) {
-      setPedidoGuardado(pedidoFinal);
-    }
-    console.log(pedidoGuardado)
-  };
-  
   return (
     <div className="m-auto container">
         {carrito.length === 0 ? (
@@ -142,12 +134,7 @@ export function Carrito() {
             </div>
             <div className="d-flex justify-content-between mt-3">
               <Button variant="warning" onClick={limpiarCarrito}>Limpiar carrito</Button>
-              <Button variant="success" onClick={enviarPedido}>Guardar pedido</Button>
-            </div>
-            <div className="mt-3">
-            <Button variant="primary" onClick={handlePagarConMP}>
-              Pagar con Mercado Pago
-            </Button>
+              <Link to='/confirmado'>Confirmar pedido</Link>
             </div>
           </>
         )}

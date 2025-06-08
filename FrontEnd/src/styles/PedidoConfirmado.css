@@ -1,0 +1,14 @@
+.radio-card {
+    display: block;
+    padding: 1rem;
+    border: 1px solid #ccc;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.radio-card.selected {
+    border-color: #198754;
+    background-color: #e6f4ea;
+    font-weight: bold;
+}

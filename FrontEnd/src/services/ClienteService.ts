@@ -9,6 +9,17 @@ const ClienteService = {
         return await response.json();
     },
 
+    async getClienteById(id: number): Promise<Cliente> {
+        try {
+            const res = await fetch(`${API_URL}/${id}`);
+            if (!res.ok) throw new Error("Error al obtener productos");
+            return await res.json();
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    },
+    
     delete: async (id: number): Promise<void> => {
         const response = await fetch(`${API_URL}/${id}`, {
             method: "DELETE",
