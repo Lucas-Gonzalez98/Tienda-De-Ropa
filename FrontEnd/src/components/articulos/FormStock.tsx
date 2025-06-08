@@ -7,7 +7,7 @@ import ColorService from "../../services/ColorService"
 import ProductoService from "../../services/ProductoService"
 import { Button } from "react-bootstrap"
 import StockService from "../../services/StockService"
-import Stock from "../../models/Stock"
+//import Stock from "../../models/Stock"
 import { useSearchParams } from "react-router-dom"
 
 
@@ -20,6 +20,7 @@ export function FormStock(){
     const [ producto, setProducto ] = useState<number | "">(0)
     const [ cantidad, setCantidad ] = useState<number>(0)
     const [searchParams] = useSearchParams();
+    const [precioCompra, setPrecioCompra] = useState<number>(0);
     const idFromUrl = searchParams.get("id");
 
     const cargarTalles = () =>{
@@ -48,31 +49,33 @@ export function FormStock(){
     }
     },[idFromUrl]);
 
-    const Guardar = async () =>{
-        const stockNuevo = new Stock()
-        stockNuevo.cantidad = cantidad
-        stockNuevo.talle = { id: talle } as Talle 
-        stockNuevo.color = { id: color } as Color 
-        stockNuevo.producto = { id: producto }  as Producto
-        StockService.create(stockNuevo);
-        if(idFromUrl){
-            await StockService.update(Number(idFromUrl), stockNuevo);
-            alert("Categoría actualizada correctamente");
-        }else{
-            const stockNuevo = new Stock()
-            stockNuevo.cantidad = cantidad
-            stockNuevo.talle = { id: talle } as Talle 
-            stockNuevo.color = { id: color } as Color 
-            stockNuevo.producto = { id: producto }  as Producto
-            StockService.create(stockNuevo);
-            alert("Stock agregado exitosamente");
+    const Guardar = async () => {
+        try {
+            if (!producto || !color || !talle || cantidad <= 0 || precioCompra <= 0) {
+                alert("Por favor complete todos los campos correctamente");
+                return;
+            }
+
+            await StockService.crearOActualizarStock({
+                idProducto: producto as number,
+                idColor: color as number,
+                idTalle: talle as number,
+                cantidad: cantidad,
+                precioCompra: precioCompra
+            });
+
+            alert("Stock procesado exitosamente");
+            window.location.href = "/admin";
+        } catch (error) {
+            console.error(error);
+            alert("Error al procesar el stock");
         }
-        window.location.href = "/admin";
-    }
+    };
+
 
     return(
         <>
-            <h2 className="mt-5">Agregar Stock</h2>
+            <h2 className="mt-5">Gestionar Stock</h2>
             <form className="formContainer container d-flex flex-column text-start" onSubmit={e => e.preventDefault()}>
                 <div>
                     <label>Cantidad:</label>
@@ -130,11 +133,22 @@ export function FormStock(){
                         ))}
                     </select>
                 </div>
+                <div>
+                    <label>Precio de Compra:</label>
+                    <input
+                        type="number"
+                        value={precioCompra}
+                        onChange={e => setPrecioCompra(Number(e.target.value))}
+                        min={0}
+                        step="0.01"
+                        required
+                    />
+                </div>
                 <Button
                     variant="success"
                     className="mt-3"
                     onClick={Guardar}
-                    disabled={cantidad <= 0 || producto === "" || talle === "" || color === ""}
+                    disabled={cantidad <= 0 || producto === "" || talle === "" || color === "" || precioCompra <= 0}
                 >
                     {idFromUrl ? "Actualizar" : "Agregar"}
                 </Button>
