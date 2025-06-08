@@ -1,5 +1,6 @@
 import type Cliente from "./Cliente";
 import type PedidoDetalle from "./PedidoDetalle";
+import type Domicilio from "./Domicilio.ts";
 
 export default class Pedido {
     id?: number;
@@ -7,5 +8,6 @@ export default class Pedido {
     estado: String = "";
     cliente!: Cliente;
     detalles: PedidoDetalle[] = [];
+    domicilio!: Domicilio;
     eliminado!: boolean;
 }

@@ -13,6 +13,7 @@ class PedidoService {
             throw error;
         }
     }
+
     async create(pedido: Pedido): Promise<Pedido> {
         try {
             const res = await fetch(`${API_URL}/realizar/${pedido.cliente.id}/2`, {
@@ -28,6 +29,7 @@ class PedidoService {
             throw error;
         }
     }
+
     async getByCliente(clienteId: number): Promise<Pedido[]> {
         const res = await fetch(`${API_URL}/cliente/${clienteId}`);
         if (!res.ok) throw new Error("Error al obtener pedidos del cliente");
@@ -45,6 +47,26 @@ class PedidoService {
         if (!res.ok) throw new Error("Error al filtrar pedidos");
         return await res.json();
     }
+
+     async getById(pedidoId: number): Promise<Pedido> {
+        const res = await fetch(`${API_URL}/${pedidoId}`);
+        if (!res.ok) throw new Error("Error al obtener pedido");
+        return await res.json();
+    }
+
+    async downloadFactura(pedidoId: number): Promise<Blob> {
+        const res = await fetch(`${API_URL}/${pedidoId}/factura`, { method: "GET" });
+        if (!res.ok) throw new Error("No se pudo descargar la factura.");
+        return await res.blob(); // PDF
+    }
+
+    async cancelarPedido(pedidoId: number, usuarioId: number): Promise<void> {
+        const res = await fetch(`${API_URL}/${pedidoId}/cancelar?usuarioId=${usuarioId}`, {
+            method: "PUT"
+        });
+        if (!res.ok) throw new Error("Error al cancelar el pedido.");
+    }
+
 
 }
 

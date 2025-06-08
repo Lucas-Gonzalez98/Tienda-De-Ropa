@@ -3,6 +3,7 @@ import { Container, Row, Col, Form, Button } from 'react-bootstrap';
 import PedidoService from '../../services/PedidoService';
 import Pedido from '../../models/Pedido';
 import PedidoCard from './PedidoCard';
+import { PedidoDetalleModal } from './PedidoDetalleModal';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/Perfil.css';
 
@@ -15,16 +16,33 @@ const PedidosCliente = () => {
     const [estadoFiltro, setEstadoFiltro] = useState('');
     const [fechaDesde, setFechaDesde] = useState('');
     const [fechaHasta, setFechaHasta] = useState('');
+    const [detallePedido, setDetallePedido] = useState<Pedido | null>(null);
+    const [modalShow, setModalShow] = useState(false);
 
     const cargarPedidos = async () => {
         if (!cliente?.id) return;
+        // Filtrado igual que en tu primer código (puedes modificar aquí el método según tu backend)
         const pedidos = await PedidoService.getPedidosFiltrados(cliente.id, estadoFiltro, fechaDesde, fechaHasta);
         setPedidos(pedidos);
     };
 
     useEffect(() => {
         cargarPedidos();
+        // eslint-disable-next-line
     }, []);
+
+    const handleVerDetalle = async (pedidoId: number) => {
+        const pedido = await PedidoService.getById(pedidoId);
+        setDetallePedido(pedido);
+        setModalShow(true);
+    };
+
+    const handleCancelar = async (pedidoId: number) => {
+        if (window.confirm("¿Seguro desea cancelar el pedido? Esta acción es irreversible.")) {
+            await PedidoService.cancelarPedido(pedidoId, cliente.usuario.id);
+            await cargarPedidos();
+        }
+    };
 
     return (
         <Container className="my-4">
@@ -54,10 +72,22 @@ const PedidosCliente = () => {
                     <Button variant="primary" onClick={cargarPedidos}>Filtrar</Button>
                 </Col>
             </Row>
+            
+            {pedidos.map(p => (
+                <PedidoCard
+                    key={p.id}
+                    pedido={p}
+                    onVerDetalle={handleVerDetalle}
+                    onCancelar={handleCancelar}
+                />
+            ))}
 
-            {pedidos.map(p => <PedidoCard key={p.id} pedido={p} />)}
+            <PedidoDetalleModal
+                pedido={detallePedido}
+                show={modalShow}
+                onClose={() => setModalShow(false)}
+            />
         </Container>
-
     );
 };
 

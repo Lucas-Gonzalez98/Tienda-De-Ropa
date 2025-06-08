@@ -5,4 +5,7 @@ import com.tienda_ropa.ecommerce.model.enums.Estado;
 
 public interface PdfGenerator {
     byte[] generarResumenCambioEstado(Pedido pedido, Estado nuevoEstado, String mensajeEstado);
+
+    byte[] generarFacturaPedido(Pedido pedido);
+
 }

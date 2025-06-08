@@ -4,7 +4,10 @@ import com.tienda_ropa.ecommerce.model.Pedido;
 import com.tienda_ropa.ecommerce.model.enums.Estado;
 import com.tienda_ropa.ecommerce.model.enums.Rol;
 import com.tienda_ropa.ecommerce.service.PedidoService;
+import com.tienda_ropa.ecommerce.service.pdf.PdfGenerator;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,10 +20,12 @@ import java.util.List;
 public class PedidoController extends MasterController<Pedido, Long> {
 
     private final PedidoService pedidoService;
+    private final PdfGenerator pdfGenerator;
 
-    public PedidoController(PedidoService pedidoService) {
+    public PedidoController(PedidoService pedidoService, PdfGenerator pdfGenerator) {
         super(pedidoService);
         this.pedidoService = pedidoService;
+        this.pdfGenerator = pdfGenerator;
     }
 
     //permitir que un cliente consulte su historial de pedidos
@@ -62,4 +67,22 @@ public class PedidoController extends MasterController<Pedido, Long> {
         pedidoService.cambiarEstadoPedido(id, nuevoEstado, usuarioId, rol);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/{id}/factura")
+    public ResponseEntity<byte[]> descargarFactura(@PathVariable Long id) {
+        Pedido pedido = pedidoService.getById(id); // de tu service
+        byte[] pdfBytes = pdfGenerator.generarFacturaPedido(pedido); // Método a implementar en tu servicio pdf
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=factura_pedido_" + id + ".pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
+    }
+
+
+    @PutMapping("/{id}/cancelar")
+    public ResponseEntity<Void> cancelarPedido(@PathVariable Long id, @RequestParam Long usuarioId) {
+        pedidoService.cambiarEstadoPedido(id, Estado.CANCELADO, usuarioId, Rol.CLIENTE);
+        return ResponseEntity.ok().build();
+    }
+
 }
