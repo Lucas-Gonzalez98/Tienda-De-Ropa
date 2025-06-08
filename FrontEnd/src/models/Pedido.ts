@@ -5,7 +5,7 @@ import type Domicilio from "./Domicilio.ts";
 export default class Pedido {
     id?: number;
     fecha: Date = new Date();
-    estado: String = "";
+    estado: string = "";
     cliente!: Cliente;
     detalles: PedidoDetalle[] = [];
     domicilio!: Domicilio;

@@ -4,7 +4,7 @@ import type HistoricoPrecioVenta from "./HistoricoPrecioVenta";
 import type ImagenProducto from "./ImagenProducto";
 import type Talle from "./Talle";
 
-export default class Pedido {
+export default class Producto {
     id?: number;
     nombre: string = "";
     descripcion: string = "";

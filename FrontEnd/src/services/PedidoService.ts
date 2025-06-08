@@ -48,7 +48,7 @@ class PedidoService {
         return await res.json();
     }
 
-     async getById(pedidoId: number): Promise<Pedido> {
+    async getById(pedidoId: number): Promise<Pedido> {
         const res = await fetch(`${API_URL}/${pedidoId}`);
         if (!res.ok) throw new Error("Error al obtener pedido");
         return await res.json();
@@ -66,6 +66,20 @@ class PedidoService {
         });
         if (!res.ok) throw new Error("Error al cancelar el pedido.");
     }
+
+    async cambiarEstado(
+        pedidoId: number,
+        nuevoEstado: string,
+        usuarioId: number,
+        rol: string
+    ): Promise<void> {
+        const res = await fetch(
+            `${API_URL}/${pedidoId}/cambiar-estado?nuevoEstado=${nuevoEstado}&usuarioId=${usuarioId}&rol=${rol}`,
+            { method: 'PUT' }
+        );
+        if (!res.ok) throw new Error('Error al cambiar el estado del pedido');
+    }
+
 
 
 }

@@ -6,6 +6,7 @@ import GrillaProductos from '../articulos/GrillaProducts';
 import GrillaCategorias from '../articulos/GrillaCategoria';
 import GrillaCliente from "./GrillaCliente.tsx";
 import { GrillaStock } from '../articulos/GrillaStock.tsx';
+import { GrillaPedidos } from '../articulos/GrillaPedidos.tsx';
 
 function PanelAdmin() {
     const [selected, setSelected] = useState('Productos');
@@ -19,7 +20,7 @@ function PanelAdmin() {
             case 'Promociones':
                 return <div>Componente Promociones</div>;
             case 'Pedidos':
-                return <div>Componente Pedidos</div>;
+                return <GrillaPedidos />;
             case 'Clientes':
                 return <GrillaCliente/>;
             case 'Historicos':
