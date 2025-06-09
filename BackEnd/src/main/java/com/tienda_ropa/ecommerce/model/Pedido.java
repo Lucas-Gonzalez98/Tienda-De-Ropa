@@ -25,7 +25,6 @@ public class Pedido extends Master {
 
     @ManyToOne
     @JoinColumn(name = "cliente_id")
-    @JsonBackReference("cliente-pedido")
     private Cliente cliente;
 
     @ManyToOne

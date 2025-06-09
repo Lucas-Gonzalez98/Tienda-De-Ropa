@@ -1,7 +1,6 @@
 import Pedido from "../models/Pedido";
 
 const API_URL = "http://localhost:8080/api/pedido";
-
 class PedidoService {
     async getAll(): Promise<Pedido[]> {
         try {
@@ -67,21 +66,38 @@ class PedidoService {
         if (!res.ok) throw new Error("Error al cancelar el pedido.");
     }
 
-    async cambiarEstado(
-        pedidoId: number,
-        nuevoEstado: string,
-        usuarioId: number,
-        rol: string
-    ): Promise<void> {
-        const res = await fetch(
-            `${API_URL}/${pedidoId}/cambiar-estado?nuevoEstado=${nuevoEstado}&usuarioId=${usuarioId}&rol=${rol}`,
-            { method: 'PUT' }
-        );
-        if (!res.ok) throw new Error('Error al cambiar el estado del pedido');
+    async cambiarEstadoPedido(pedidoId: number, nuevoEstado: string, usuarioId: number, rol: string): Promise<string> {
+        const url = `${API_URL}/${pedidoId}/estado`;
+
+        const body = {
+            nuevoEstado,
+            usuarioId,
+            rol
+        };
+
+        console.log("Datos enviados al backend:", body);
+        try {
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Error ${response.status}: ${errorText}`);
+            }
+
+            const result = await response.text(); // O usar .json() si la API devuelve JSON
+            console.log("Estado actualizado:", result);
+            return result;
+        } catch (error: any) {
+            console.error("Error al cambiar el estado del pedido:", error.message);
+            throw error;
+        }
     }
-
-
-
 }
 
 export default new PedidoService();

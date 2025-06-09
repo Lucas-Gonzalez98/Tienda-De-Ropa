@@ -6,7 +6,7 @@ import GrillaProductos from '../articulos/GrillaProducts';
 import GrillaCategorias from '../articulos/GrillaCategoria';
 import GrillaCliente from "./GrillaCliente.tsx";
 import { GrillaStock } from '../articulos/GrillaStock.tsx';
-import { GrillaPedidos } from '../articulos/GrillaPedidos.tsx';
+import GrillaPedidos from '../articulos/GrillaPedidos.tsx';
 
 function PanelAdmin() {
     const [selected, setSelected] = useState('Productos');
@@ -17,14 +17,10 @@ function PanelAdmin() {
                 return <div><GrillaProductos/></div>;
             case 'Categorias':
                 return <div><GrillaCategorias/></div>;
-            case 'Promociones':
-                return <div>Componente Promociones</div>;
             case 'Pedidos':
                 return <GrillaPedidos />;
             case 'Clientes':
                 return <GrillaCliente/>;
-            case 'Historicos':
-                return <div>Componente Historicos</div>;
             case 'Stock':
                 return <GrillaStock/>;
             default:
@@ -49,7 +45,7 @@ function PanelAdmin() {
                         </div>
                     </div>
                     <Nav className="flex-column">
-                        {['Productos', 'Categorias', 'Promociones', 'Pedidos', 'Clientes', 'Historicos','Stock'].map((item) => (
+                        {['Productos', 'Categorias', 'Pedidos', 'Clientes','Stock'].map((item) => (
                             <Nav.Link
                                 key={item}
                                 onClick={() => setSelected(item)}
