@@ -184,48 +184,50 @@ const GrillaPedidos: React.FC = () => {
                             </td>
                         </tr>
                     ) : (
-                        pedidos.map((pedido) => (
-                            <tr key={pedido.id}>
-                                <td>{pedido.id}</td>
-                                <td>{pedido.cliente.nombre} {pedido.cliente.apellido}</td>
-                                <td>
-                                    {pedido.domicilio.calle} {pedido.domicilio.numero},{" "}
-                                    {pedido.domicilio.localidad?.nombre}
-                                    {pedido.domicilio.referencia ? ` (${pedido.domicilio.referencia})` : ""}
-                                </td>
-                                <td>{new Date(pedido.fecha).toLocaleDateString()}</td>
-                                <td>{pedido.estado}</td>
-                                <td>
-                                    <Button variant="info" size="sm" onClick={() => handleVerDetalle(pedido.id!)}>
-                                        Ver
-                                    </Button>{" "}
-                                    <Button variant="success" size="sm" onClick={() => handleDescargarFactura(pedido.id!)}>
-                                        Factura
-                                    </Button>{" "}
-                                    <Form.Select
-                                        size="sm"
-                                        value={nuevoEstadoMap[pedido.id!] || pedido.estado}
-                                        onChange={(e) =>
-                                            setNuevoEstadoMap({ ...nuevoEstadoMap, [pedido.id!]: e.target.value as Estado })
-                                        }
-                                        className="d-inline w-auto"
-                                    >
-                                        {estados.map((estado) => (
-                                            <option key={estado} value={estado}>
-                                                {estado}
-                                            </option>
-                                        ))}
-                                    </Form.Select>{" "}
-                                    <Button
-                                        variant="primary"
-                                        size="sm"
-                                        onClick={() => handleCambiarEstado(pedido.id!)}
-                                    >
-                                        Guardar
-                                    </Button>
-                                </td>
-                            </tr>
-                        ))
+                        [...pedidos]
+                            .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
+                            .map((pedido) => (
+                                <tr key={pedido.id}>
+                                    <td>{pedido.id}</td>
+                                    <td>{pedido.cliente.nombre} {pedido.cliente.apellido}</td>
+                                    <td>
+                                        {pedido.domicilio.calle} {pedido.domicilio.numero},{" "}
+                                        {pedido.domicilio.localidad?.nombre}
+                                        {pedido.domicilio.referencia ? ` (${pedido.domicilio.referencia})` : ""}
+                                    </td>
+                                    <td>{new Date(pedido.fecha).toLocaleDateString()}</td>
+                                    <td>{pedido.estado}</td>
+                                    <td>
+                                        <Button variant="info" size="sm" onClick={() => handleVerDetalle(pedido.id!)}>
+                                            Ver
+                                        </Button>{" "}
+                                        <Button variant="success" size="sm" onClick={() => handleDescargarFactura(pedido.id!)}>
+                                            Factura
+                                        </Button>{" "}
+                                        <Form.Select
+                                            size="sm"
+                                            value={nuevoEstadoMap[pedido.id!] || pedido.estado}
+                                            onChange={(e) =>
+                                                setNuevoEstadoMap({ ...nuevoEstadoMap, [pedido.id!]: e.target.value as Estado })
+                                            }
+                                            className="d-inline w-auto"
+                                        >
+                                            {estados.map((estado) => (
+                                                <option key={estado} value={estado}>
+                                                    {estado}
+                                                </option>
+                                            ))}
+                                        </Form.Select>{" "}
+                                        <Button
+                                            variant="primary"
+                                            size="sm"
+                                            onClick={() => handleCambiarEstado(pedido.id!)}
+                                        >
+                                            Guardar
+                                        </Button>
+                                    </td>
+                                </tr>
+                            ))
                     )}
                 </tbody>
             </Table>
