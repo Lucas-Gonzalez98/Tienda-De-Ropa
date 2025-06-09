@@ -28,4 +28,9 @@ public class CategoriaController extends MasterController<Categoria, Long> {
     public ResponseEntity<List<Categoria>> getByDenominacion(@PathVariable String denominacion) {
         return ResponseEntity.ok(categoriaService.findByDenominacion(denominacion));
     }
+
+    @GetMapping("/tree")
+    public ResponseEntity<List<Categoria>> getAllTree() {
+        return ResponseEntity.ok(categoriaService.getAllTree());
+    }
 }

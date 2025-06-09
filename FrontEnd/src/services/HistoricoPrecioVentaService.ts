@@ -51,6 +51,17 @@ class HistoricoPrecioVentaService {
             throw error;
         }
     }
+
+    async getUltimosById(id: number, limit: number = 3): Promise<HistoricoPrecioVenta[]> {
+        try {
+            const res = await fetch(`${API_URL}/ultimos/${id}?limit=${limit}`);
+            if (!res.ok) throw new Error("Error al obtener los precios de venta históricos");
+            return await res.json();
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
 }
 
 export default new HistoricoPrecioVentaService();

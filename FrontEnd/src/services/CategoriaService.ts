@@ -102,6 +102,18 @@ class CategoriaService {
             throw error;
         }
     }
+
+    async getAllTree(): Promise<Categoria[]> {
+        try {
+            const res = await fetch(`${API_URL}/tree`);
+            if (!res.ok) throw new Error("Error al obtener el árbol de Categorías");
+            return await res.json();
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
 }
 
 export default new CategoriaService();

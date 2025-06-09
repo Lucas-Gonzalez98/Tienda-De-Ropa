@@ -28,4 +28,9 @@ public class CategoriaServiceImpl extends MasterServiceImpl<Categoria, Long> imp
         return categoriaRepository.findByDenominacion(denominacion);
     }
 
+    @Override
+    public List<Categoria> getAllTree() {
+        return categoriaRepository.findAllTree();
+    }
+
 }

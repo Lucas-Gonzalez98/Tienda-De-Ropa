@@ -40,4 +40,12 @@ public class HistoricoPrecioCompraController extends MasterController<HistoricoP
         return ResponseEntity.ok(lista);
     }
 
+    @GetMapping("/ultimos/{id}")
+    public ResponseEntity<List<HistoricoPrecioCompra>> getUltimos(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "3") int limit
+    ) {
+        return ResponseEntity.ok(historicoPrecioCompraService.getUltimosById(id, limit));
+    }
+
 }

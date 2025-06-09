@@ -53,6 +53,11 @@ public class StockServiceImpl extends MasterServiceImpl<Stock, Long> implements 
         return stockRepository.obtenerCantidadStockDisponible(producto, talle, color);
     }
 
+    @Override
+    public List<Stock> getByProducto(Long productoId) {
+        return stockRepository.findByProductoId(productoId);
+    }
+
     // Crear stock con combinacion e Historico Compra
     @Override
     @Transactional

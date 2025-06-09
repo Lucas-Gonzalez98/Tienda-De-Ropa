@@ -4,6 +4,8 @@ import com.tienda_ropa.ecommerce.model.HistoricoPrecioCompra;
 import com.tienda_ropa.ecommerce.repository.HistoricoPrecioCompraRepository;
 import com.tienda_ropa.ecommerce.service.HistoricoPrecioCompraService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -32,5 +34,11 @@ public class HistoricoPrecioCompraServiceImpl extends MasterServiceImpl<Historic
     @Override
     public List<HistoricoPrecioCompra> listarPorProductoOrdenadosPorFecha(Long productoId) {
         return historicoPrecioCompraRepository.findAllByProductoIdAndEliminadoFalseOrderByFechaDesc(productoId);
+    }
+
+    @Override
+    public List<HistoricoPrecioCompra> getUltimosById(Long productoId, int limite) {
+        Pageable pageable = PageRequest.of(0, limite);
+        return historicoPrecioCompraRepository.findUltimosByProductoId(productoId, pageable);
     }
 }
