@@ -28,7 +28,7 @@ export function PedidoConfirmado(){
     const handlePagarConMP = async () => {
         const pedidoFinal = await guardarPedidoYObtener();
         if (pedidoFinal) {
-        setPedidoGuardado(pedidoFinal);
+            setPedidoGuardado(pedidoFinal);
         }
     };
     useEffect(()=>{
@@ -132,7 +132,7 @@ export function PedidoConfirmado(){
                         Pagar con Mercado Pago
                     </Button>
                     {pedidoGuardado && (
-                        <CheckoutMP pedido={pedido}/>
+                        <CheckoutMP pedido={pedidoGuardado}/>
                     )}
                 </div>
 

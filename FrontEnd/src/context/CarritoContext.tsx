@@ -132,9 +132,8 @@ const restarDelCarrito = (idProducto: number) => {
       pedido.estado = "PENDIENTE";
       const response = PedidoService.create(pedido)
 
-      const data = response;
-      console.log(data)
-      return data;
+      console.log(response)
+      return response;
     } catch (error) {
       console.error(error);
       alert("Hubo un error al guardar el pedido.");

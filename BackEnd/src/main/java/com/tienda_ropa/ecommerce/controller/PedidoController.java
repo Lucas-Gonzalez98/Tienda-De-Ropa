@@ -4,6 +4,7 @@ import com.tienda_ropa.ecommerce.model.Pedido;
 import com.tienda_ropa.ecommerce.model.enums.Estado;
 import com.tienda_ropa.ecommerce.model.enums.Rol;
 import com.tienda_ropa.ecommerce.model.mercadopago.PreferenceMP;
+import com.tienda_ropa.ecommerce.repository.PedidoRepository;
 import com.tienda_ropa.ecommerce.service.PedidoService;
 import com.tienda_ropa.ecommerce.service.pdf.PdfGenerator;
 import jakarta.persistence.EntityNotFoundException;

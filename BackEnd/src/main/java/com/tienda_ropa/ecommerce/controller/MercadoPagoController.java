@@ -1,8 +1,7 @@
 package com.tienda_ropa.ecommerce.controller;
 
-
-
 import com.mercadopago.MercadoPagoConfig;
+import com.mercadopago.client.merchantorder.MerchantOrderClient;
 import com.mercadopago.client.payment.PaymentClient;
 import com.mercadopago.client.preference.PreferenceBackUrlsRequest;
 import com.mercadopago.client.preference.PreferenceClient;
@@ -10,13 +9,13 @@ import com.mercadopago.client.preference.PreferenceItemRequest;
 import com.mercadopago.client.preference.PreferenceRequest;
 import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
+import com.mercadopago.resources.merchantorder.MerchantOrder;
 import com.mercadopago.resources.payment.Payment;
 import com.mercadopago.resources.preference.Preference;
 import com.tienda_ropa.ecommerce.model.Pedido;
 import com.tienda_ropa.ecommerce.model.mercadopago.PreferenceMP;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,13 +41,20 @@ public class MercadoPagoController {
         try {
             // Crear cliente
             PaymentClient client = new PaymentClient();
+            System.out.println(paymentId);
             // Obtener info del pago
             Payment payment = client.get(paymentId);
 
+            MerchantOrderClient merchantOrderClient = new MerchantOrderClient();
+            MerchantOrder order = merchantOrderClient.get(payment.getOrder().getId());
+
+            String externalReference = order.getExternalReference();
+            Long pedidoId = Long.valueOf(externalReference);
+
+            System.out.println(pedidoId);
+
             System.out.println("Estado del pago: " + payment.getStatus());
             System.out.println("Monto: " + payment.getTransactionAmount());
-
-            // TODO: actualizar el pedido según el estado del pago
 
         } catch (MPApiException | MPException e) {
             e.printStackTrace();
@@ -80,7 +86,7 @@ public class MercadoPagoController {
                     .pending("http://localhost:5173")
                     .failure("http://localhost:5173")
                     .build();
-
+            System.out.println("Pedido ID: "+pedido.getId());
             PreferenceRequest preferenceRequest = PreferenceRequest.builder()
                     .notificationUrl("https://2869-2803-9800-9849-7c6d-d16f-c3c4-3dfd-54a9.ngrok-free.app/api/webhook")
                     .externalReference(String.valueOf(pedido.getId()))
