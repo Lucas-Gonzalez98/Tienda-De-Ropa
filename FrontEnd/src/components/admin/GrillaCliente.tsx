@@ -184,7 +184,7 @@ function ClienteGrilla() {
                                     <ul className="list-group">
                                         {clienteSeleccionado.domicilios.map((dom, idx) => (
                                             <li key={idx} className="list-group-item">
-                                                <span><b>{dom.referencia}</b> - {dom.calle} {dom.numero} - CP {dom.codigoPostal} - {dom.localidad.nombre}</span>
+                                                <span><b>{dom.referencia}</b> - {dom.calle} {dom.numero} - CP {dom.codigoPostal} - {dom.localidad!.nombre}</span>
                                             </li>
                                         ))}
                                     </ul>

@@ -11,4 +11,6 @@ public interface HistoricoPrecioCompraService extends MasterService<HistoricoPre
     List<HistoricoPrecioCompra> listarTodosOrdenadosPorFecha();
 
     List<HistoricoPrecioCompra> listarPorProductoOrdenadosPorFecha(Long productoId);
+
+    List<HistoricoPrecioCompra> getUltimosById(Long productoId, int limite);
 }

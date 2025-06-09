@@ -30,4 +30,8 @@ public interface StockRepository extends MasterRepository<Stock, Long> {
             @Param("colorId") Long colorId,
             @Param("talleId") Long talleId
     );
+
+    Optional<Stock> findByProductoAndColorAndTalle(Producto producto, Color color, Talle talle);
+
+    List<Stock> findByProductoId(Long productoId);
 }

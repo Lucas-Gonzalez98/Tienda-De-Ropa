@@ -1,7 +1,9 @@
 package com.tienda_ropa.ecommerce.repository;
 
 import com.tienda_ropa.ecommerce.model.HistoricoPrecioCompra;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,4 +22,7 @@ public interface HistoricoPrecioCompraRepository extends MasterRepository<Histor
 
     //Buscar el ultimo precio compra
     Optional<HistoricoPrecioCompra> findTopByProductoIdOrderByFechaDesc(Long productoId);
+
+    @Query("SELECT h FROM HistoricoPrecioCompra h WHERE h.producto.id = :productoId ORDER BY h.fecha DESC")
+    List<HistoricoPrecioCompra> findUltimosByProductoId(@Param("productoId") Long productoId, Pageable pageable);
 }

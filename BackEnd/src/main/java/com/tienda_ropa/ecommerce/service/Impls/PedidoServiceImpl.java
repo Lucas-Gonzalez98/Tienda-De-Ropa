@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.EnumSet;
 import java.util.List;
 
 @Service
@@ -112,11 +113,81 @@ public class PedidoServiceImpl extends MasterServiceImpl<Pedido, Long> implement
     // búsqueda filtrada para ver pedidos realizados
     @Override
     @Transactional
-    public List<Pedido> getByFiltros(Long clienteId, String estado, LocalDate fechaDesde, LocalDate fechaHasta) {
+    public List<Pedido> getByFiltros(Long clienteId, String estadoStr, LocalDate fechaDesde, LocalDate fechaHasta) {
+        Estado estado = null;
+        if (estadoStr != null && !estadoStr.isEmpty()) {
+            try {
+                estado = Estado.valueOf(estadoStr.toUpperCase()); // Asegura coincidencia con enum
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Estado inválido: " + estadoStr);
+            }
+        }
+
         return pedidoRepository.findByFiltros(clienteId, estado, fechaDesde, fechaHasta);
     }
 
+    //CAMBIAR DE ESTADO EL PEDIDO
+    @Transactional
+    @Override
+    public void cambiarEstadoPedido(Long pedidoId, Estado nuevoEstado, Long usuarioId, Rol rol) {
+
+        Pedido pedido = pedidoRepository.findById(pedidoId)
+                .orElseThrow(() -> new EntityNotFoundException("Pedido no encontrado"));
+
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+
+        // Validación por ROL
+        if (rol == Rol.CLIENTE) {
+            if (!pedido.getCliente().getUsuario().getId().equals(usuarioId)) {
+                throw new AccessDeniedException("El cliente no puede modificar pedidos de otros.");
+            }
+            if (pedido.getEstado() != Estado.PENDIENTE || nuevoEstado != Estado.CANCELADO) {
+                throw new AccessDeniedException("El cliente solo puede cancelar pedidos en estado PENDIENTE.");
+            }
+        } else if (rol == Rol.ADMINISTRADOR) {
+            if (!EnumSet.of(Estado.PROCESANDO, Estado.EN_CAMINO, Estado.ENTREGADO, Estado.CANCELADO).contains(nuevoEstado)) {
+                throw new IllegalArgumentException("El estado solicitado no es válido para administradores.");
+            }
+        } else {
+            throw new AccessDeniedException("Rol no permitido.");
+        }
+
+        // Actualizar estado
+        pedido.setEstado(nuevoEstado);
+        pedidoRepository.save(pedido);
+
+        // Si el estado es CANCELADO → devolver stock
+        if (nuevoEstado == Estado.CANCELADO) {
+            for (PedidoDetalle detalle : pedido.getDetalles()) {
+                Producto producto = detalle.getProducto();
+                Color color = producto.getColor();
+                Talle talle = producto.getTalle();
+
+                Stock stock = stockRepository.findByProductoAndColorAndTalle(producto, color, talle)
+                        .orElseThrow(() -> new EntityNotFoundException("Stock no encontrado"));
+
+                stock.setCantidad(stock.getCantidad() + detalle.getCantidad());
+                stockRepository.save(stock);
+            }
+        }
+
+        // Generar PDF y enviar email
+        String mensaje = switch (nuevoEstado) {
+            case PENDIENTE -> "Tu pedido ha sido registrado y está pendiente de aprobación.";
+            case PROCESANDO -> "Tu pedido fue aprobado y está siendo preparado.";
+            case EN_CAMINO -> "Tu pedido está listo, ya se está enviando a su destino. ¡Ojalá llegue pronto!";
+            case ENTREGADO -> "Hemos entregado tu pedido. ¡Gracias por tu compra!";
+            case CANCELADO -> "El pedido ha sido cancelado. Si no realizaste esta acción, por favor contáctanos.";
+            default -> "Tu pedido cambió de estado.";
+        };
+        //byte[] pdf = pdfGenerator.generarResumenCambioEstado(pedido, nuevoEstado, mensaje);
+        //emailService.enviarEmailEstadoPedido(pedido.getCliente().getUsuario().getEmail(), nuevoEstado, mensaje, pdf);
+    }
+
+
     //Actualizar el estado del pedido.
+    /*
     @Override
     @Transactional
     public void cambiarEstadoPedido(Long pedidoId, Estado nuevoEstado, Long usuarioId, Rol rol) {
@@ -156,4 +227,5 @@ public class PedidoServiceImpl extends MasterServiceImpl<Pedido, Long> implement
             case CANCELADO -> "El pedido ha sido cancelado. Si no realizaste esta acción, por favor contáctanos.";
         };
     }
+     */
 }

@@ -12,4 +12,7 @@ public interface CategoriaRepository extends MasterRepository<Categoria, Long> {
     List<Categoria> findAllExcludingFirst();
 
     List<Categoria> findByDenominacion(String denominacion);
+
+    @Query("SELECT c FROM Categoria c LEFT JOIN FETCH c.subcategorias WHERE c.categoriaPadre IS NULL")
+    List<Categoria> findAllTree();
 }

@@ -6,14 +6,18 @@ import com.tienda_ropa.ecommerce.model.enums.Rol;
 import com.tienda_ropa.ecommerce.model.mercadopago.PreferenceMP;
 import com.tienda_ropa.ecommerce.service.PedidoService;
 import com.tienda_ropa.ecommerce.service.pdf.PdfGenerator;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/pedido")
@@ -58,15 +62,27 @@ public class PedidoController extends MasterController<Pedido, Long> {
     }
 
     // Endpoint para cambiar el estado de un pedido
-    @PutMapping("/{id}/cambiar-estado")
-    public ResponseEntity<Void> cambiarEstado(
-            @PathVariable Long id,
-            @RequestParam Estado nuevoEstado,
-            @RequestParam Long usuarioId,
-            @RequestParam Rol rol
-    ) {
-        pedidoService.cambiarEstadoPedido(id, nuevoEstado, usuarioId, rol);
-        return ResponseEntity.ok().build();
+    @PutMapping("/{pedidoId}/estado")
+    public ResponseEntity<?> cambiarEstadoPedido(
+            @PathVariable Long pedidoId,
+            @RequestBody Map<String, String> body) {
+
+        try {
+            Estado nuevoEstado = Estado.valueOf(body.get("nuevoEstado"));
+            Long usuarioId = Long.parseLong(body.get("usuarioId"));
+            Rol rol = Rol.valueOf(body.get("rol"));
+
+            pedidoService.cambiarEstadoPedido(pedidoId, nuevoEstado, usuarioId, rol);
+            return ResponseEntity.ok("Estado del pedido actualizado correctamente.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Enum inválido: " + e.getMessage());
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error inesperado.");
+        }
     }
 
     @GetMapping("/{id}/factura")

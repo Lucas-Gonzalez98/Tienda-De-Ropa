@@ -1,46 +1,48 @@
-import { useEffect, useState } from 'react';
-import { Button, Form, Modal, Table } from 'react-bootstrap';
-import PedidoService from '../../services/PedidoService';
-import type Pedido from '../../models/Pedido';
+// src/components/GrillaPedidos.tsx
+import React, { useEffect, useState } from "react";
+import { Table, Button, Form, Modal, Row, Col, Spinner } from "react-bootstrap";
+import { useAuth } from "../../context/AuthContext";
+import PedidoService from "../../services/PedidoService";
+import Pedido from "../../models/Pedido";
+import { PedidoDetalleModal } from "../cliente/PedidoDetalleModal";
+import { type Estado } from "../../models/enums/Estado";
 
-export function GrillaPedidos() {
-    // Estados
+const estados: Estado[] = ["PENDIENTE", "PROCESANDO", "EN_CAMINO", "ENTREGADO", "CANCELADO"];
+
+const GrillaPedidos: React.FC = () => {
+    const { usuario } = useAuth();
     const [pedidos, setPedidos] = useState<Pedido[]>([]);
-    const [filtroTexto, setFiltroTexto] = useState('');
-    const [filtroEstado, setFiltroEstado] = useState('');
-    const [filtroFechaDesde, setFiltroFechaDesde] = useState('');
-    const [filtroFechaHasta, setFiltroFechaHasta] = useState('');
-    const [showDetalleModal, setShowDetalleModal] = useState(false);
-    const [showEstadoModal, setShowEstadoModal] = useState(false);
+    const [loading, setLoading] = useState<boolean>(false);
+
+    const [filtroTexto, setFiltroTexto] = useState<string>("");
+    const [filtroEstado, setFiltroEstado] = useState<string>("");
+    const [fechaDesde, setFechaDesde] = useState<string>("");
+    const [fechaHasta, setFechaHasta] = useState<string>("");
+
+    const [mostrarModal, setMostrarModal] = useState<boolean>(false);
     const [pedidoSeleccionado, setPedidoSeleccionado] = useState<Pedido | null>(null);
-    const [nuevoEstado, setNuevoEstado] = useState('');
-    const [loading, setLoading] = useState(false);
 
-    // Estados disponibles
-    const estados = ['PENDIENTE', 'PROCESANDO', 'EN_CAMINO', 'ENTREGADO', 'CANCELADO'];
+    const [nuevoEstadoMap, setNuevoEstadoMap] = useState<Record<number, Estado>>({});
 
-    // Cargar pedidos
     const cargarPedidos = async () => {
         setLoading(true);
         try {
-            const data = await PedidoService.getPedidosFiltrados(
-                0, // clienteId 0 para traer todos
+            const pedidosFiltrados = await PedidoService.getPedidosFiltrados(
+                0,
                 filtroEstado || undefined,
-                filtroFechaDesde || undefined,
-                filtroFechaHasta || undefined
+                fechaDesde || undefined,
+                fechaHasta || undefined
             );
-            // Filtrar por texto si existe
-            const pedidosFiltrados = filtroTexto
-                ? data.filter(pedido =>
-                    `${pedido.cliente.nombre} ${pedido.cliente.apellido}`
-                        .toLowerCase()
-                        .includes(filtroTexto.toLowerCase())
-                )
-                : data;
-            setPedidos(pedidosFiltrados);
+
+            const filtradosPorTexto = pedidosFiltrados.filter(p =>
+                (`${p.cliente.nombre} ${p.cliente.apellido}`)
+                    .toLowerCase()
+                    .includes(filtroTexto.toLowerCase())
+            );
+
+            setPedidos(filtradosPorTexto);
         } catch (error) {
-            console.error('Error al cargar pedidos:', error);
-            alert('Error al cargar los pedidos');
+            console.error("Error al cargar pedidos:", error);
         } finally {
             setLoading(false);
         }
@@ -48,88 +50,121 @@ export function GrillaPedidos() {
 
     useEffect(() => {
         cargarPedidos();
-    }, [filtroEstado, filtroFechaDesde, filtroFechaHasta, filtroTexto]);
+    }, [filtroTexto, filtroEstado, fechaDesde, fechaHasta]);
 
-    // Limpiar filtros
-    const limpiarFiltros = () => {
-        setFiltroTexto('');
-        setFiltroEstado('');
-        setFiltroFechaDesde('');
-        setFiltroFechaHasta('');
+    const handleVerDetalle = async (pedidoId: number) => {
+        try {
+            const pedido = await PedidoService.getById(pedidoId);
+            setPedidoSeleccionado(pedido);
+            setMostrarModal(true);
+        } catch (error) {
+            console.error("Error al obtener detalles del pedido:", error);
+        }
     };
 
-    // Cambiar estado
-    const confirmarCambioEstado = async () => {
-        if (!pedidoSeleccionado || !nuevoEstado) return;
+    const handleDescargarFactura = async (pedidoId: number) => {
+        try {
+            const blob = await PedidoService.downloadFactura(pedidoId);
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `factura_${pedidoId}.pdf`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Error al descargar la factura:", error);
+        }
+    };
+
+    const handleCambiarEstado = async (pedidoId: number) => {
+        if (!usuario || usuario.id === undefined) {
+            alert("No se encontró información del usuario.");
+            return;
+        }
+
+        const nuevoEstado = nuevoEstadoMap[pedidoId];
+        if (!nuevoEstado) {
+            alert("Seleccione un estado válido.");
+            return;
+        }
 
         try {
-            await PedidoService.cambiarEstado(
-                pedidoSeleccionado.id!,
-                nuevoEstado as any,
-                1, // usuarioId del admin
-                'ADMIN' // rol
+            setLoading(true);
+            await PedidoService.cambiarEstadoPedido(
+                pedidoId,
+                nuevoEstado.toUpperCase(),
+                usuario.id,
+                usuario.rol.toUpperCase()
             );
-            setShowEstadoModal(false);
-            cargarPedidos();
-            alert('Estado actualizado correctamente');
-        } catch (error) {
-            console.error('Error al cambiar estado:', error);
-            alert('Error al cambiar el estado del pedido');
+            alert("Estado actualizado correctamente.");
+            await cargarPedidos();
+        } catch (error: any) {
+            alert("Error al cambiar el estado: " + error.message);
+        } finally {
+            setLoading(false);
         }
+    };
+
+    const limpiarFiltros = () => {
+        setFiltroTexto("");
+        setFiltroEstado("");
+        setFechaDesde("");
+        setFechaHasta("");
     };
 
     return (
         <div className="container mt-4">
             <h2>Gestión de Pedidos</h2>
+            <Form className="mb-3">
+                <Row>
+                    <Col md={3}>
+                        <Form.Control
+                            placeholder="Buscar por cliente"
+                            value={filtroTexto}
+                            onChange={(e) => setFiltroTexto(e.target.value)}
+                        />
+                    </Col>
+                    <Col md={2}>
+                        <Form.Select
+                            value={filtroEstado}
+                            onChange={(e) => setFiltroEstado(e.target.value)}
+                        >
+                            <option value="">Estado</option>
+                            {estados.map((estado) => (
+                                <option key={estado} value={estado}>
+                                    {estado}
+                                </option>
+                            ))}
+                        </Form.Select>
+                    </Col>
+                    <Col md={2}>
+                        <Form.Control
+                            type="date"
+                            value={fechaDesde}
+                            onChange={(e) => setFechaDesde(e.target.value)}
+                        />
+                    </Col>
+                    <Col md={2}>
+                        <Form.Control
+                            type="date"
+                            value={fechaHasta}
+                            onChange={(e) => setFechaHasta(e.target.value)}
+                        />
+                    </Col>
+                    <Col md={2}>
+                        <Button variant="secondary" onClick={limpiarFiltros}>
+                            Ver Todos
+                        </Button>
+                    </Col>
+                </Row>
+            </Form>
 
-            {/* Filtros */}
-            <div className="row mb-4">
-                <div className="col-md-3">
-                    <Form.Control
-                        type="text"
-                        placeholder="Buscar por cliente..."
-                        value={filtroTexto}
-                        onChange={e => setFiltroTexto(e.target.value)}
-                    />
-                </div>
-                <div className="col-md-2">
-                    <Form.Select
-                        value={filtroEstado}
-                        onChange={e => setFiltroEstado(e.target.value)}
-                    >
-                        <option value="">Todos los estados</option>
-                        {estados.map(estado => (
-                            <option key={estado} value={estado}>{estado}</option>
-                        ))}
-                    </Form.Select>
-                </div>
-                <div className="col-md-2">
-                    <Form.Control
-                        type="date"
-                        value={filtroFechaDesde}
-                        onChange={e => setFiltroFechaDesde(e.target.value)}
-                    />
-                </div>
-                <div className="col-md-2">
-                    <Form.Control
-                        type="date"
-                        value={filtroFechaHasta}
-                        onChange={e => setFiltroFechaHasta(e.target.value)}
-                    />
-                </div>
-                <div className="col-md-3">
-                    <Button variant="secondary" onClick={limpiarFiltros}>
-                        Limpiar Filtros
-                    </Button>
-                </div>
-            </div>
-
-            {/* Tabla de Pedidos */}
             <Table striped bordered hover responsive>
                 <thead>
                     <tr>
                         <th>ID</th>
                         <th>Cliente</th>
+                        <th>Domicilio</th>
                         <th>Fecha</th>
                         <th>Estado</th>
                         <th>Acciones</th>
@@ -138,53 +173,56 @@ export function GrillaPedidos() {
                 <tbody>
                     {loading ? (
                         <tr>
-                            <td colSpan={5} className="text-center">Cargando...</td>
+                            <td colSpan={6} className="text-center">
+                                <Spinner animation="border" /> Cargando...
+                            </td>
                         </tr>
                     ) : pedidos.length === 0 ? (
                         <tr>
-                            <td colSpan={5} className="text-center">No hay pedidos para mostrar</td>
+                            <td colSpan={6} className="text-center">
+                                No se encontraron pedidos.
+                            </td>
                         </tr>
                     ) : (
-                        pedidos.map(pedido => (
+                        pedidos.map((pedido) => (
                             <tr key={pedido.id}>
                                 <td>{pedido.id}</td>
+                                <td>{pedido.cliente.nombre} {pedido.cliente.apellido}</td>
                                 <td>
-                                    {pedido.cliente ?
-                                        `${pedido.cliente.nombre || ''} ${pedido.cliente.apellido || ''}` :
-                                        'Cliente no disponible'
-                                    }
+                                    {pedido.domicilio.calle} {pedido.domicilio.numero},{" "}
+                                    {pedido.domicilio.localidad?.nombre}
+                                    {pedido.domicilio.referencia ? ` (${pedido.domicilio.referencia})` : ""}
                                 </td>
                                 <td>{new Date(pedido.fecha).toLocaleDateString()}</td>
                                 <td>{pedido.estado}</td>
                                 <td>
-
-                                    <Button
-                                        variant="info"
-                                        size="sm"
-                                        className="me-2"
-                                        onClick={() => {
-                                            setPedidoSeleccionado(pedido);
-                                            setShowDetalleModal(true);
-                                        }}
-                                    >
-                                        Ver Detalle
-                                    </Button>
+                                    <Button variant="info" size="sm" onClick={() => handleVerDetalle(pedido.id!)}>
+                                        Ver
+                                    </Button>{" "}
+                                    <Button variant="success" size="sm" onClick={() => handleDescargarFactura(pedido.id!)}>
+                                        Factura
+                                    </Button>{" "}
                                     <Form.Select
                                         size="sm"
-                                        style={{ width: 'auto', display: 'inline-block' }}
-                                        onChange={e => {
-                                            setPedidoSeleccionado(pedido);
-                                            setNuevoEstado(e.target.value);
-                                            setShowEstadoModal(true);
-                                        }}
-                                        value={pedido.estado}
+                                        value={nuevoEstadoMap[pedido.id!] || pedido.estado}
+                                        onChange={(e) =>
+                                            setNuevoEstadoMap({ ...nuevoEstadoMap, [pedido.id!]: e.target.value as Estado })
+                                        }
+                                        className="d-inline w-auto"
                                     >
-                                        {estados.map(estado => (
+                                        {estados.map((estado) => (
                                             <option key={estado} value={estado}>
                                                 {estado}
                                             </option>
                                         ))}
-                                    </Form.Select>
+                                    </Form.Select>{" "}
+                                    <Button
+                                        variant="primary"
+                                        size="sm"
+                                        onClick={() => handleCambiarEstado(pedido.id!)}
+                                    >
+                                        Guardar
+                                    </Button>
                                 </td>
                             </tr>
                         ))
@@ -192,71 +230,22 @@ export function GrillaPedidos() {
                 </tbody>
             </Table>
 
-            {/* Modal de Detalle */}
-            <Modal show={showDetalleModal} onHide={() => setShowDetalleModal(false)} size="lg">
+            <Modal show={mostrarModal} onHide={() => setMostrarModal(false)} size="lg">
                 <Modal.Header closeButton>
                     <Modal.Title>Detalle del Pedido</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {pedidoSeleccionado && (
-                        <>
-                            <h5>Información del Cliente</h5>
-                            {pedidoSeleccionado.cliente ? (
-                                <>
-                                    <p>Nombre: {`${pedidoSeleccionado.cliente.nombre || ''} ${pedidoSeleccionado.cliente.apellido || ''}`}</p>
-                                    {pedidoSeleccionado.domicilio && (
-                                        <p>Domicilio de entrega: {`${pedidoSeleccionado.domicilio.calle || ''} ${pedidoSeleccionado.domicilio.numero || ''}`}</p>
-                                    )}
-                                </>
-                            ) : (
-                                <p>Información del cliente no disponible</p>
-                            )}
-
-                            <h5>Productos</h5>
-                            <Table striped bordered>
-                                <thead>
-                                    <tr>
-                                        <th>Producto</th>
-                                        <th>Cantidad</th>
-                                        <th>Precio Unitario</th>
-                                        <th>Subtotal</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {pedidoSeleccionado.detalles.map(detalle => (
-                                        <tr key={detalle.id}>
-                                            <td>{detalle.producto?.nombre || 'Producto no disponible'}</td>
-                                            <td>{detalle.cantidad}</td>
-                                            <td>${detalle.precio}</td>
-                                            <td>${detalle.cantidad * detalle.precio}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </Table>
-                            <h5>Total: ${pedidoSeleccionado.detalles.reduce((acc, det) => acc + (det.cantidad * det.precio), 0)}</h5>
-                        </>
+                        <PedidoDetalleModal
+                            pedido={pedidoSeleccionado}
+                            show={mostrarModal}
+                            onClose={() => setMostrarModal(false)}
+                        />
                     )}
                 </Modal.Body>
-
-            </Modal>
-
-            {/* Modal de Confirmación de Cambio de Estado */}
-            <Modal show={showEstadoModal} onHide={() => setShowEstadoModal(false)}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Confirmar cambio de estado</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    ¿Está seguro que desea cambiar el estado del pedido a {nuevoEstado}?
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowEstadoModal(false)}>
-                        Cancelar
-                    </Button>
-                    <Button variant="primary" onClick={confirmarCambioEstado}>
-                        Confirmar
-                    </Button>
-                </Modal.Footer>
             </Modal>
         </div>
     );
-}
+};
+
+export default GrillaPedidos;

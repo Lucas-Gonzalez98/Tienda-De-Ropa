@@ -88,4 +88,9 @@ public class StockController extends MasterController<Stock, Long> {
         return ResponseEntity.ok(stockActualizado);
     }
 
+    @GetMapping("/producto/{id}")
+    public ResponseEntity<List<Stock>> getByProducto(@PathVariable Long id) {
+        return ResponseEntity.ok(stockService.getByProducto(id));
+    }
+
 }

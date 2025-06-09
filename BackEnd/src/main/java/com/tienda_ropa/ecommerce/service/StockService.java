@@ -21,4 +21,6 @@ public interface StockService extends MasterService<Stock, Long> {
 
     //crear stock
     Stock crearStock(Long idProducto, Long idColor, Long idTalle, Integer cantidad, Double precio);
+
+    List<Stock> getByProducto(Long productoId);
 }

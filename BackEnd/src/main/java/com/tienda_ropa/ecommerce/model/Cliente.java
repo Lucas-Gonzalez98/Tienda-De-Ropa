@@ -1,5 +1,6 @@
 package com.tienda_ropa.ecommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -36,6 +37,6 @@ public class Cliente extends Master {
     private Set<Domicilio> domicilios = new HashSet<>();
 
     @OneToMany(mappedBy = "cliente")
-    @JsonManagedReference("cliente-pedido")
+    @JsonIgnore
     private List<Pedido> pedidos = new ArrayList<>();
 }
