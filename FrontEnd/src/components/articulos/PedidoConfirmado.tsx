@@ -38,7 +38,6 @@ export function PedidoConfirmado(){
         }
         if (carritoCtx){
             let totalPedido = 0
-            console.log(pedido)
             pedido.detalles.map((det)=>(
                 totalPedido += det.precio * det.cantidad
             ))
