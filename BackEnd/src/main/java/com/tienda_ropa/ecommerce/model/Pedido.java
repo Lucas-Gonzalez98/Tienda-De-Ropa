@@ -35,5 +35,12 @@ public class Pedido extends Master {
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference("pedido-detalle")
     private Set<PedidoDetalle> detalles = new HashSet<>();
+
+    public double getTotalPedido() {
+        return detalles.stream()
+                .mapToDouble(detalle -> detalle.getCantidad() * detalle.getPrecio())
+                .sum();
+    }
+
 }
 

@@ -5,9 +5,11 @@ import Domicilio from "../../models/Domicilio";
 import { Button, Card, Col } from "react-bootstrap";
 import ClienteService from "../../services/ClienteService";
 import { Row } from "react-bootstrap";
-import { FaEdit, FaPlus, FaTrash } from "react-icons/fa";
+import {  FaPlus } from "react-icons/fa";
 import ModalDomicilio from "../cliente/ModalDomicilio";
 import '../../styles/PedidoConfirmado.css'
+import CheckoutMP from "./CheckoutMP";
+import type Pedido from "../../models/Pedido";
 
 export function PedidoConfirmado(){
     const carritoCtx = useCarrito();
@@ -16,8 +18,19 @@ export function PedidoConfirmado(){
     const [direccionSeleccionada, setDireccionSeleccionada] = useState<any | null>(null);
     const [ domicilios, setDomicilios ] = useState<Domicilio[]>([])
     const [ total, setTotal ] = useState(0)
-    if (!carritoCtx) return null;
+    const [pedidoGuardado, setPedidoGuardado] = useState<Pedido | null>(null);
 
+    if (!carritoCtx) return null;
+    const {
+        pedido,
+        guardarPedidoYObtener
+    } = carritoCtx;
+    const handlePagarConMP = async () => {
+        const pedidoFinal = await guardarPedidoYObtener();
+        if (pedidoFinal) {
+        setPedidoGuardado(pedidoFinal);
+        }
+    };
     useEffect(()=>{
         if(userData?.id){
             const domiciliosCliente = () => {ClienteService.getClienteById(userData.id as number).then((cliente) => setDomicilios(cliente.domicilios))}
@@ -49,20 +62,9 @@ export function PedidoConfirmado(){
 
         setShowModal(false);
     };
-    const {
-        pedido,
-        enviarPedido,
-    } = carritoCtx;
     const handleAgregar = () => {
         setDireccionSeleccionada(null);
         setShowModal(true);
-    };
-    const handlePagarConMP = async () => {
-        const pedidoFinal = await guardarPedidoYObtener();
-        if (pedidoFinal) {
-        setPedidoGuardado(pedidoFinal);
-        }
-        console.log(pedidoGuardado)
     };
     return(
         <>
@@ -130,6 +132,9 @@ export function PedidoConfirmado(){
                     <Button variant="primary" onClick={handlePagarConMP}>
                         Pagar con Mercado Pago
                     </Button>
+                    {pedidoGuardado && (
+                        <CheckoutMP pedido={pedido}/>
+                    )}
                 </div>
 
             </div>

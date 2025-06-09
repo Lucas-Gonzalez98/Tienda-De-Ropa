@@ -129,11 +129,11 @@ const restarDelCarrito = (idProducto: number) => {
     }
 
     try {
-      const ahora = new Date();
-      const horaActual = ahora.toTimeString().split(' ')[0];
-      console.log("Hora actual:", horaActual);
+      pedido.estado = "PENDIENTE";
+      const response = PedidoService.create(pedido)
 
-      return pedido;
+      const data = response;
+      return data;
     } catch (error) {
       console.error(error);
       alert("Hubo un error al guardar el pedido.");

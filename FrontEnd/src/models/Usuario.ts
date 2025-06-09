@@ -6,4 +6,5 @@ export default class Usuario {
     firebaseUid: string = "";
     rol: Rol = "CLIENTE";
     eliminado: boolean = false;
+    token?: string;
 }
