@@ -3,6 +3,7 @@ package com.tienda_ropa.ecommerce.controller;
 import com.tienda_ropa.ecommerce.model.Pedido;
 import com.tienda_ropa.ecommerce.model.enums.Estado;
 import com.tienda_ropa.ecommerce.model.enums.Rol;
+import com.tienda_ropa.ecommerce.model.mercadopago.PreferenceMP;
 import com.tienda_ropa.ecommerce.service.PedidoService;
 import com.tienda_ropa.ecommerce.service.pdf.PdfGenerator;
 import jakarta.persistence.EntityNotFoundException;
@@ -101,4 +102,11 @@ public class PedidoController extends MasterController<Pedido, Long> {
         return ResponseEntity.ok().build();
     }
 
+
+    @PostMapping("/create_preference_mp")
+    public PreferenceMP crearPreferenciaMercadoPago(@RequestBody Pedido pedido) {
+        var controllerMercadoPago = new MercadoPagoController();
+        PreferenceMP  preference = controllerMercadoPago.getPreferenciaIdMercadoPago(pedido);
+        return preference;
+    }
 }
