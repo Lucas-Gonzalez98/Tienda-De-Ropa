@@ -1,7 +1,6 @@
 import '../../styles/navbar.css'
 import IconoEmpresa from '../../assets/IconoEmpresa.jpg';
 import Vector from '../../assets/Carrito.svg';
-import Buscador from './Buscador';
 import  { useState, useEffect } from 'react';
 import { Modal, Dropdown } from 'react-bootstrap';
 import LoginUsuario from '../auth/LoginUsuario.tsx';

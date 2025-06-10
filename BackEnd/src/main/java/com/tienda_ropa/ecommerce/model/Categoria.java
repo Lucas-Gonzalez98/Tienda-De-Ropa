@@ -1,6 +1,7 @@
 package com.tienda_ropa.ecommerce.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,5 +28,6 @@ public class Categoria extends Master {
     private Set<Categoria> subcategorias = new HashSet<>();
 
     @ManyToMany(mappedBy = "categorias")
+    @JsonIgnore
     private Set<Producto> productos = new HashSet<>();
 }
