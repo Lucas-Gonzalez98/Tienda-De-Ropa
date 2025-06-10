@@ -20,7 +20,6 @@ class PedidoService {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(pedido)
             });
-            console.log(JSON.stringify(pedido));
             if (!res.ok) throw new Error("Error al crear el pedido");
             return await res.json();
         } catch (error) {

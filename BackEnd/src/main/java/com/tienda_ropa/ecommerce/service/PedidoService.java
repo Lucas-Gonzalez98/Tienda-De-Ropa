@@ -21,4 +21,7 @@ public interface PedidoService extends MasterService<Pedido, Long> {
     //actualizar el estado del pedido
     void cambiarEstadoPedido(Long pedidoId, Estado nuevoEstado, Long usuarioId, Rol rol);
 
+    //Cambiar estado del Pedido Dependiendo de el Pago de Mercado Pago
+    void actualizarEstadoPorPago(Long pedidoId, String paymentStatus);
+
 }

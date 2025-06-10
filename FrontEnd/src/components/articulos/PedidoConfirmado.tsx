@@ -28,7 +28,7 @@ export function PedidoConfirmado(){
     const handlePagarConMP = async () => {
         const pedidoFinal = await guardarPedidoYObtener();
         if (pedidoFinal) {
-        setPedidoGuardado(pedidoFinal);
+            setPedidoGuardado(pedidoFinal);
         }
     };
     useEffect(()=>{
@@ -38,7 +38,6 @@ export function PedidoConfirmado(){
         }
         if (carritoCtx){
             let totalPedido = 0
-            console.log(pedido)
             pedido.detalles.map((det)=>(
                 totalPedido += det.precio * det.cantidad
             ))
@@ -133,7 +132,7 @@ export function PedidoConfirmado(){
                         Pagar con Mercado Pago
                     </Button>
                     {pedidoGuardado && (
-                        <CheckoutMP pedido={pedido}/>
+                        <CheckoutMP pedido={pedidoGuardado}/>
                     )}
                 </div>
 

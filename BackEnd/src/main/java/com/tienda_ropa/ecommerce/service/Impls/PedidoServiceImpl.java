@@ -8,6 +8,8 @@ import com.tienda_ropa.ecommerce.service.PedidoService;
 import com.tienda_ropa.ecommerce.service.email.EmailService;
 import com.tienda_ropa.ecommerce.service.pdf.PdfGenerator;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,8 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 
 @Service
+@Slf4j
 public class PedidoServiceImpl extends MasterServiceImpl<Pedido, Long> implements PedidoService {
 
     private final PedidoRepository pedidoRepository;
@@ -186,46 +190,57 @@ public class PedidoServiceImpl extends MasterServiceImpl<Pedido, Long> implement
     }
 
 
-    //Actualizar el estado del pedido.
-    /*
+    //Cambiar estado del Pedido Dependiendo de el Pago de Mercado Pago
     @Override
     @Transactional
-    public void cambiarEstadoPedido(Long pedidoId, Estado nuevoEstado, Long usuarioId, Rol rol) {
-        Pedido pedido = pedidoRepository.findById(pedidoId)
-                .orElseThrow(() -> new EntityNotFoundException("Pedido no encontrado"));
+    public void actualizarEstadoPorPago(Long pedidoId, String paymentStatus) {
+        Optional<Pedido> optionalPedido = pedidoRepository.findById(pedidoId);
 
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
-
-        Cliente cliente = pedido.getCliente();
-        boolean esCliente = rol == Rol.CLIENTE;
-
-        if (esCliente && !cliente.getUsuario().getId().equals(usuarioId)) {
-            throw new AccessDeniedException("No puedes modificar pedidos que no son tuyos");
+        if (optionalPedido.isEmpty()) {
+            log.warn("Pedido con ID {} no encontrado", pedidoId);
+            return;
         }
 
-        if (esCliente && pedido.getEstado() != Estado.PENDIENTE) {
-            throw new IllegalStateException("Solo puedes cancelar pedidos en estado PENDIENTE");
+        Pedido pedido = optionalPedido.get();
+        Estado nuevoEstado = mapearEstadoDesdePago(paymentStatus);
+
+        if (pedido.getEstado() == nuevoEstado) {
+            log.info("El estado del pedido con ID {} ya es {}. No se realizan cambios.", pedidoId, nuevoEstado);
+            return;
         }
 
-        Estado estadoAnterior = pedido.getEstado();
+        log.info("Actualizando estado del pedido {} de {} a {}", pedidoId, pedido.getEstado(), nuevoEstado);
         pedido.setEstado(nuevoEstado);
-        pedidoRepository.save(pedido);
 
-        String mensajeEstado = obtenerMensajeEstado(nuevoEstado);
-        byte[] pdf = pdfGenerator.generarResumenCambioEstado(pedido, nuevoEstado, mensajeEstado);
-        emailService.enviarEmailEstadoPedido(cliente.getUsuario().getEmail(), nuevoEstado, mensajeEstado, pdf);
+        if (nuevoEstado == Estado.CANCELADO) {
+            log.info("Rollback de stock para pedido cancelado ID {}", pedidoId);
+            pedido.getDetalles().forEach(detalle -> {
+                Producto producto = detalle.getProducto();
+                Color color = producto.getColor();
+                Talle talle = producto.getTalle();
+
+                Stock stock = stockRepository.findByProductoAndColorAndTalle(producto, color, talle)
+                        .orElseThrow(() -> new EntityNotFoundException(String.format(
+                                "Stock no encontrado para producto ID %d con color %s y talle %s",
+                                producto.getId(), color.getNombre(), talle.getNombre()
+                        )));
+
+                stock.setCantidad(stock.getCantidad() + detalle.getCantidad());
+                stockRepository.save(stock);
+                log.info("Stock actualizado para producto ID {} (color: {}, talle: {}) - nueva cantidad: {}",
+                        producto.getId(), color.getNombre(), talle.getNombre(), stock.getCantidad());
+            });
+        }
+
+        pedidoRepository.save(pedido);
     }
 
-    //Mensaje para cada estado.
-    private String obtenerMensajeEstado(Estado estado) {
-        return switch (estado) {
-            case PENDIENTE -> "Tu pedido ha sido registrado y está pendiente de aprobación.";
-            case PROCESANDO -> "Tu pedido fue aprobado y está siendo preparado.";
-            case EN_CAMINO -> "Tu pedido está listo, ya se está enviando a su destino. ¡Ojalá llegue pronto!";
-            case ENTREGADO -> "Hemos entregado tu pedido. ¡Gracias por tu compra!";
-            case CANCELADO -> "El pedido ha sido cancelado. Si no realizaste esta acción, por favor contáctanos.";
+    private Estado mapearEstadoDesdePago(String paymentStatus) {
+        return switch (paymentStatus) {
+            case "approved" -> Estado.PROCESANDO;
+            case "pending", "in_process", "in_mediation" -> Estado.PENDIENTE;
+            case "rejected", "refunded", "cancelled", "charged_back" -> Estado.CANCELADO;
+            default -> Estado.PENDIENTE; // Comportamiento por defecto
         };
     }
-     */
 }

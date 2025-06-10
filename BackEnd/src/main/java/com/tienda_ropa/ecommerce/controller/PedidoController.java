@@ -4,7 +4,9 @@ import com.tienda_ropa.ecommerce.model.Pedido;
 import com.tienda_ropa.ecommerce.model.enums.Estado;
 import com.tienda_ropa.ecommerce.model.enums.Rol;
 import com.tienda_ropa.ecommerce.model.mercadopago.PreferenceMP;
+import com.tienda_ropa.ecommerce.repository.PedidoRepository;
 import com.tienda_ropa.ecommerce.service.PedidoService;
+import com.tienda_ropa.ecommerce.service.mercadoPago.MercadoPagoService;
 import com.tienda_ropa.ecommerce.service.pdf.PdfGenerator;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -26,11 +28,13 @@ public class PedidoController extends MasterController<Pedido, Long> {
 
     private final PedidoService pedidoService;
     private final PdfGenerator pdfGenerator;
+    private final MercadoPagoService mercadoPagoService;
 
-    public PedidoController(PedidoService pedidoService, PdfGenerator pdfGenerator) {
+    public PedidoController(PedidoService pedidoService, PdfGenerator pdfGenerator, MercadoPagoService mercadoPagoService) {
         super(pedidoService);
         this.pedidoService = pedidoService;
         this.pdfGenerator = pdfGenerator;
+        this.mercadoPagoService = mercadoPagoService;
     }
 
     //permitir que un cliente consulte su historial de pedidos
@@ -105,8 +109,6 @@ public class PedidoController extends MasterController<Pedido, Long> {
 
     @PostMapping("/create_preference_mp")
     public PreferenceMP crearPreferenciaMercadoPago(@RequestBody Pedido pedido) {
-        var controllerMercadoPago = new MercadoPagoController();
-        PreferenceMP  preference = controllerMercadoPago.getPreferenciaIdMercadoPago(pedido);
-        return preference;
+        return mercadoPagoService.getPreferenciaIdMercadoPago(pedido);
     }
 }
