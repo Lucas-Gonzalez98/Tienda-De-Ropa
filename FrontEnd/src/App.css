@@ -2,6 +2,22 @@
   width: 100%;
   margin: 0 auto;
   text-align: center;
+  min-height: 100vh;
+}
+
+.carrito-container, .productos-container{
+  min-height: 50vh;
+}
+
+button:active {
+  transform: translateY(2px);
+  box-shadow: none;
+  transition: transform 0.1s ease;
+}
+
+button {
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .logo {

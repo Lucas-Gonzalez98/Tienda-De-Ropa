@@ -4,7 +4,7 @@ import Instragram from '../../assets/Instragram.svg';
 import Facebook from '../../assets/Facebook.svg';
 function Footer() {
   return (
-    <footer className="bg-gray-800 text-white py-4">
+    <footer className="bg-gray-800 text-white py-4 mt-5">
       <div className="container mx-auto text-center">
         <p className='fw-bold'>Nuestra Compañia</p>
         <p>Quienes Somos</p>

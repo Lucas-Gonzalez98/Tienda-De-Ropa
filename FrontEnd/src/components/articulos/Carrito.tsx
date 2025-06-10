@@ -103,12 +103,12 @@ export function Carrito() {
     pedido.domicilio = domicilio;
   }
   return (
-    <div className="m-auto container">
+    <div className="m-auto container mt-5 carrito-container">
         {carrito.length === 0 ? (
           <p>El carrito está vacío.</p>
         ) : (
           carrito.map((item) => (
-            <div key={item.stock.id} className="row d-flex align-items-center mb-3 border-bottom pb-2">
+            <div key={item.stock.id} className="row d-flex align-items-center mb-3 border-bottom pb-2 position-relative">
               <Image
                 src={item.stock.producto.imagenes[0]?.denominacion}
                 alt={"Imagen del artículo"}
@@ -119,10 +119,11 @@ export function Carrito() {
                 <div className="d-flex justify-content-between mb-2 pb-2">
                   <strong>{item.stock.producto.nombre}</strong>
                   <Button
-                    style={{ width: "30px", height: "30px", display: "flex", alignItems: "center", justifyContent: "center"}}
+                    style={{ width: "30px", height: "30px", display: "flex", alignItems: "center", justifyContent: "center", right: "15px", top: "10px"}}
                     variant="outline-danger"
                     size="sm"
                     onClick={() => quitarDelCarrito(item.stock.id ? item.stock.id : 0)}
+                    className="position-absolute"
                   >
                     <img src={trashIcon} alt="Eliminar" style={{ width: 16, height: 16 }} />
                   </Button>

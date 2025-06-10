@@ -12,6 +12,7 @@ function Productos(){
 
     return (
         <>
+        <div className="productos-container mt-4">
             <h1>Productos</h1>
             <p>Esta es la página de productos.</p>
             { productos.length > 0 ? (
@@ -23,6 +24,7 @@ function Productos(){
             ) : (
                 <p>No hay productos disponibles.</p>
             )}
+        </div>
         </>
     )
 }
