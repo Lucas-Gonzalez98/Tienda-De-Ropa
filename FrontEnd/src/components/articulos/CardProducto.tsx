@@ -18,7 +18,8 @@ const CardProducto: React.FC<Props> = ({ producto }) => {
       try {
         if (producto.id){
           const historico = await HistoricoPrecioventaService.ultimoById(producto.id);
-          setPrecioHistorico(historico.precio);
+          setPrecioHistorico(historico.precio)
+          producto.precio =historico.precio
         }else{
           setPrecioHistorico(0)
         }

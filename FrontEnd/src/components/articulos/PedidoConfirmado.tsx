@@ -1,41 +1,23 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../../context/AuthContext";
 import { useCarrito } from "../../hooks/useCarrito";
-import Domicilio from "../../models/Domicilio";
-import { Button, Card, Col } from "react-bootstrap";
-import ClienteService from "../../services/ClienteService";
-import { Row } from "react-bootstrap";
-import {  FaPlus } from "react-icons/fa";
-import ModalDomicilio from "../cliente/ModalDomicilio";
 import '../../styles/PedidoConfirmado.css'
-import CheckoutMP from "./CheckoutMP";
-import type Pedido from "../../models/Pedido";
+import { BotonWallet } from "./BotonWallet";
+import { Image } from "react-bootstrap";
+import HistoricoPrecioVentaService from "../../services/HistoricoPrecioVentaService";
+
 
 export function PedidoConfirmado(){
     const carritoCtx = useCarrito();
-    const { userData } = useAuth();
-    const [showModal, setShowModal] = useState(false);
-    const [direccionSeleccionada, setDireccionSeleccionada] = useState<any | null>(null);
-    const [ domicilios, setDomicilios ] = useState<Domicilio[]>([])
     const [ total, setTotal ] = useState(0)
-    const [pedidoGuardado, setPedidoGuardado] = useState<Pedido | null>(null);
+    const [preciosActualizados, setPreciosActualizados] = useState<Record<number, number>>({});
 
     if (!carritoCtx) return null;
     const {
         pedido,
-        guardarPedidoYObtener
+        preferenceId
     } = carritoCtx;
-    const handlePagarConMP = async () => {
-        const pedidoFinal = await guardarPedidoYObtener();
-        if (pedidoFinal) {
-        setPedidoGuardado(pedidoFinal);
-        }
-    };
     useEffect(()=>{
-        if(userData?.id){
-            const domiciliosCliente = () => {ClienteService.getClienteById(userData.id as number).then((cliente) => setDomicilios(cliente.domicilios))}
-            domiciliosCliente();
-        }
+
         if (carritoCtx){
             let totalPedido = 0
             pedido.detalles.map((det)=>(
@@ -44,68 +26,84 @@ export function PedidoConfirmado(){
             setTotal(totalPedido)
         }
     },[]);
-
-    const handleGuardar = (nuevoDomicilio: any) => {
-        if (!nuevoDomicilio) return;
-
-        setDomicilios(prev => {
-            const existe = prev.find(d => d.id === nuevoDomicilio.id);
-            if (existe) {
-                // Actualización
-                return prev.map(d => d.id === nuevoDomicilio.id ? nuevoDomicilio : d);
-            } else {
-                // Nuevo domicilio
-                return [...prev, nuevoDomicilio];
+    useEffect(() => {
+    if (pedido) {
+        const totalPedido = pedido.detalles.reduce((acc, det) => acc + det.precio * det.cantidad, 0);
+        setTotal(totalPedido);
+    }
+    }, [pedido]);
+    const carrito = pedido.detalles
+    useEffect(() => {
+        const obtenerPrecios = async () => {
+          const precios: Record<number, number> = {};
+          for (const item of carrito) {
+            try {
+              if(item.stock.producto.id){
+                const historico = await HistoricoPrecioVentaService.ultimoById(item.stock.producto.id);
+                precios[item.stock.producto.id] = historico.precio;
+              }
+            } catch {
+              if(item.stock.producto.id){
+                precios[item.stock.producto.id] = item.stock.producto.precio ?? 0; // fallback con default
+              }
             }
-        });
-
-        setShowModal(false);
-    };
-    const handleAgregar = () => {
-        setDireccionSeleccionada(null);
-        setShowModal(true);
-    };
+          }
+          setPreciosActualizados(precios);
+        };
+    
+        if (carrito.length > 0) {
+          obtenerPrecios();
+        }
+      }, [carrito]);
     return(
         <>
-            <div className="confirmarPedido d-flex" style={{margin: "50px auto", justifyContent: "space-around"}}>
-                <div className="domicilios">
-                    {domicilios.map((domicilio, index)=>(
-                        <label key={index} className={`radio-card ${direccionSeleccionada === domicilio ? "selected" : ""}`}>
-                            <input
-                                type="radio"
-                                name="domicilio"
-                                value={domicilio.id}
-                                checked={direccionSeleccionada === domicilio}
-                                onChange={() => setDireccionSeleccionada(domicilio)}
-                                hidden
-                            />
-                        <Card key={domicilio.id} className="m-0 p-0">
-                            <Card.Body>
-                                <Row className="">
-                                    <Col>
-                                        <h5 className="mb-1 fw-semibold">{domicilio.referencia}</h5>
-                                        <p className="mb-0">
-                                            {domicilio.calle} {domicilio.numero} - CP {domicilio.codigoPostal}, {domicilio.localidad?.nombre}
-                                        </p>
-                                    </Col>
-                                </Row>
-                            </Card.Body>
-                        </Card>
-                        </label>
-                    ))}
-                    <div className="d-flex justify-content-start mb-4">
-                        <Button variant="dark" onClick={handleAgregar}>
-                            <FaPlus className="me-2" />
-                            Agregar dirección
-                        </Button>
+        <div className="d-flex">
+            <div className="m-auto container">
+                {carrito.length === 0 ? (
+                <p>El carrito está vacío.</p>
+                ) : (
+                carrito.map((item) => (
+                    <div key={item.stock.id} className="row d-flex align-items-center mb-3 border-bottom pb-2">
+                        <Image
+                        src={item.stock.producto.imagenes[0]?.denominacion}
+                        alt={"Imagen del artículo"}
+                        style={{ width: "200px", height: "auto", objectFit: "cover", marginRight: "10px" }}
+                        rounded
+                        />
+                        <div className="flex-grow-1">
+                        <div className="d-flex justify-content-between mb-2 pb-2">
+                            <strong>{item.stock.producto.nombre}</strong>
+                        </div>
+                        <div className="d-flex align-items-center justify-content-between">
+                            <div className="d-flex flex-column align-items-start">
+                            <small>Talle: {item.stock.talle?.nombre}</small>
+                            <small>Color: {item.stock.color?.nombre}</small>
+                            <small>Precio: ${item.precio.toFixed(2)}</small>
+                            </div>
+                            <div className="text-end">
+                            Subtotal: ${(item.precio * item.cantidad).toFixed(2)}
+                            </div>
+                        </div>
+                        </div>
                     </div>
-                    <ModalDomicilio
-                        show={showModal}
-                        onHide={() => setShowModal(false)}
-                        onSubmit={handleGuardar}
-                        direccionActual={direccionSeleccionada}
-                    />
-                </div>
+                    )))}
+
+                {carrito.length > 0 && (
+                    <div className="mt-3 text-end">
+                    <strong>
+                        Total: $
+                        {carrito
+                        .reduce((acc, item) => {
+                            const id = item.stock.producto.id;
+                            const precio = typeof id === "number" ? preciosActualizados[id] ?? 0 : 0;
+                            return acc + precio * item.cantidad;
+                        }, 0)
+                        .toFixed(2)}
+                    </strong>
+                    </div>
+                )}
+            </div>
+            <div className="confirmarPedido d-flex" style={{margin: "50px auto", justifyContent: "space-around"}}>
                 <div className="resumenPedido">
                     <div className="resumen p-3 mb-3" style={{ border: "1px solid gray", borderRadius: "10px" }}>
                         <h5>Resumen del pedido</h5>
@@ -128,15 +126,10 @@ export function PedidoConfirmado(){
                             <span>${total + 7500}</span>
                         </div>
                     </div>
-                    <Button variant="primary" onClick={handlePagarConMP}>
-                        Pagar con Mercado Pago
-                    </Button>
-                    {pedidoGuardado && (
-                        <CheckoutMP pedido={pedidoGuardado}/>
-                    )}
+                    <BotonWallet idPreference={preferenceId}/>
                 </div>
-
             </div>
+        </div>
         </>
     )
 }

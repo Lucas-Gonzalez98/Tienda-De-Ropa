@@ -10,9 +10,11 @@ import type Stock from "../models/Stock";
 
 interface CarritoContextProps {
   pedido: Pedido;
+  preferenceId: string;
   agregarAlCarrito: (stock: Stock, cantidad: number) => void;
   quitarDelCarrito: (idStock: number) => void;
   restarDelCarrito: (idStock: number) => void;
+  AgregarPreferenceId: (id: string) => void;
   limpiarCarrito: () => void;
   enviarPedido: () => Promise<void>;
   guardarPedidoYObtener: () => Promise<Pedido | null>;
@@ -31,6 +33,11 @@ export function CarritoProvider({ children }: { children: ReactNode }) {
     nuevoPedido.cliente = userData as Cliente
     return nuevoPedido;
   });
+  const [preferenceId, setIdPreference ] = useState<string>("");
+
+  const AgregarPreferenceId = (id: string) => {
+    setIdPreference(id);
+  }
 
   const agregarAlCarrito = (stock: Stock, cantidad: number) => {
   setPedido((prevPedido) => {
@@ -142,10 +149,12 @@ const restarDelCarrito = (idstock: number) => {
     <carritoContext.Provider
       value={{
         pedido,
+        preferenceId,
         agregarAlCarrito,
         restarDelCarrito,
         quitarDelCarrito,
         limpiarCarrito,
+        AgregarPreferenceId,
         enviarPedido,
         guardarPedidoYObtener,
       }}

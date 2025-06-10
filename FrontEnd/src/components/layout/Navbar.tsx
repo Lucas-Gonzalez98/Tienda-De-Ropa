@@ -1,7 +1,6 @@
 import '../../styles/navbar.css'
 import IconoEmpresa from '../../assets/IconoEmpresa.jpg';
 import Vector from '../../assets/Carrito.svg';
-import Buscador from './Buscador';
 import  { useState, useEffect } from 'react';
 import { Modal, Dropdown } from 'react-bootstrap';
 import LoginUsuario from '../auth/LoginUsuario.tsx';
@@ -53,9 +52,6 @@ function Navbar() {
         <>
             <nav>
                 <a className='homeNav' href="/"><img className='logoEmpresa' src={IconoEmpresa} alt="Icono Empresa" /><span>M- SHOP</span></a>
-                {!isAdmin && (
-                <Buscador />
-                )}
                 <div className="navButtons">
                     <Link className="nav-link" to="/productos">Tienda</Link>
                     

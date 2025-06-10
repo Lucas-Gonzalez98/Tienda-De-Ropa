@@ -14,11 +14,12 @@ import Color from "../../models/Color";
 import Talle from "../../models/Talle";
 import ColorService from "../../services/ColorService";
 import HistoricoPrecioventaService from "../../services/HistoricoPrecioVentaService";
-import Stock from "../../models/Stock";
+import { useAuth } from "../../context/AuthContext";
 
 function DetalleProducto() {
   const carritoCtx = useCarrito();
   const { id } = useParams();
+  const { userData } = useAuth();
   const [producto, setProducto] = useState<Producto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -116,16 +117,16 @@ function DetalleProducto() {
   if (!producto) return null;
 
   return (
-    <div className="container mt-5">
+    <div className="container mt-5 text-start d-flex justify-content-center">
       <div className="row">
         {/* Imágenes */}
         <div className="col-md-6">
-          <div className="mb-3 text-center">
+          <div className="mb-3 text-start d-flex">
             <img
               src={imagenSeleccionada?.denominacion || ""}
               alt="Imagen principal"
               className="img-fluid border rounded"
-              style={{ maxHeight: 400, objectFit: "contain" }}
+              style={{ height: 400, objectFit: "cover" }}
             />
           </div>
           <div className="d-flex justify-content-center gap-2 flex-wrap">
@@ -191,9 +192,10 @@ function DetalleProducto() {
             </div>
           </div>
           {/* Botón agregar */}
-          <button
+          {}
+          <Button
             onClick={handleAgregarAlCarrito}
-            disabled={!stockDisponible}
+            disabled={userData?.usuario.rol === "ADMINISTRADOR"  || !stockDisponible}
             style={{
               padding: "10px 20px",
               backgroundColor: "#4CAF50",
@@ -204,8 +206,8 @@ function DetalleProducto() {
               marginTop: "10px"
             }}
           >
-            Agregar al carrito
-          </button>
+            {userData?.usuario.rol === "ADMINISTRADOR" ? "No disponible" : "Agregar al carrito"}
+          </Button>
         </div>
       </div>
     </div>

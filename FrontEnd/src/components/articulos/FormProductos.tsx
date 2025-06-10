@@ -9,12 +9,14 @@ import "../../styles/FormProducto.css";
 import HistoricoPrecioVenta from "../../models/HistoricoPrecioVenta";
 import HistoricoPrecioventaService from "../../services/HistoricoPrecioVentaService";
 import type Categoria from "../../models/Categoria";
+import CategoriaService from "../../services/CategoriaService";
 
 function FormProducto() {
     const [nombre, setNombre] = useState("");
     const [descripcion, setDescripcion] = useState("");
     const [precio, setPrecio] = useState<number>(0);
     const [categorias, setCategorias] = useState<Categoria[]>([]);
+    const [categoriasSeleccionadas, setCategoriasSeleccionadas] = useState<Categoria[]>([]);
     const [precioHistorico, setPrecioHistorico] = useState<number>(0);
     const [historicoPreciosVenta, sethistoricoPreciosVenta] = useState<HistoricoPrecioVenta[]>([]);
     const [eliminado, setEliminado] = useState(false);
@@ -25,18 +27,22 @@ function FormProducto() {
     const [imagenes, setImagenes] = useState<File[]>([]);
 
     useEffect(() => {
+        CategoriaService.getAll().then((res) => setCategorias(res));
+    }, []);
+
+    useEffect(() => {
         if (idFromUrl) {
             ProductoService.getById(Number(idFromUrl)).then((producto: Producto) => {
                 setNombre(producto.nombre);
                 setDescripcion(producto.descripcion);
                 HistoricoPrecioventaService.ultimoById(Number(idFromUrl)).then((historico: HistoricoPrecioVenta) => {
-                    setPrecio(historico.precio)
-                    setPrecioHistorico(historico.precio)
-                })
+                    setPrecio(historico.precio);
+                    setPrecioHistorico(historico.precio);
+                });
                 HistoricoPrecioventaService.getAllProductoId(Number(idFromUrl)).then((historicos) => {
-                    sethistoricoPreciosVenta(historicos)
-                })
-                setCategorias(producto.categorias);
+                    sethistoricoPreciosVenta(historicos);
+                });
+                setCategoriasSeleccionadas(producto.categorias || []);
                 setEliminado(!!producto.eliminado);
                 setImagenesExistentes(producto.imagenes || []);
             });
@@ -93,10 +99,10 @@ function FormProducto() {
         ];
 
         const producto: Producto = {
-             ...(idFromUrl && { id: Number(idFromUrl) }), // solo si hay id
+            ...(idFromUrl && { id: Number(idFromUrl) }),
             nombre,
             descripcion,
-            categorias,
+            categorias: categoriasSeleccionadas,
             historicoPreciosVenta,
             eliminado,
             imagenes: imagenesFinales
@@ -104,20 +110,20 @@ function FormProducto() {
 
         try {
             if (idFromUrl) {
-                console.log("actualizando", producto)
-                if(precio != precioHistorico){
+                console.log("actualizando", producto);
+                if (precio !== precioHistorico) {
                     const historico = new HistoricoPrecioVenta();
                     historico.fecha = new Date();
                     historico.precio = precio;
-                    producto.historicoPreciosVenta = [...historicoPreciosVenta, historico]
+                    producto.historicoPreciosVenta = [...historicoPreciosVenta, historico];
                 }
                 await ProductoService.update(Number(idFromUrl), producto);
             } else {
-                console.log("creando", producto)
+                console.log("creando", producto);
                 const historico = new HistoricoPrecioVenta();
                 historico.fecha = new Date();
                 historico.precio = precio;
-                producto.historicoPreciosVenta = [historico]
+                producto.historicoPreciosVenta = [historico];
                 await ProductoService.create(producto);
             }
             alert("Producto guardado exitosamente");
@@ -151,7 +157,31 @@ function FormProducto() {
                         required
                     />
                 </div>
-
+                <div className="categorias">
+                    <label>Categorías:</label>
+                    <div style={{display: "grid", gridTemplateColumns: "1fr 1fr 1fr"}}>
+                        {categorias.map(cat => (
+                            <div key={cat.id} className="form-check d-flex flex-row alin-items-center gap-1">
+                                <input
+                                    type="checkbox"
+                                    id={`cat-${cat.id}`}
+                                    checked={categoriasSeleccionadas.some(c => c.id === cat.id)}
+                                    onChange={e => {
+                                        if (e.target.checked) {
+                                            setCategoriasSeleccionadas(prev => [...prev, cat]);
+                                        } else {
+                                            setCategoriasSeleccionadas(prev => prev.filter(c => c.id !== cat.id));
+                                        }
+                                    }}
+                                    className="form-check-input"
+                                />
+                                <label htmlFor={`cat-${cat.id}`} className="form-check-label">
+                                    {cat.denominacion}
+                                </label>
+                            </div>
+                        ))}
+                    </div>
+                </div>
                 {/* Imágenes */}
                 <div>
                     <label>Imágenes:</label>
@@ -204,7 +234,7 @@ function FormProducto() {
                     {imagenes.length > 0 && (
                         <div className="preview-imagenes mt-2 d-flex gap-2 flex-wrap">
                             {imagenes.map((img, idx) => (
-                                <div key={idx} style={{ position: "relative", display: "inline-block" }}>
+                                <div key={idx} style={{ position: "relative", display: "inline-block", width: "fit-content" }}>
                                     <img
                                         src={URL.createObjectURL(img)}
                                         alt={`preview-${idx}`}
@@ -224,6 +254,9 @@ function FormProducto() {
                                             width: 20,
                                             height: 20,
                                             cursor: "pointer",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
                                         }}
                                     >
                                         ×
@@ -233,7 +266,6 @@ function FormProducto() {
                         </div>
                     )}
                 </div>
-
                 <div>
                     <label>Estado:</label>
                     <select
