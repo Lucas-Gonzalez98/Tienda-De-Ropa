@@ -14,6 +14,7 @@ import Color from "../../models/Color";
 import Talle from "../../models/Talle";
 import ColorService from "../../services/ColorService";
 import HistoricoPrecioventaService from "../../services/HistoricoPrecioVentaService";
+import Stock from "../../models/Stock";
 
 function DetalleProducto() {
   const carritoCtx = useCarrito();
@@ -76,25 +77,28 @@ function DetalleProducto() {
     }
   }, [colorSeleccionado, talleSeleccionado, stockMap]);
 
-  const handleAgregarAlCarrito = () => {
-  if (
-    carritoCtx &&
-    producto &&
-    stockDisponible &&
-    stockDisponible > 0 &&
-    talleSeleccionado &&
-    colorSeleccionado
-  ) {
-    // Asignar talle y color directamente al producto
-    const productoConVariantes = { ...producto };
-    productoConVariantes.talle = talleSeleccionado;
-    productoConVariantes.color = colorSeleccionado;
+  const handleAgregarAlCarrito = async () => {
+    if (
+      carritoCtx &&
+      producto &&
+      stockDisponible &&
+      stockDisponible > 0 &&
+      talleSeleccionado &&
+      colorSeleccionado
+    ) {
+      try {
+        const stock = await StockService.getStock(
+          producto.id!,
+          colorSeleccionado.id,
+          talleSeleccionado.id
+        );
+        carritoCtx.agregarAlCarrito(stock, 1);
+      } catch (error) {
+        console.error("No se pudo agregar al carrito:", error);
+      }
+    }
+  };
 
-    carritoCtx.agregarAlCarrito(productoConVariantes, 1);
-  } else {
-    alert("Debés seleccionar un talle y un color antes de agregar al carrito.");
-  }
-};
 
 
   const isColorHabilitado = (color: Color) => {

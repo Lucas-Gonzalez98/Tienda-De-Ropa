@@ -124,16 +124,15 @@ INSERT INTO `categoria` (`id`, `eliminado`, `denominacion`, `id_categoria_padre`
 -- =========================
 -- Tabla: producto
 -- =========================
-INSERT INTO `producto` (`id`, `eliminado`, `descripcion`, `nombre`, `precio`) VALUES
-(1, b'0', 'Remera de algodón 100% color', 'Remera Básica', 6000),
-(2, b'0', 'Jean azul corte slim fit', 'Jean Slim', 13000),
-(3, b'0', 'Campera sintética negra', 'Campera de Cuero', 24999),
-(4, b'1', 'Zapatillas deportivas urbanas', 'Zapatillas Urbanas', 17999.99),
-(5, b'0', 'Buzo con capucha gris', 'Buzo Hoodie', 8999),
-(6, b'0', 'Short de poliéster para entrenamiento', 'Short Deportivo', 4999.99),
-(7, b'0', 'Camisa manga larga a cuadros', 'Camisa Cuadros', 10999),
-(8, b'0', 'Vestido corto estampado', 'Vestido Casual', 13999.99),
-(9, b'0', 'Sweater tejido de lana', 'Sweater Lana', 11999),
-(10, b'0', 'Jogger de algodón negro', 'Pantalón Jogger', 7999.99),
-(11, b'1', '654', 'Hamburguesa nueva', 654);
+INSERT INTO `producto` (`id`, `eliminado`, `descripcion`, `nombre`) VALUES
+(1, b'0', 'Remera de algodón 100% color', 'Remera Básica'),
+(2, b'0', 'Jean azul corte slim fit', 'Jean Slim'),
+(3, b'0', 'Campera sintética negra', 'Campera de Cuero'),
+(4, b'1', 'Zapatillas deportivas urbanas', 'Zapatillas Urbanas'),
+(5, b'0', 'Buzo con capucha gris', 'Buzo Hoodie'),
+(6, b'0', 'Short de poliéster para entrenamiento', 'Short Deportivo'),
+(7, b'0', 'Camisa manga larga a cuadros', 'Camisa Cuadros'),
+(8, b'0', 'Vestido corto estampado', 'Vestido Casual'),
+(9, b'0', 'Sweater tejido de lana', 'Sweater Lana'),
+(10, b'0', 'Jogger de algodón negro', 'Pantalón Jogger'),
 

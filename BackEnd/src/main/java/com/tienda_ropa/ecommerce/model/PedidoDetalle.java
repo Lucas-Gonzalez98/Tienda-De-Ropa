@@ -22,7 +22,7 @@ public class PedidoDetalle extends Master {
     private Pedido pedido;
 
     @ManyToOne
-    @JoinColumn(name = "producto_id")
-    private Producto producto;
+    @JoinColumn(name = "stock_id")
+    private Stock stock;
 }
 

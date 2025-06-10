@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/stock")
@@ -91,6 +92,11 @@ public class StockController extends MasterController<Stock, Long> {
     @GetMapping("/producto/{id}")
     public ResponseEntity<List<Stock>> getByProducto(@PathVariable Long id) {
         return ResponseEntity.ok(stockService.getByProducto(id));
+    }
+
+    @GetMapping("/buscar/stock")
+    public ResponseEntity<Optional<Stock>> buscarStock(@RequestParam Long idProducto, @RequestParam Long idTalle, @RequestParam Long idColor) {
+        return ResponseEntity.ok(stockService.getStock(idProducto, idColor, idTalle));
     }
 
 }

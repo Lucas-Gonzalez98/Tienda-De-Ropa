@@ -1,8 +1,12 @@
 package com.tienda_ropa.ecommerce.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "stock")
@@ -25,5 +29,9 @@ public class Stock extends Master {
     @ManyToOne
     @JoinColumn(name = "id_talle", nullable = false)
     private Talle talle;
+
+    @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private Set<PedidoDetalle> detalles = new HashSet<>();
 }
 

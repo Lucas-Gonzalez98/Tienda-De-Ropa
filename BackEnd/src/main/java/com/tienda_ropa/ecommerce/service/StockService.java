@@ -6,6 +6,7 @@ import com.tienda_ropa.ecommerce.model.Stock;
 import com.tienda_ropa.ecommerce.model.Talle;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface StockService extends MasterService<Stock, Long> {
 
@@ -18,7 +19,7 @@ public interface StockService extends MasterService<Stock, Long> {
 
     // actualizar stock para una combinación + historico compra
     Stock actualizarStock(Long idProducto, Long idColor, Long idTalle, Integer cantidadAdicional, Double nuevoPrecioCompra);
-
+    Optional<Stock> getStock(Long idProducto, Long idColor, Long idTalle);
     //crear stock
     Stock crearStock(Long idProducto, Long idColor, Long idTalle, Integer cantidad, Double precio);
 

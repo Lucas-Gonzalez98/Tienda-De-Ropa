@@ -25,6 +25,21 @@ class StockService {
         }
     }
 
+    async getStock(productoId: number, colorId: number, talleId: number): Promise<Stock> {
+        try {
+            const res = await fetch(`${API_URL}/buscar/stock?idProducto=${productoId}&idColor=${colorId}&idTalle=${talleId}`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" }
+            });
+            if (!res.ok) throw new Error("Error al obtener el stock del producto");
+            return await res.json();
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
+
     async create(stock: Stock): Promise<any> {
         try {
             const res = await fetch(`${API_URL}`, {

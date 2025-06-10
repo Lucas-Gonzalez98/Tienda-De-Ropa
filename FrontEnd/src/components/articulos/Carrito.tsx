@@ -28,13 +28,13 @@ export function Carrito() {
       const precios: Record<number, number> = {};
       for (const item of carrito) {
         try {
-          if(item.producto.id){
-            const historico = await HistoricoPrecioventaService.ultimoById(item.producto.id);
-            precios[item.producto.id] = historico.precio;
+          if(item.stock.producto.id){
+            const historico = await HistoricoPrecioventaService.ultimoById(item.stock.producto.id);
+            precios[item.stock.producto.id] = historico.precio;
           }
         } catch {
-          if(item.producto.id){
-            precios[item.producto.id] = item.producto.precio ?? 0; // fallback con default
+          if(item.stock.producto.id){
+            precios[item.stock.producto.id] = item.stock.producto.precio ?? 0; // fallback con default
           }
         }
       }
@@ -51,21 +51,21 @@ export function Carrito() {
           <p>El carrito está vacío.</p>
         ) : (
           carrito.map((item) => (
-            <div key={item.producto.id} className="row d-flex align-items-center mb-3 border-bottom pb-2">
+            <div key={item.stock.id} className="row d-flex align-items-center mb-3 border-bottom pb-2">
               <Image
-                src={item.producto.imagenes[0]?.denominacion}
+                src={item.stock.producto.imagenes[0]?.denominacion}
                 alt={"Imagen del artículo"}
                 style={{ width: "200px", height: "auto", objectFit: "cover", marginRight: "10px" }}
                 rounded
                 />
               <div className="flex-grow-1">
                 <div className="d-flex justify-content-between mb-2 pb-2">
-                  <strong>{item.producto.nombre}</strong>
+                  <strong>{item.stock.producto.nombre}</strong>
                   <Button
                     style={{ width: "30px", height: "30px", display: "flex", alignItems: "center", justifyContent: "center"}}
                     variant="outline-danger"
                     size="sm"
-                    onClick={() => quitarDelCarrito(item.producto.id ? item.producto.id : 0)}
+                    onClick={() => quitarDelCarrito(item.stock.id ? item.stock.id : 0)}
                   >
                     <img src={trashIcon} alt="Eliminar" style={{ width: 16, height: 16 }} />
                   </Button>
@@ -74,17 +74,17 @@ export function Carrito() {
                   <div className="d-flex flex-column align-items-start">
                     <small>
                       Talle: 
-                      {item.producto.talle?.nombre}
+                      {item.stock.talle?.nombre}
                     </small>
 
                     <small>
                       Color: 
-                      {item.producto.color?.nombre}
+                      {item.stock.color?.nombre}
                     </small>
-                    {item.producto.id !== undefined &&
+                    {item.stock.producto.id !== undefined &&
                       <small>
                         Precio: $
-                        {preciosActualizados[item.producto.id]?.toFixed(2) ?? "Cargando..."}
+                        {preciosActualizados[item.stock.producto.id]?.toFixed(2) ?? "Cargando..."}
                       </small>
                     }
                   </div>
@@ -93,7 +93,7 @@ export function Carrito() {
                       style={{ background: "white", color: "black" }}
                       variant="outline-secondary"
                       size="sm"
-                      onClick={() => restarDelCarrito(item.producto.id ? item.producto.id : 0)}
+                      onClick={() => restarDelCarrito(item.stock.id ? item.stock.id : 0)}
                     >
                       <strong>-</strong>
                     </Button>
@@ -102,16 +102,16 @@ export function Carrito() {
                       style={{ background: "white", color: "black" }}
                       variant="outline-secondary"
                       size="sm"
-                      onClick={() => agregarAlCarrito(item.producto, 1)}
+                      onClick={() => agregarAlCarrito(item.stock, 1)}
                     >
                       <strong>+</strong>
                     </Button>
                   </div>
                 </div>
-                {item.producto.id !== undefined &&
+                {item.stock.producto.id !== undefined &&
                 <div className="text-end">
                   Subtotal: $
-                  {((preciosActualizados[item.producto.id] ?? 0) * item.cantidad).toFixed(2)}
+                  {((preciosActualizados[item.stock.producto.id] ?? 0) * item.cantidad).toFixed(2)}
                 </div>
                 }
               </div>
@@ -125,7 +125,7 @@ export function Carrito() {
                 Total: $
                 {carrito
                   .reduce((acc, item) => {
-                    const id = item.producto.id;
+                    const id = item.stock.producto.id;
                     const precio = typeof id === "number" ? preciosActualizados[id] ?? 0 : 0;
                     return acc + precio * item.cantidad;
                   }, 0)

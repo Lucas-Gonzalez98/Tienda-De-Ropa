@@ -1,18 +1,18 @@
 import { createContext, useState } from "react";
 import type { ReactNode } from "react";
-import Producto from "../models/Producto";
 import Pedido from "../models/Pedido";
 import PedidoDetalle from "../models/PedidoDetalle";
 import PedidoService from "../services/PedidoService";
 import { useAuth } from "./AuthContext";
 import type Cliente from "../models/Cliente";
 import HistoricoPrecioVentaService from "../services/HistoricoPrecioVentaService";
+import type Stock from "../models/Stock";
 
 interface CarritoContextProps {
   pedido: Pedido;
-  agregarAlCarrito: (Producto: Producto, cantidad: number) => void;
-  quitarDelCarrito: (idProducto: number) => void;
-  restarDelCarrito: (idProducto: number) => void;
+  agregarAlCarrito: (stock: Stock, cantidad: number) => void;
+  quitarDelCarrito: (idStock: number) => void;
+  restarDelCarrito: (idStock: number) => void;
   limpiarCarrito: () => void;
   enviarPedido: () => Promise<void>;
   guardarPedidoYObtener: () => Promise<Pedido | null>;
@@ -32,19 +32,15 @@ export function CarritoProvider({ children }: { children: ReactNode }) {
     return nuevoPedido;
   });
 
-  const agregarAlCarrito = (producto: Producto, cantidad: number) => {
+  const agregarAlCarrito = (stock: Stock, cantidad: number) => {
   setPedido((prevPedido) => {
     const detallesExistente = prevPedido.detalles.find(
-      (d) => d.producto.id === producto.id &&
-      d.producto.talle?.id === producto.talle?.id &&
-      d.producto.color?.id === producto.color?.id
+      (d) => d.stock.id === stock.id
     );
     let nuevosdetalles: PedidoDetalle[];
     if (detallesExistente) {
       nuevosdetalles = prevPedido.detalles.map((d) => {
-        if (d.producto.id === producto.id &&
-      d.producto.talle?.id === producto.talle?.id &&
-      d.producto.color?.id === producto.color?.id) {
+        if (d.stock.id === stock.id) {
           const nuevaCantidad = d.cantidad + cantidad;
           return {
             ...d,
@@ -55,10 +51,10 @@ export function CarritoProvider({ children }: { children: ReactNode }) {
       });
     } else {
       const nuevoDetalles = new PedidoDetalle();
-      nuevoDetalles.producto = producto;
+      nuevoDetalles.stock = stock;
       nuevoDetalles.cantidad = cantidad;
       const nuevoPrecio = () =>{
-        HistoricoPrecioVentaService.ultimoById(producto.id!).then((res) => nuevoDetalles.precio = res.precio)
+        HistoricoPrecioVentaService.ultimoById(stock.producto.id!).then((res) => nuevoDetalles.precio = res.precio)
       } 
       nuevoPrecio()
       nuevosdetalles = [...prevPedido.detalles, nuevoDetalles];
@@ -68,12 +64,14 @@ export function CarritoProvider({ children }: { children: ReactNode }) {
   });
 };
 
-const restarDelCarrito = (idProducto: number) => {
+const restarDelCarrito = (idstock: number) => {
   setPedido((prevPedido) => {
     const nuevosdetalles = prevPedido.detalles
       .map((d) => {
-        if (d.producto.id === idProducto) {
+        console.log("cantidad: ", d)
+        if (d.stock.id === idstock) {
           const nuevaCantidad = d.cantidad - 1;
+          console.log("canttidadnueva: ", nuevaCantidad)
           if (nuevaCantidad <= 0) return null;
           return {
             ...d,
@@ -88,10 +86,10 @@ const restarDelCarrito = (idProducto: number) => {
   });
 };
 
-  const quitarDelCarrito = (idProducto: number) => {
+  const quitarDelCarrito = (idstock: number) => {
     setPedido((prevPedido) => {
       const nuevosdetalles = prevPedido.detalles.filter(
-        (d) => d.producto.id !== idProducto
+        (d) => d.stock.id !== idstock
       );
       return { ...prevPedido, detalles: nuevosdetalles };
     });
@@ -130,9 +128,9 @@ const restarDelCarrito = (idProducto: number) => {
 
     try {
       pedido.estado = "PENDIENTE";
+      console.log(pedido)
       const response = PedidoService.create(pedido)
 
-      console.log(response)
       return response;
     } catch (error) {
       console.error(error);

@@ -18,10 +18,6 @@ public class Producto extends Master {
     private String descripcion;
 
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
-    private Set<PedidoDetalle> detalles = new HashSet<>();
-
-    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private Set<ImagenProducto> imagenes = new HashSet<>();
 

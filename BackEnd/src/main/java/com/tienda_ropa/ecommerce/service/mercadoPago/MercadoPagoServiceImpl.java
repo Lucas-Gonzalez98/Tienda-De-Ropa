@@ -31,7 +31,7 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
                     .id(String.valueOf(pedido.getId()))
                     .title("Articulos")
                     .description("Pedido realizado desde el carrito de compras")
-                    .pictureUrl("https://img.freepik.com/vector-gratis/diferentes-tipos-instrumentos-musicales_1308-3320.jpg")
+                    .pictureUrl("https://9e2f-2803-9800-9849-7c6d-d16f-c3c4-3dfd-54a9.ngrok-free.app")
                     .quantity(1)
                     .currencyId("ARS")
                     .unitPrice(BigDecimal.valueOf(pedido.getTotalPedido()))
@@ -47,7 +47,7 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
                     .build();
             System.out.println("Pedido ID: "+pedido.getId());
             PreferenceRequest preferenceRequest = PreferenceRequest.builder()
-                    .notificationUrl("https://2869-2803-9800-9849-7c6d-d16f-c3c4-3dfd-54a9.ngrok-free.app/api/webhook")
+                    .notificationUrl("https://9e2f-2803-9800-9849-7c6d-d16f-c3c4-3dfd-54a9.ngrok-free.app/api/webhook")
                     .externalReference(String.valueOf(pedido.getId()))
                     .items(items)
                     .backUrls(backURL)

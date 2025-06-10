@@ -28,7 +28,7 @@ export function PedidoConfirmado(){
     const handlePagarConMP = async () => {
         const pedidoFinal = await guardarPedidoYObtener();
         if (pedidoFinal) {
-            setPedidoGuardado(pedidoFinal);
+        setPedidoGuardado(pedidoFinal);
         }
     };
     useEffect(()=>{

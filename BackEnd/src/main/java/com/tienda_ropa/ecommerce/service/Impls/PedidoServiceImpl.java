@@ -86,11 +86,11 @@ public class PedidoServiceImpl extends MasterServiceImpl<Pedido, Long> implement
         pedido.setEstado(Estado.PENDIENTE);
 
         for (PedidoDetalle detalle : pedido.getDetalles()) {
-            Producto producto = productoRepository.findById(detalle.getProducto().getId())
+            Producto producto = productoRepository.findById(detalle.getStock().getProducto().getId())
                     .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
 
-            Long colorId = detalle.getProducto().getColor().getId();
-            Long talleId = detalle.getProducto().getTalle().getId();
+            Long colorId = detalle.getStock().getColor().getId();
+            Long talleId = detalle.getStock().getTalle().getId();
 
             Stock stock = stockRepository.findStockDisponible(producto.getId(), colorId, talleId)
                     .orElseThrow(() -> new EntityNotFoundException("Stock no disponible"));
@@ -102,7 +102,7 @@ public class PedidoServiceImpl extends MasterServiceImpl<Pedido, Long> implement
             stock.setCantidad(stock.getCantidad() - detalle.getCantidad());
 
             detalle.setPedido(pedido);
-            detalle.setProducto(producto);
+            detalle.getStock().setProducto(producto);
 
             HistoricoPrecioVenta ultimoPrecio = historicoPrecioVentaRepository
                     .findUltimoByProductoId(producto.getId())
@@ -164,7 +164,7 @@ public class PedidoServiceImpl extends MasterServiceImpl<Pedido, Long> implement
         // Si el estado es CANCELADO → devolver stock
         if (nuevoEstado == Estado.CANCELADO) {
             for (PedidoDetalle detalle : pedido.getDetalles()) {
-                Producto producto = detalle.getProducto();
+                Producto producto = detalle.getStock().getProducto();
                 Color color = producto.getColor();
                 Talle talle = producto.getTalle();
 
@@ -215,7 +215,7 @@ public class PedidoServiceImpl extends MasterServiceImpl<Pedido, Long> implement
         if (nuevoEstado == Estado.CANCELADO) {
             log.info("Rollback de stock para pedido cancelado ID {}", pedidoId);
             pedido.getDetalles().forEach(detalle -> {
-                Producto producto = detalle.getProducto();
+                Producto producto = detalle.getStock().getProducto();
                 Color color = producto.getColor();
                 Talle talle = producto.getTalle();
 

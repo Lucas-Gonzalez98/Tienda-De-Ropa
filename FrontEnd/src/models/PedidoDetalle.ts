@@ -1,4 +1,4 @@
-import Producto from "./Producto";
+import Stock from "./Stock";
 import Pedido from "./Pedido";
 
 export default class PedidoDetalle {
@@ -6,6 +6,6 @@ export default class PedidoDetalle {
     cantidad: number = 0;
     precio: number = 0;
     pedido!: Pedido;
-    producto!: Producto;
+    stock!: Stock;
     eliminado!: boolean;
 }

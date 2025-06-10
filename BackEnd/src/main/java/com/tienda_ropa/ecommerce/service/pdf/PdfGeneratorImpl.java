@@ -107,7 +107,7 @@ public class PdfGeneratorImpl implements PdfGenerator {
             double total = 0;
 
             for (PedidoDetalle det : pedido.getDetalles()) {
-                Producto prod = det.getProducto();
+                Producto prod = det.getStock().getProducto();
                 double subtotal = det.getPrecio() * det.getCantidad();
                 total += subtotal;
 

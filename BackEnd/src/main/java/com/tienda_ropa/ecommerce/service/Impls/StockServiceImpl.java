@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -132,6 +131,10 @@ public class StockServiceImpl extends MasterServiceImpl<Stock, Long> implements 
         return stockRepository.save(stock);
     }
 
+    @Override
+    public Optional<Stock> getStock(Long idProducto, Long idColor, Long idTalle) {
+        return stockRepository.findStockDisponible(idProducto, idColor, idTalle);
+    }
 
 
 }
