@@ -14,7 +14,6 @@ import Color from "../../models/Color";
 import Talle from "../../models/Talle";
 import ColorService from "../../services/ColorService";
 import HistoricoPrecioventaService from "../../services/HistoricoPrecioVentaService";
-import Stock from "../../models/Stock";
 
 function DetalleProducto() {
   const carritoCtx = useCarrito();

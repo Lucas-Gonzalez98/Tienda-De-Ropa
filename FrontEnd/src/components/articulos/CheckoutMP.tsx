@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import PreferenceMP from "../../models/mercadopago/PreferenceMP";
 import { useSavePreferenceMP } from "../../services/mercadopago/MercadoPagoApi"; // ← cambio aquí
 import Pedido from "../../models/Pedido";
-import { initMercadoPago, Wallet } from "@mercadopago/sdk-react";
+import { initMercadoPago } from "@mercadopago/sdk-react";
+import { useCarrito } from "../../hooks/useCarrito";
 
 function CheckoutMP({ pedido }: { pedido: Pedido }) {
+  const carritoCtx = useCarrito();
   const [idPreference, setIdPreference] = useState<string>('');
   const savePreferenceMP = useSavePreferenceMP(); // ← uso del hook
-
+  const { AgregarPreferenceId } = carritoCtx;
   const getPreferenceMP = async () => {
     try {
       const response: PreferenceMP = await savePreferenceMP(pedido); // ← llamada usando la función que devuelve el hook
@@ -31,15 +33,10 @@ function CheckoutMP({ pedido }: { pedido: Pedido }) {
     initMercadoPago('APP_USR-952520fb-4647-48b8-b7ef-b10e19201384', { locale: 'es-AR' });
   }, []);
 
-  return (
-    <div className="mt-3">
-      {idPreference && (
-        <Wallet
-          initialization={{ preferenceId: idPreference, redirectMode: "blank" }}
-        />
-      )}
-    </div>
-  );
+  useEffect(() => {
+    AgregarPreferenceId(idPreference)
+  }, [idPreference]);
+  return "";
 }
 
 export default CheckoutMP;
