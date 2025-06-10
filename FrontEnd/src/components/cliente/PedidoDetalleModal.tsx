@@ -43,9 +43,9 @@ export const PedidoDetalleModal: React.FC<DetalleProps> = ({ pedido, show, onClo
                     <tbody>
                         {pedido.detalles.map((det) => (
                             <tr key={det.id}>
-                                <td>{det.producto?.nombre}</td>
-                                <td>{det.producto?.talle?.nombre}</td>
-                                <td>{det.producto?.color?.nombre}</td>
+                                <td>{det.stock?.producto?.nombre}</td>
+                                <td>{det.stock?.talle?.nombre}</td>
+                                <td>{det.stock?.color?.nombre}</td>
                                 <td>{det.cantidad}</td>
                                 <td>{formatCurrency(det.precio)}</td>
                                 <td>{formatCurrency(det.cantidad * det.precio)}</td>

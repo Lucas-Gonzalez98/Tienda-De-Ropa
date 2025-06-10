@@ -13,23 +13,56 @@ const PedidosCliente = () => {
     const { userData } = useAuth();
     const cliente = userData as any;
     const [pedidos, setPedidos] = useState<Pedido[]>([]);
+    const [pedidosOriginales, setPedidosOriginales] = useState<Pedido[]>([]);
     const [estadoFiltro, setEstadoFiltro] = useState('');
     const [fechaDesde, setFechaDesde] = useState('');
     const [fechaHasta, setFechaHasta] = useState('');
     const [detallePedido, setDetallePedido] = useState<Pedido | null>(null);
     const [modalShow, setModalShow] = useState(false);
 
-    const cargarPedidos = async () => {
+    const cargarPedidosIniciales = async () => {
         if (!cliente?.id) return;
-        // Filtrado igual que en tu primer código (puedes modificar aquí el método según tu backend)
-        const pedidos = await PedidoService.getPedidosFiltrados(cliente.id, estadoFiltro, fechaDesde, fechaHasta);
-        setPedidos(pedidos);
+        const todosLosPedidos = await PedidoService.getPedidosFiltrados(cliente.id);
+        setPedidosOriginales(todosLosPedidos);
+    };
+
+    const aplicarFiltros = () => {
+        let pedidosFiltrados = [...pedidosOriginales];
+
+        // Filtro por estado
+        if (estadoFiltro) {
+            pedidosFiltrados = pedidosFiltrados.filter(p => p.estado === estadoFiltro);
+        }
+
+        // Filtro por fecha desde
+        if (fechaDesde) {
+            pedidosFiltrados = pedidosFiltrados.filter(p => 
+                new Date(p.fecha) >= new Date(fechaDesde)
+            );
+        }
+
+        // Filtro por fecha hasta
+        if (fechaHasta) {
+            pedidosFiltrados = pedidosFiltrados.filter(p => 
+                new Date(p.fecha) <= new Date(fechaHasta)
+            );
+        }
+
+        // Ordenar por fecha (más recientes primero)
+        pedidosFiltrados.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+
+        setPedidos(pedidosFiltrados);
     };
 
     useEffect(() => {
-        cargarPedidos();
+        cargarPedidosIniciales();
         // eslint-disable-next-line
     }, []);
+
+    useEffect(() => {
+        aplicarFiltros();
+        // eslint-disable-next-line
+    }, [estadoFiltro, fechaDesde, fechaHasta, pedidosOriginales]);
 
     const handleVerDetalle = async (pedidoId: number) => {
         const pedido = await PedidoService.getById(pedidoId);
@@ -40,8 +73,14 @@ const PedidosCliente = () => {
     const handleCancelar = async (pedidoId: number) => {
         if (window.confirm("¿Seguro desea cancelar el pedido? Esta acción es irreversible.")) {
             await PedidoService.cancelarPedido(pedidoId, cliente.usuario.id);
-            await cargarPedidos();
+            await cargarPedidosIniciales();
         }
+    };
+
+    const limpiarFiltros = () => {
+        setEstadoFiltro('');
+        setFechaDesde('');
+        setFechaHasta('');
     };
 
     return (
@@ -50,7 +89,10 @@ const PedidosCliente = () => {
 
             <Row className="align-items-end mb-3 gap-lg-1 ">
                 <Col md="auto">
-                    <Button onClick={cargarPedidos} variant="dark">Ver Todos</Button>
+                    <Button onClick={limpiarFiltros} variant="outline-secondary">
+                        <i className="fas fa-eraser me-1"></i>
+                        Ver Todos
+                    </Button>
                 </Col>
                 <Col md="auto">
                     <Form.Select value={estadoFiltro} onChange={e => setEstadoFiltro(e.target.value)}>
@@ -67,9 +109,6 @@ const PedidosCliente = () => {
                 <Col md="auto" className="d-flex align-items-center gap-2">
                     <div>Hasta:</div>
                     <Form.Control type="date" value={fechaHasta} onChange={e => setFechaHasta(e.target.value)} />
-                </Col>
-                <Col md="auto">
-                    <Button variant="primary" onClick={cargarPedidos}>Filtrar</Button>
                 </Col>
             </Row>
             

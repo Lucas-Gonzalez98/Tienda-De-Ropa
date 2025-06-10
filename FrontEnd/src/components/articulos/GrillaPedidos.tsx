@@ -1,6 +1,6 @@
 // src/components/GrillaPedidos.tsx
 import React, { useEffect, useState } from "react";
-import { Table, Button, Form, Modal, Row, Col, Spinner } from "react-bootstrap";
+import { Table, Button, Form, Row, Col, Spinner, Badge } from "react-bootstrap";
 import { useAuth } from "../../context/AuthContext";
 import PedidoService from "../../services/PedidoService";
 import Pedido from "../../models/Pedido";
@@ -9,9 +9,18 @@ import { type Estado } from "../../models/enums/Estado";
 
 const estados: Estado[] = ["PENDIENTE", "PROCESANDO", "EN_CAMINO", "ENTREGADO", "CANCELADO"];
 
+const estadoColors: Record<string, string> = {
+    PENDIENTE: 'secondary',
+    PROCESANDO: 'warning',
+    EN_CAMINO: 'info',
+    ENTREGADO: 'success',
+    CANCELADO: 'danger',
+};
+
 const GrillaPedidos: React.FC = () => {
     const { usuario } = useAuth();
     const [pedidos, setPedidos] = useState<Pedido[]>([]);
+    const [pedidosOriginales, setPedidosOriginales] = useState<Pedido[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
     const [filtroTexto, setFiltroTexto] = useState<string>("");
@@ -24,23 +33,11 @@ const GrillaPedidos: React.FC = () => {
 
     const [nuevoEstadoMap, setNuevoEstadoMap] = useState<Record<number, Estado>>({});
 
-    const cargarPedidos = async () => {
+    const cargarPedidosIniciales = async () => {
         setLoading(true);
         try {
-            const pedidosFiltrados = await PedidoService.getPedidosFiltrados(
-                0,
-                filtroEstado || undefined,
-                fechaDesde || undefined,
-                fechaHasta || undefined
-            );
-
-            const filtradosPorTexto = pedidosFiltrados.filter(p =>
-                (`${p.cliente.nombre} ${p.cliente.apellido}`)
-                    .toLowerCase()
-                    .includes(filtroTexto.toLowerCase())
-            );
-
-            setPedidos(filtradosPorTexto);
+            const todosLosPedidos = await PedidoService.getPedidosFiltrados(0);
+            setPedidosOriginales(todosLosPedidos);
         } catch (error) {
             console.error("Error al cargar pedidos:", error);
         } finally {
@@ -48,9 +45,50 @@ const GrillaPedidos: React.FC = () => {
         }
     };
 
+    const aplicarFiltros = () => {
+        let pedidosFiltrados = [...pedidosOriginales];
+
+        // Filtro por texto (nombre del cliente)
+        if (filtroTexto) {
+            pedidosFiltrados = pedidosFiltrados.filter(p =>
+                (`${p.cliente.nombre} ${p.cliente.apellido}`)
+                    .toLowerCase()
+                    .includes(filtroTexto.toLowerCase())
+            );
+        }
+
+        // Filtro por estado
+        if (filtroEstado) {
+            pedidosFiltrados = pedidosFiltrados.filter(p => p.estado === filtroEstado);
+        }
+
+        // Filtro por fecha desde
+        if (fechaDesde) {
+            pedidosFiltrados = pedidosFiltrados.filter(p => 
+                new Date(p.fecha) >= new Date(fechaDesde)
+            );
+        }
+
+        // Filtro por fecha hasta
+        if (fechaHasta) {
+            pedidosFiltrados = pedidosFiltrados.filter(p => 
+                new Date(p.fecha) <= new Date(fechaHasta)
+            );
+        }
+
+        // Ordenar por fecha (más recientes primero)
+        pedidosFiltrados.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+
+        setPedidos(pedidosFiltrados);
+    };
+
     useEffect(() => {
-        cargarPedidos();
-    }, [filtroTexto, filtroEstado, fechaDesde, fechaHasta]);
+        cargarPedidosIniciales();
+    }, []);
+
+    useEffect(() => {
+        aplicarFiltros();
+    }, [filtroTexto, filtroEstado, fechaDesde, fechaHasta, pedidosOriginales]);
 
     const handleVerDetalle = async (pedidoId: number) => {
         try {
@@ -97,7 +135,7 @@ const GrillaPedidos: React.FC = () => {
                 usuario.rol.toUpperCase()
             );
             alert("Estado actualizado correctamente.");
-            await cargarPedidos();
+            await cargarPedidosIniciales();
         } catch (error: any) {
             alert("Error al cambiar el estado: " + error.message);
         } finally {
@@ -129,10 +167,10 @@ const GrillaPedidos: React.FC = () => {
                             value={filtroEstado}
                             onChange={(e) => setFiltroEstado(e.target.value)}
                         >
-                            <option value="">Estado</option>
+                            <option value="">Todos los estados</option>
                             {estados.map((estado) => (
                                 <option key={estado} value={estado}>
-                                    {estado}
+                                    {estado.replace('_', ' ')}
                                 </option>
                             ))}
                         </Form.Select>
@@ -140,6 +178,7 @@ const GrillaPedidos: React.FC = () => {
                     <Col md={2}>
                         <Form.Control
                             type="date"
+                            placeholder="Fecha desde"
                             value={fechaDesde}
                             onChange={(e) => setFechaDesde(e.target.value)}
                         />
@@ -147,22 +186,24 @@ const GrillaPedidos: React.FC = () => {
                     <Col md={2}>
                         <Form.Control
                             type="date"
+                            placeholder="Fecha hasta"
                             value={fechaHasta}
                             onChange={(e) => setFechaHasta(e.target.value)}
                         />
                     </Col>
                     <Col md={2}>
-                        <Button variant="secondary" onClick={limpiarFiltros}>
-                            Ver Todos
+                        <Button variant="outline-secondary" onClick={limpiarFiltros}>
+                            <i className="fas fa-eraser me-1"></i>
+                            Limpiar Filtros
                         </Button>
                     </Col>
                 </Row>
             </Form>
 
             <Table striped bordered hover responsive>
-                <thead>
+                <thead className="table-dark">
                     <tr>
-                        <th>ID</th>
+                        <th>N° Pedido</th>
                         <th>Cliente</th>
                         <th>Domicilio</th>
                         <th>Fecha</th>
@@ -173,79 +214,112 @@ const GrillaPedidos: React.FC = () => {
                 <tbody>
                     {loading ? (
                         <tr>
-                            <td colSpan={6} className="text-center">
-                                <Spinner animation="border" /> Cargando...
+                            <td colSpan={6} className="text-center py-4">
+                                <Spinner animation="border" variant="primary" /> 
+                                <div className="mt-2">Cargando pedidos...</div>
                             </td>
                         </tr>
                     ) : pedidos.length === 0 ? (
                         <tr>
-                            <td colSpan={6} className="text-center">
-                                No se encontraron pedidos.
+                            <td colSpan={6} className="text-center py-4 text-muted">
+                                <i className="fas fa-search fa-2x mb-2"></i>
+                                <div>No se encontraron pedidos con los filtros aplicados.</div>
                             </td>
                         </tr>
                     ) : (
-                        [...pedidos]
-                            .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
-                            .map((pedido) => (
-                                <tr key={pedido.id}>
-                                    <td>{pedido.id}</td>
-                                    <td>{pedido.cliente.nombre} {pedido.cliente.apellido}</td>
-                                    <td>
-                                        {pedido.domicilio.calle} {pedido.domicilio.numero},{" "}
-                                        {pedido.domicilio.localidad?.nombre}
-                                        {pedido.domicilio.referencia ? ` (${pedido.domicilio.referencia})` : ""}
-                                    </td>
-                                    <td>{new Date(pedido.fecha).toLocaleDateString()}</td>
-                                    <td>{pedido.estado}</td>
-                                    <td>
-                                        <Button variant="info" size="sm" onClick={() => handleVerDetalle(pedido.id!)}>
+                        pedidos.map((pedido) => (
+                            <tr key={pedido.id}>
+                                <td className="fw-bold"># {pedido.id}</td>
+                                <td>
+                                    <div className="fw-semibold">
+                                        {pedido.cliente.nombre} {pedido.cliente.apellido}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        {pedido.domicilio.calle} {pedido.domicilio.numero}, {pedido.domicilio.localidad?.nombre}
+                                    </div>
+                                    {pedido.domicilio.referencia && (
+                                        <small className="text-muted d-block mt-1">
+                                            <i className="fas fa-map-marker-alt me-1"></i>
+                                            {pedido.domicilio.referencia}
+                                        </small>
+                                    )}
+                                </td>
+                                <td>{new Date(pedido.fecha).toLocaleDateString('es-AR')}</td>
+                                <td>
+                                    <Badge bg={estadoColors[pedido.estado]} className="px-2 py-1">
+                                        {pedido.estado.replace('_', ' ')}
+                                    </Badge>
+                                </td>
+                                <td>
+                                    <div className="d-flex flex-wrap gap-1">
+                                        <Button 
+                                            variant="outline-info" 
+                                            size="sm" 
+                                            onClick={() => handleVerDetalle(pedido.id!)}
+                                            className="d-flex align-items-center"
+                                        >
+                                            <i className="fas fa-eye me-1"></i>
                                             Ver
-                                        </Button>{" "}
-                                        <Button variant="success" size="sm" onClick={() => handleDescargarFactura(pedido.id!)}>
-                                            Factura
-                                        </Button>{" "}
-                                        <Form.Select
-                                            size="sm"
-                                            value={nuevoEstadoMap[pedido.id!] || pedido.estado}
-                                            onChange={(e) =>
-                                                setNuevoEstadoMap({ ...nuevoEstadoMap, [pedido.id!]: e.target.value as Estado })
-                                            }
-                                            className="d-inline w-auto"
-                                        >
-                                            {estados.map((estado) => (
-                                                <option key={estado} value={estado}>
-                                                    {estado}
-                                                </option>
-                                            ))}
-                                        </Form.Select>{" "}
-                                        <Button
-                                            variant="primary"
-                                            size="sm"
-                                            onClick={() => handleCambiarEstado(pedido.id!)}
-                                        >
-                                            Guardar
                                         </Button>
-                                    </td>
-                                </tr>
-                            ))
+                                        
+                                        <Button 
+                                            variant="outline-success" 
+                                            size="sm" 
+                                            onClick={() => handleDescargarFactura(pedido.id!)}
+                                            className="d-flex align-items-center"
+                                        >
+                                            <i className="fas fa-file-pdf me-1"></i>
+                                            Factura
+                                        </Button>
+                                        
+                                        <div className="d-flex align-items-center">
+                                            <Form.Select
+                                                size="sm"
+                                                value={nuevoEstadoMap[pedido.id!] || pedido.estado}
+                                                onChange={(e) =>
+                                                    setNuevoEstadoMap({ 
+                                                        ...nuevoEstadoMap, 
+                                                        [pedido.id!]: e.target.value as Estado 
+                                                    })
+                                                }
+                                                className="me-1"
+                                                style={{ minWidth: '120px' }}
+                                            >
+                                                {estados.map((estado) => (
+                                                    <option key={estado} value={estado}>
+                                                        {estado.replace('_', ' ')}
+                                                    </option>
+                                                ))}
+                                            </Form.Select>
+                                            
+                                            <Button
+                                                variant={estadoColors[nuevoEstadoMap[pedido.id!] || pedido.estado]}
+                                                size="sm"
+                                                onClick={() => handleCambiarEstado(pedido.id!)}
+                                                disabled={!nuevoEstadoMap[pedido.id!] || nuevoEstadoMap[pedido.id!] === pedido.estado}
+                                                className="d-flex align-items-center"
+                                            >
+                                                <i className="fas fa-save me-1"></i>
+                                                Actualizar
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))
                     )}
                 </tbody>
             </Table>
 
-            <Modal show={mostrarModal} onHide={() => setMostrarModal(false)} size="lg">
-                <Modal.Header closeButton>
-                    <Modal.Title>Detalle del Pedido</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    {pedidoSeleccionado && (
-                        <PedidoDetalleModal
-                            pedido={pedidoSeleccionado}
-                            show={mostrarModal}
-                            onClose={() => setMostrarModal(false)}
-                        />
-                    )}
-                </Modal.Body>
-            </Modal>
+            {pedidoSeleccionado && (
+                <PedidoDetalleModal
+                    pedido={pedidoSeleccionado}
+                    show={mostrarModal}
+                    onClose={() => setMostrarModal(false)}
+                />
+            )}
         </div>
     );
 };

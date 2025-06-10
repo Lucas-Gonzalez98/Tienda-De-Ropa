@@ -161,16 +161,16 @@ public class PedidoServiceImpl extends MasterServiceImpl<Pedido, Long> implement
         pedido.setEstado(nuevoEstado);
         pedidoRepository.save(pedido);
 
-        // Si el estado es CANCELADO → devolver stock
         if (nuevoEstado == Estado.CANCELADO) {
             for (PedidoDetalle detalle : pedido.getDetalles()) {
-                Producto producto = detalle.getStock().getProducto();
-                Color color = producto.getColor();
-                Talle talle = producto.getTalle();
+                Stock stock = detalle.getStock();
 
-                Stock stock = stockRepository.findByProductoAndColorAndTalle(producto, color, talle)
-                        .orElseThrow(() -> new EntityNotFoundException("Stock no encontrado"));
+                // Validación opcional para asegurar que el stock existe
+                if (stock == null) {
+                    throw new EntityNotFoundException("Stock no encontrado para el detalle del pedido");
+                }
 
+                // Incrementar la cantidad en stock
                 stock.setCantidad(stock.getCantidad() + detalle.getCantidad());
                 stockRepository.save(stock);
             }
@@ -212,23 +212,21 @@ public class PedidoServiceImpl extends MasterServiceImpl<Pedido, Long> implement
         log.info("Actualizando estado del pedido {} de {} a {}", pedidoId, pedido.getEstado(), nuevoEstado);
         pedido.setEstado(nuevoEstado);
 
+        //Si el estado es CANCELADO → devolver al Stock
         if (nuevoEstado == Estado.CANCELADO) {
             log.info("Rollback de stock para pedido cancelado ID {}", pedidoId);
             pedido.getDetalles().forEach(detalle -> {
-                Producto producto = detalle.getStock().getProducto();
-                Color color = producto.getColor();
-                Talle talle = producto.getTalle();
+                Stock stock = detalle.getStock();
 
-                Stock stock = stockRepository.findByProductoAndColorAndTalle(producto, color, talle)
-                        .orElseThrow(() -> new EntityNotFoundException(String.format(
-                                "Stock no encontrado para producto ID %d con color %s y talle %s",
-                                producto.getId(), color.getNombre(), talle.getNombre()
-                        )));
-
+                // Incrementar la cantidad en stock
                 stock.setCantidad(stock.getCantidad() + detalle.getCantidad());
                 stockRepository.save(stock);
+
                 log.info("Stock actualizado para producto ID {} (color: {}, talle: {}) - nueva cantidad: {}",
-                        producto.getId(), color.getNombre(), talle.getNombre(), stock.getCantidad());
+                        stock.getProducto().getId(),
+                        stock.getColor().getNombre(),
+                        stock.getTalle().getNombre(),
+                        stock.getCantidad());
             });
         }
 

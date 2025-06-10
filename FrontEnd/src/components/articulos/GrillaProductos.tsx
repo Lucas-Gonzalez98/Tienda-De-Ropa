@@ -195,9 +195,6 @@ const GrillaProductos = () => {
             <>
               <h5>{productoSeleccionado.nombre}</h5>
               <p>{productoSeleccionado.descripcion}</p>
-              {productoSeleccionado.imagenes?.length && (
-                <img src={productoSeleccionado.imagenes[0].denominacion} className="img-fluid mb-3" />
-              )}
               <h6>Stock</h6>
               <Table size="sm" striped>
                 <thead><tr><th>Talle</th><th>Color</th><th>Cantidad</th></tr></thead>
