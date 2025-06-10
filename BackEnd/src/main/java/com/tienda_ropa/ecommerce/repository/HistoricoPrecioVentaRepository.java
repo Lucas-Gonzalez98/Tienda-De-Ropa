@@ -22,7 +22,11 @@ public interface HistoricoPrecioVentaRepository extends MasterRepository<Histori
     //para el update de producto
     boolean existsByProductoIdAndPrecio(Long productoId, Double precio);
 
-    Optional<HistoricoPrecioVenta> findTopByProductoOrderByFechaDesc(Producto producto);
+    //Optional<HistoricoPrecioVenta> findTopByProductoOrderByFechaDesc(Producto producto);
+    @Query("SELECT h FROM HistoricoPrecioVenta h WHERE h.producto.id = :productoId ORDER BY h.fecha DESC")
+    Optional<HistoricoPrecioVenta> findTopByProductoIdOrderByFechaDesc(@Param("productoId") Long productoId);
+
+    //Optional<HistoricoPrecioVenta> findTopByProductoOrderByFechaDesc(Long productoId);
 
     @Query("SELECT h FROM HistoricoPrecioVenta h WHERE h.producto.id = :productoId ORDER BY h.fecha DESC")
     List<HistoricoPrecioVenta> findUltimosByProductoId(@Param("productoId") Long productoId, Pageable pageable);

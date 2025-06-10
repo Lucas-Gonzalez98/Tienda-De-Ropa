@@ -35,18 +35,17 @@ public class StockServiceImpl extends MasterServiceImpl<Stock, Long> implements 
         this.historicoPrecioVentaRepository = historicoPrecioVentaRepository;
     }
 
-    //filtrar stock por talle, color y disponibilidad
+    // Métodos existentes (mantener sin cambios)
     @Override
     public List<Stock> getDisponiblesPorTalleYColor(Talle talle, Color color) {
-
         return stockRepository.findByTalleAndColorAndCantidadGreaterThan(talle, color, 0);
     }
-    //obtener todos los el stock con cantidad > 0
+
     @Override
     public List<Stock> getDisponibles() {
         return stockRepository.findByCantidadGreaterThan(0);
     }
-    // cantidad de stock por producto, talle y color)
+
     @Override
     public int obtenerCantidadStockDisponible(Producto producto, Talle talle, Color color) {
         return stockRepository.obtenerCantidadStockDisponible(producto, talle, color);
@@ -57,14 +56,29 @@ public class StockServiceImpl extends MasterServiceImpl<Stock, Long> implements 
         return stockRepository.findByProductoId(productoId);
     }
 
-    // Crear stock con combinacion e Historico Compra
+    @Override
+    public Optional<Stock> getStock(Long idProducto, Long idColor, Long idTalle) {
+        return stockRepository.findStockDisponible(idProducto, idColor, idTalle);
+    }
+
+    // 🟢 CREAR STOCK - Crear nuevo registro de stock
     @Override
     @Transactional
-    public Stock crearStock(Long idProducto, Long idColor, Long idTalle, Integer cantidad, Double precioCompra) {
-        // Verificar stock existente
+    public Stock crearStock(Long idProducto, Long idColor, Long idTalle, Integer cantidad,
+                            Double precioCompra) {
+
+        // Verificar que no existe stock para esta combinación
         Optional<Stock> stockExistente = stockRepository.findStockDisponible(idProducto, idColor, idTalle);
         if (stockExistente.isPresent()) {
             throw new RuntimeException("Ya existe un stock para esa combinación de producto, color y talle.");
+        }
+
+        // Validaciones
+        if (cantidad <= 0) {
+            throw new IllegalArgumentException("La cantidad debe ser mayor a 0");
+        }
+        if (precioCompra <= 0) {
+            throw new IllegalArgumentException("El precio de compra debe ser mayor a 0");
         }
 
         // Obtener entidades
@@ -83,58 +97,135 @@ public class StockServiceImpl extends MasterServiceImpl<Stock, Long> implements 
         nuevoStock.setCantidad(cantidad);
         Stock stockGuardado = stockRepository.save(nuevoStock);
 
-        // Registrar histórico de precio de compra
-        HistoricoPrecioCompra historicoPrecioCompra = new HistoricoPrecioCompra();
-        historicoPrecioCompra.setProducto(producto);
-        historicoPrecioCompra.setFecha(LocalDateTime.now());
-        historicoPrecioCompra.setPrecio(precioCompra);
-        historicoPrecioCompraRepository.save(historicoPrecioCompra);
-
-        // Calcular y registrar histórico de precio de venta (50% más)
-        Double precioVenta = precioCompra * 1.5;
-        HistoricoPrecioVenta historicoPrecioVenta = new HistoricoPrecioVenta();
-        historicoPrecioVenta.setProducto(producto);
-        historicoPrecioVenta.setFecha(LocalDateTime.now());
-        historicoPrecioVenta.setPrecio(precioVenta);
-        historicoPrecioVentaRepository.save(historicoPrecioVenta);
+        // SIEMPRE crear históricos al crear nuevo stock
+        crearHistoricoPrecioCompra(producto, precioCompra);
+        crearHistoricoPrecioVenta(producto, precioCompra);
 
         return stockGuardado;
     }
 
-
-    // Actualizar Stock
+    // 🔘 AGREGAR STOCK - Solo agregar cantidad a stock existente
     @Override
     @Transactional
-    public Stock actualizarStock(Long idProducto, Long idColor, Long idTalle,
-                                 Integer cantidadAdicional, Double nuevoPrecioCompra) {
+    public Stock agregarStock(Long idProducto, Long idColor, Long idTalle, Integer cantidadAdicional,
+                              Double precioCompra) {
+
+        // Buscar stock existente
         Stock stock = stockRepository.findStockDisponible(idProducto, idColor, idTalle)
-                .orElseThrow(() -> new EntityNotFoundException("Stock no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Stock no encontrado. Use 'Crear Stock' para crear uno nuevo."));
+
+        // Validaciones
+        if (cantidadAdicional <= 0) {
+            throw new IllegalArgumentException("La cantidad adicional debe ser mayor a 0");
+        }
+        if (precioCompra <= 0) {
+            throw new IllegalArgumentException("El precio de compra debe ser mayor a 0");
+        }
 
         // Actualizar cantidad
         stock.setCantidad(stock.getCantidad() + cantidadAdicional);
 
-        // Registrar nuevo precio de compra
-        HistoricoPrecioCompra historicoPrecioCompra = new HistoricoPrecioCompra();
-        historicoPrecioCompra.setProducto(stock.getProducto());
-        historicoPrecioCompra.setFecha(LocalDateTime.now());
-        historicoPrecioCompra.setPrecio(nuevoPrecioCompra);
-        historicoPrecioCompraRepository.save(historicoPrecioCompra);
-
-        // Calcular y registrar nuevo precio de venta
-        Double precioVenta = nuevoPrecioCompra * 1.5;
-        HistoricoPrecioVenta historicoPrecioVenta = new HistoricoPrecioVenta();
-        historicoPrecioVenta.setProducto(stock.getProducto());
-        historicoPrecioVenta.setFecha(LocalDateTime.now());
-        historicoPrecioVenta.setPrecio(precioVenta);
-        historicoPrecioVentaRepository.save(historicoPrecioVenta);
+        // Solo crear históricos si los precios son diferentes
+        if (esPrecioCompraDiferente(idProducto, precioCompra)) {
+            crearHistoricoPrecioCompra(stock.getProducto(), precioCompra);
+            crearHistoricoPrecioVenta(stock.getProducto(), precioCompra);
+        }
 
         return stockRepository.save(stock);
     }
 
+    // 🟡 ACTUALIZAR STOCK - Modificar stock existente
     @Override
-    public Optional<Stock> getStock(Long idProducto, Long idColor, Long idTalle) {
-        return stockRepository.findStockDisponible(idProducto, idColor, idTalle);
+    @Transactional
+    public Stock actualizarStock(Long stockId, Long idProducto, Long idColor, Long idTalle,
+                                 Integer nuevaCantidad, Double precioCompra) {
+
+        // Buscar stock por ID
+        Stock stock = stockRepository.findById(stockId)
+                .orElseThrow(() -> new EntityNotFoundException("Stock no encontrado"));
+
+        // Validaciones
+        if (nuevaCantidad < 0) {
+            throw new IllegalArgumentException("La cantidad no puede ser negativa");
+        }
+        if (precioCompra <= 0) {
+            throw new IllegalArgumentException("El precio de compra debe ser mayor a 0");
+        }
+        // Obtener entidades (pueden haber cambiado)
+        Producto producto = productoRepository.findById(idProducto)
+                .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
+        Color color = colorRepository.findById(idColor)
+                .orElseThrow(() -> new EntityNotFoundException("Color no encontrado"));
+        Talle talle = talleRepository.findById(idTalle)
+                .orElseThrow(() -> new EntityNotFoundException("Talle no encontrado"));
+
+        // Verificar que no existe otro stock con la nueva combinación (si cambió)
+        if (!stock.getProducto().getId().equals(idProducto) ||
+                !stock.getColor().getId().equals(idColor) ||
+                !stock.getTalle().getId().equals(idTalle)) {
+
+            Optional<Stock> stockExistente = stockRepository.findStockDisponible(idProducto, idColor, idTalle);
+            if (stockExistente.isPresent() && !stockExistente.get().getId().equals(stockId)) {
+                throw new RuntimeException("Ya existe un stock para esa combinación de producto, color y talle.");
+            }
+        }
+
+        // Actualizar datos del stock
+        stock.setProducto(producto);
+        stock.setColor(color);
+        stock.setTalle(talle);
+        stock.setCantidad(nuevaCantidad);
+
+        // Solo crear históricos si los precios son diferentes
+        if (esPrecioCompraDiferente(idProducto, precioCompra)) {
+            crearHistoricoPrecioCompra(producto, precioCompra);
+            crearHistoricoPrecioVenta(producto, precioCompra);
+        }
+
+        return stockRepository.save(stock);
     }
 
+    // Métodos auxiliares para validar precios
+    @Override
+    public boolean esPrecioCompraDiferente(Long productoId, Double nuevoPrecio) {
+        Double ultimoPrecio = obtenerUltimoPrecioCompra(productoId);
+        return ultimoPrecio == null || !ultimoPrecio.equals(nuevoPrecio);
+    }
 
+    @Override
+    public boolean esPrecioVentaDiferente(Long productoId, Double nuevoPrecio) {
+        Double ultimoPrecio = obtenerUltimoPrecioVenta(productoId);
+        return ultimoPrecio == null || !ultimoPrecio.equals(nuevoPrecio);
+    }
+
+    @Override
+    public Double obtenerUltimoPrecioCompra(Long productoId) {
+        return historicoPrecioCompraRepository.findTopByProductoIdOrderByFechaDesc(productoId)
+                .map(HistoricoPrecioCompra::getPrecio)
+                .orElse(null);
+    }
+
+    @Override
+    public Double obtenerUltimoPrecioVenta(Long productoId) {
+        return historicoPrecioVentaRepository.findTopByProductoIdOrderByFechaDesc(productoId)
+                .map(HistoricoPrecioVenta::getPrecio)
+                .orElse(null);
+    }
+
+    // Métodos privados para crear históricos
+    private void crearHistoricoPrecioCompra(Producto producto, Double precio) {
+        HistoricoPrecioCompra historico = new HistoricoPrecioCompra();
+        historico.setProducto(producto);
+        historico.setFecha(LocalDateTime.now());
+        historico.setPrecio(precio);
+        historicoPrecioCompraRepository.save(historico);
+    }
+
+    private void crearHistoricoPrecioVenta(Producto producto, Double precio) {
+        HistoricoPrecioVenta historico = new HistoricoPrecioVenta();
+        historico.setProducto(producto);
+        historico.setFecha(LocalDateTime.now());
+        historico.setPrecio(precio * 1.5);
+        historicoPrecioVentaRepository.save(historico);
+    }
 }

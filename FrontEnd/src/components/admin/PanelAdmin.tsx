@@ -5,7 +5,7 @@ import AdminPanelIcon from '../../assets/admin_panel.svg'; // Importa el SVG
 import GrillaProductos from '../articulos/GrillaProductos.tsx';
 import GrillaCategorias from '../articulos/GrillaCategoria';
 import GrillaCliente from "./GrillaCliente.tsx";
-import { GrillaStock } from '../articulos/GrillaStock.tsx';
+import  GrillaStock  from '../articulos/GrillaStock.tsx';
 import GrillaPedidos from '../articulos/GrillaPedidos.tsx';
 
 function PanelAdmin() {

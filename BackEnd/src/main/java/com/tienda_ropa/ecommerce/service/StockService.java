@@ -10,18 +10,28 @@ import java.util.Optional;
 
 public interface StockService extends MasterService<Stock, Long> {
 
-    //filtrar por talle y color
+    // Métodos existentes
     List<Stock> getDisponiblesPorTalleYColor(Talle talle, Color color);
-    //obtener todos los stock con cantidad > 0
     List<Stock> getDisponibles();
-    // cantidad de stock por producto, talle y color)
     int obtenerCantidadStockDisponible(Producto producto, Talle talle, Color color);
-
-    // actualizar stock para una combinación + historico compra
-    Stock actualizarStock(Long idProducto, Long idColor, Long idTalle, Integer cantidadAdicional, Double nuevoPrecioCompra);
-    Optional<Stock> getStock(Long idProducto, Long idColor, Long idTalle);
-    //crear stock
-    Stock crearStock(Long idProducto, Long idColor, Long idTalle, Integer cantidad, Double precio);
-
     List<Stock> getByProducto(Long productoId);
+    Optional<Stock> getStock(Long idProducto, Long idColor, Long idTalle);
+
+    // Métodos mejorados para los tres botones
+    Stock crearStock(Long idProducto, Long idColor, Long idTalle, Integer cantidad,
+                     Double precioCompra);
+
+    Stock agregarStock(Long idProducto, Long idColor, Long idTalle, Integer cantidadAdicional,
+                       Double precioCompra);
+
+    Stock actualizarStock(Long stockId, Long idProducto, Long idColor, Long idTalle,
+                          Integer nuevaCantidad, Double precioCompra);
+
+    // Métodos auxiliares para validar precios
+    boolean esPrecioCompraDiferente(Long productoId, Double nuevoPrecio);
+    boolean esPrecioVentaDiferente(Long productoId, Double nuevoPrecio);
+    Double obtenerUltimoPrecioCompra(Long productoId);
+    Double obtenerUltimoPrecioVenta(Long productoId);
+
+
 }
